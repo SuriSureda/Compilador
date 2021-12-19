@@ -7,16 +7,7 @@ import SymbolsTable.*;
 
 parser code
 {:
-  private 
-  private Symbol s;
-  
-  public void syntax_error(Symbol s){
-  this.s = s;
-  }
-
-  public Symbol getS(){
-  return this.s;
-  }
+  private SymbolsTable symbolsTable;
 :};
 
 /******Declaració de simbols terminals*********/
@@ -28,10 +19,42 @@ terminal        character, id, number, string, bool, Void, op_relational, op_log
 
 /******Declaració de simbols no terminals*********/
 
-non terminal STARTS, INSTRUCTIONS, INSTRUCTION, DECLARATIONS, OPERATOR_ASSIG, INSTRUCTION_IN, INSTRUCTION_OUT, CONSTANT,VALUE,
-              INITIALIZE_ARITHMETICAL_OP, ARITHMETICAL_OP, ARITHMETICAL_VALUE, POS_NEG, BOOLEAN_OP, INITIALIZE_BOOLEAN_OP, BOOLEAN_VALUE, VALUE_COMPARISON,
-             INSTRUCTION_IF, OTHER_CASES, INSTRUCTION_WHILE, INSTRUCTION_FOR, INTERNAL_FOR, INSTRUCTION_SWITCH, CASES, CASE_DEFAULT, DEFINE_FUNCTION,
-             CALL_FUNCTION, CALL_BODY, FUNCTION_BEG,PARAMETERS, HAS_PARAMETERS,HAS_MORE_PARAMETERS, FUNCTION_BODY, RETURN_TYPE, CALL_MAIN, INIT;
+non terminal  SymbolStarts                STARTS;
+non terminal  SymbolInit                  INIT;
+non terminal  SymbolCallMain              CALL_MAIN;
+non terminal  SymbolInstructions          INSTRUCTIONS;
+non terminal  SymbolInstruction           INSTRUCTION;
+non terminal  SymbolDeclarations          DECLARATIONS;
+non terminal  SymbolOperatorAssignation   OPERATOR_ASSIG;
+non terminal  SymbolInstructionIn         INSTRUCTION_IN;
+non terminal  SymbolInstructionOut        INSTRUCTION_OUT;
+non terminal  SymbolConstant              CONSTANT;
+non terminal  SymbolValue                 VALUE;
+non terminal  SymbolInitArithOp           INITIALIZE_ARITHMETICAL_OP;
+non terminal  SymbolArithmeticalOperator  ARITHMETICAL_OP;
+non terminal  SymbolArithValue            ARITHMETICAL_VALUE;
+non terminal  SymbolPosNeg                POS_NEG;
+non terminal  SymbolBoolOp                BOOLEAN_OP;
+non terminal  SymbolInitBoolOp            INITIALIZE_BOOLEAN_OP;
+non terminal  SymbolBoolValue             BOOLEAN_VALUE;
+non terminal  SymbolValueComparison       VALUE_COMPARISON;
+non terminal  SymbolInstructionIf         INSTRUCTION_IF;
+non terminal  SymbolOtherCases            OTHER_CASES;
+non terminal  SymbolInstructionWhile      INSTRUCTION_WHILE;
+non terminal  SymbolInstructionFor        INSTRUCTION_FOR;
+non terminal  SymbolInternalFor           INTERNAL_FOR;
+non terminal  SymbolInstructionSwitch     INSTRUCTION_SWITCH;
+non terminal  SymbolCases                 CASES;
+non terminal  SymbolCaseDefault           CASE_DEFAULT;
+non terminal  SymbolDefFunction           DEFINE_FUNCTION;
+non terminal  SymbolCallFunction          CALL_FUNCTION;
+non terminal  SymbolCallBody              CALL_BODY;
+non terminal  SymbolFunctionBeg           FUNCTION_BEG;
+non terminal  SymbolParameters            PARAMETERS;
+non terminal  SymbolHasParameters         HAS_PARAMETERS;
+non terminal  SymbolHasMoreParameters     HAS_MORE_PARAMETERS;
+non terminal  SymbolFunctionBody          FNCTION_BODY;
+non terminal  SymbolReturnType            RETURN_TYPE;
 
 
 start with STARTS;

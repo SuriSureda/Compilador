@@ -7,7 +7,7 @@ package Symbols;
 
 
 
-import java_cup.runtime.ComplexSymbolFactory.ComplexSymbol;
+// import java_cup.runtime.ComplexSymbolFactory.ComplexSymbol;
 import java_cup.runtime.Symbol;
 /**
  * Classe que implementa la classe base a partir de la que s'implementen totes
