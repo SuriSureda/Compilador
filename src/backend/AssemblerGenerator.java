@@ -5,7 +5,7 @@
  */
 package backend;
 
-import SymbolsTable.SymbolsTable;
+import SymbolsTable.*;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -29,7 +29,7 @@ public class AssemblerGenerator {
     private BufferedWriter writer;
     private final String PATH = "src/Output/AssemblerCode_NOT_Optimized.txt";
     // Symbol Table
-    private SymbolsTable symbolTable;
+    private SymbolsTable symbolsTable;
     // TS + TV
     private Table table;
     // List of instructions
@@ -44,7 +44,7 @@ public class AssemblerGenerator {
 
     public AssemblerGenerator(SymbolsTable symbolTable, Table table) {
         //this.writer = writer;
-        this.symbolTable = symbolTable;
+        this.symbolsTable = symbolTable;
         this.table = table;
         previousInstr = new Instruction(null, null, null, null);
         variablesFromKeyboard = new ArrayList<>();
@@ -235,23 +235,22 @@ public class AssemblerGenerator {
 
     // Call Instruction
     private void callInstruction(Instruction instruction) {
-//        if ((symbolTable.existe(instruction.getDestination().toString()))
-//                && ((symbolTable.get(instruction.getDestination().toString()).getTipo().toString().equalsIgnoreCase("funcion"))
-//                || symbolTable.get(instruction.getDestination().toString()).getTipo().toString().equalsIgnoreCase("metodo"))) {
-//            writeLine("call " + instruction.getDestination());
-//        } else {
-//
-//            if (instruction.getDestination().toString().equals("llegir_teclat")) {
-//                writeLine("call scanf");
-//                writeLine("pop %rbp");
-//
-//            } else if (instruction.getDestination().toString().equals("imprimir")) {
-//                writeLine("call printf");
-//                writeLine("pop %rbx");
-//            } else {
-//                writeLine("call imprimirLogic");
-//            }
-//        }
+        if (symbolsTable.get(instruction.getDest()) != null 
+            && symbolsTable.get(instruction.getDest()).getType() == Type.TYPE.dfun) {
+           writeLine("call " + instruction.getDest());
+        } else {
+
+           if (instruction.getDest().equals("input")) {
+               writeLine("call scanf");
+               writeLine("pop %rbp");
+
+           } else if (instruction.getDest().equals("output")) {
+               writeLine("call printf");
+               writeLine("pop %rbx");
+           } else {
+               writeLine("call imprimirLogic");
+           }
+        }
     }
 
     private void paramInstruction(Instruction instruction, Instruction nextInstruction) {
@@ -363,38 +362,39 @@ public class AssemblerGenerator {
     }
 
     private void pmbInstruction(Instruction instruction) {
-//        if (!lastProcedure(instruction.getDest())) {
-//            writeLine("push %rbp        # Guardem el registre que utilitzarem com a apuntador de la pila.");
-//            writeLine("mov %rsp, %rbp");
-//        }
-//
-//        //Declarar parametros del procedimiento como variables.
-//        SymbolTable node = symbolTable.get(instruction.getDest());
-//
-//        if (node != null) {
-//            if (node.getTipo().toString().equalsIgnoreCase("funcion")) {
-//                isFunction = true;
-//            } else {
-//                isFunction = false;
-//            }
-//        }
-//
-//        if (node != null) {
-//            for (int i = 0; i < node.getArgumentos().size(); i++) {
-//                newIntegerGlobalVariable(node.getArgumentos().get(i).getId(), "0");
-//            }
-//
-//            nparams = node.getArgumentos().size();
-//
-//            int index = 0;
-//
-//            writeLine("# Restaurar paràmetres");
-//            for (int i = 0; i < nparams * 8; i += 8) {
-//                writeLine("mov " + (i + 16) + "(%rbp), %rax");
-//                writeLine("mov %rax, " + node.getArgumentos().get(index).getId());
-//                index++;
-//            }
-//        }
+       if (!lastProcedure(instruction.getDest())) {
+           writeLine("push %rbp        # Guardem el registre que utilitzarem com a apuntador de la pila.");
+           writeLine("mov %rsp, %rbp");
+       }
+
+       //Declarar parametros del procedimiento como variables.
+       String funId = instruction.getDest();
+       Type node = symbolsTable.get(funId);
+
+       if (node != null) {
+        if (node.getType() == Type.TYPE.dfun) {
+               isFunction = true;
+           } else {
+               isFunction = false;
+           }
+       }
+
+       if (node != null /* && isFunction */) {
+
+            ArrayList<Expansion> params = symbolsTable.getParams(funId);
+
+            for(Expansion param : params) {
+                newIntegerGlobalVariable(param.getId(), "0");
+            }
+
+            int index = 0;
+            writeLine("# Restaurar paràmetres");
+            for (int i = 0; i < params.size() * 8; i += 8) {
+                writeLine("mov " + (i + 16) + "(%rbp), %rax");
+                writeLine("mov %rax, " + params.get(index).getId());
+                index++;
+            }
+       }
     }
 
 // Auxiliar method for checking if destination is the last instruction of the
