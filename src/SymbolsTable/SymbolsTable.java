@@ -84,6 +84,10 @@ public class SymbolsTable {
         return descriptionTable.get(id).getType();
     }
 
+    public Type getParam(String id) {
+        
+    }
+
     public void enterBlock() {
         scopeTable.add(scope + 1, scopeTable.get(scope));
         scope +=1;
