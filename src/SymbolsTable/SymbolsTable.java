@@ -81,11 +81,41 @@ public class SymbolsTable {
     }
 
     public Type get(String id) {
+        if(!descriptionTable.containsKey(id)){
+            return null;
+        }
         return descriptionTable.get(id).getType();
     }
 
-    public Type getParam(String id) {
-        
+    public ArrayList<Expansion> getParams(String idFun) {
+        Description funDes = descriptionTable.get(idFun);
+        // CHECK TYPE
+        try {
+            if(funDes == null){
+                throw new Exception(idFun + "function not found");
+                
+            }
+            if(funDes.getType().getType() != Type.TYPE.dfun){
+                throw new Exception(idFun + "is not a function");
+            }
+
+            ArrayList<Expansion> params = new ArrayList<Expansion>();
+            int idxe = funDes.getFirst();
+
+            while(idxe != -1){
+                params.add(expansionTable.get(idxe));
+                idxe = ((ParamExpansion)expansionTable.get(idxe)).getNext();
+            }
+            
+            if(idxe == - 1){
+                // llançar excepcio
+            }
+
+            return params;
+        }catch(Exception e){
+            // 
+        }
+        return null;
     }
 
     public void enterBlock() {
