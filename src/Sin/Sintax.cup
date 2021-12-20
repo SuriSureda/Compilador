@@ -56,7 +56,6 @@ non terminal  SymbolHasMoreParameters     HAS_MORE_PARAMETERS;
 non terminal  SymbolFunctionBody          FNCTION_BODY;
 non terminal  SymbolReturnType            RETURN_TYPE;
 
-
 start with STARTS;
 
 STARTS                      ::=  INIT DEFINE_FUNCTION CALL_MAIN ;
