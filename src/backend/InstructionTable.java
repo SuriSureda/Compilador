@@ -26,6 +26,14 @@ public class InstructionTable {
         table.add(new Instruction(opCode, op1, op2, dest));
     }
     
+    public int getTableSize(){
+        return table.size();
+    }
+    
+    public Instruction getInstruction(int i){
+        return table.get(i);
+    }
+    
     public void eraseInstruction(int i){
         table.remove(i);
     }
