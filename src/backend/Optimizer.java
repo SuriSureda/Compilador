@@ -46,26 +46,28 @@ public class Optimizer {
     }
 
     private void deferredAssignment(int i) {
-//        if (current.getDest().equals(next.getOp1().toString()) && next.getOpCode().toString() != "param") {
-//
-//            if (current.getOp2().toString() == null) {
-//
-//                Instruction novainstruccio = new Instruction("copy", current.getOp1(), null, next.getDest(), next.getDest() + " = " + current.getOp1());
-//                table.getInstructions().add(i, novainstruccio);
-//                table.eraseInstruction(i + 1);
-//                table.eraseInstruction(i + 1);
-//                someChangeOcurred = true;
-//            } else if (current.getOp2().toString() != null) {
-//
-//                Instruction novainstruccio = new Instruction(current.getOpCode().toString(), current.getOp1(),
-//                        current.getOp2(), next.getDest(), next.getDest() + " = " + current.getOp1() + " " + current.signeOperador() + " " + current.getOp2());
-//                table.addInstruction()(i, novainstruccio);
-//                table.eraseInstruction(i + 1);
-//                table.eraseInstruction(i + 1);
-//                someChangeOcurred = true;
-//            }
-//
-//        }
-//    }
+        if (current.getDest().equals(next.getOp1()) && next.getOpCode().toString() != "param") {
+
+            if (current.getOp2() == null) {
+                                        
+                Instruction novainstruccio = new Instruction(Instruction.Code.copy, current.getOp1(),  next.getDest(), next.getDest() + " = " + current.getOp1());
+                table.addInstruction(Instruction.Code.copy, current.getOp1(),  next.getDest(), next.getDest() + " = " + current.getOp1());
+                
+                table.addInstruction(i, novainstruccio);
+                table.eraseInstruction(i + 1);
+                table.eraseInstruction(i + 1);
+                someChangeOcurred = true;
+            } else if (current.getOp2().toString() != null) {
+                                        
+                Instruction novainstruccio = new Instruction(current.getOpCode(), current.getOp1(), current.getOp2(), next.getDest() + " = " + current.getOp1() + " " + current.signeOperador() + " " + current.getOp2());
+                
+                table.addInstruction(i, novainstruccio);
+                table.eraseInstruction(i + 1);
+                table.eraseInstruction(i + 1);
+                someChangeOcurred = true;
+            }
+
+        }
+    }
 }
-}
+

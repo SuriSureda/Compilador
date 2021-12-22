@@ -26,6 +26,14 @@ public class InstructionTable {
         table.add(new Instruction(opCode, op1, op2, dest));
     }
     
+    public void addInstruction(Instruction instruction){
+        table.add(instruction);
+    }
+    
+    public void addInstruction(int index, Instruction instruction){
+        table.add(index,instruction);
+    }
+    
     public int getTableSize(){
         return table.size();
     }

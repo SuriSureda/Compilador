@@ -60,6 +60,34 @@ public class Instruction {
     public void setOpCode(Code opCode) {
         this.opCode = opCode;
     }
+    
+    public String signeOperador() {
+        switch (this.opCode.toString()) {
+            case "add":
+                return "+";
+            case "div":
+                return "%";
+            case "sub":
+                return "-";
+            case "mod":
+                return "%";
+            case "mul":
+                return "*";
+            case "if::LT":
+                return "<";
+            case "if::LE":
+                return "<=";
+            case "if::EQ":
+                return "=";
+            case "if::NE":
+                return "!=";
+            case "if::GE":
+                return ">=";
+            case "if::GT":
+                return ">";
+        }
+        return null;
+    }
 
     public String getOp1() {
         return op1;
