@@ -13,18 +13,29 @@ public class Type {
 
     private TYPE type;
     private SUBJACENTTYPE subType;
+
+    private int backendId = -1;
     
     // dtype
     private int size;
     private int lowLimit;
     private int highLimit;
+    
 
     public Type(TYPE type, SUBJACENTTYPE subType, int size, int lowLimit, int highLimit){
         this.type = type;
         this.subType = subType;
         this.size = size;
         this.lowLimit = lowLimit;
-        this.highLimit = highLimit;
+        this.highLimit = highLimit; 
+    }
+
+    public int getBackendId() {
+        return this.backendId;
+    }
+
+    public void getBackendId(int id) {
+        this.backendId = id;
     }
 
     public TYPE getType(){
@@ -75,7 +86,7 @@ public class Type {
 
     /* ENUMS */
     public static enum TYPE {
-        idnull,
+        dnull,
         dtype,
         dconst,
         dvar,
