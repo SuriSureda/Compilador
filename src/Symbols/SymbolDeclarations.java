@@ -5,13 +5,26 @@
  */
 package Symbols;
 
+import SymbolsTable.Type;
+
 /**
  *
  * @author soyjo
  */
 public class SymbolDeclarations extends SymbolBase{
     
+    private Type type;
+
     public SymbolDeclarations() {
         super("SymbolDeclarations", 0);
+    }
+
+    public SymbolDeclarations(Type type) {
+        super("SymbolDeclarations", 0);
+        this.type = type;
+    }
+
+    public Type getType() {
+        return this.type;
     }
 }

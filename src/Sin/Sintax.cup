@@ -5,9 +5,25 @@ import java_cup.runtime.Symbol;
 import Symbols.*;
 import SymbolsTable.*;
 
+class Parser;
+
 parser code
 {:
   private SymbolsTable symbolsTable;
+  private LexerCup scanner;
+
+  public Parser(LexerCup scanner){
+    super(scanner)
+    this.symbolsTable = new SymbolsTable();
+  }
+
+  public void syntax_error(Symbol current_token) {
+      report_error(
+          "Syntax error at line " + (current_token.left+1) + ", column "
+          + current_token.right, null
+      );
+  }
+
 :};
 
 /******Declaració de simbols terminals*********/
@@ -58,31 +74,113 @@ non terminal  SymbolReturnType            RETURN_TYPE;
 
 start with STARTS;
 
-STARTS                      ::=  INIT DEFINE_FUNCTION CALL_MAIN ;
+STARTS                      ::=  INIT CALL_MAIN;
 
-INIT                        ::= ;
+INIT                        ::= {:
+                              initTypes();
+                              RESULT = new SymbolInit();
+                            :};
 
-DEFINE_FUNCTION             ::= lparen; // TOCARÁ CAMBIARSE EN UN FUTURO SEMANTICO
+CALL_MAIN                   ::= inst_main lparen id:id_main rparen nextinstr {:
+                              Type type = symbolsTable.get(id_main);
+                              
+                              RESULT = new SymbolCallMain();
+                            :};
 
-CALL_MAIN                   ::= inst_main lparen id_main rparen nextinstr;
+INSTRUCTIONS                ::=   INSTRUCTIONS INSTRUCTION 
+                            {:
+                              RESULT = new SymbolInstructions();
+                            :};
+                            | INSTRUCTION 
+                            {:
+                              RESULT = new SymbolInstructions();
+                            :};
 
-INSTRUCTIONS                ::=   INSTRUCTIONS INSTRUCTION
-                            | INSTRUCTION ;
-
-INSTRUCTION                 ::=  DECLARATIONS
-                            | INSTRUCTION_IF
+INSTRUCTION                 ::=  DECLARATIONS 
+                            {:
+                              RESULT = new SymbolInstruction();
+                            :}
+                            | INSTRUCTION_IF 
+                            {:
+                              RESULT = new SymbolInstruction();
+                            :}
                             | INSTRUCTION_WHILE
+                            {:
+                              RESULT = new SymbolInstruction();
+                            :}
                             | INSTRUCTION_SWITCH
+                            {:
+                              RESULT = new SymbolInstruction();
+                            :}
                             | INSTRUCTION_FOR
+                            {:
+                              RESULT = new SymbolInstruction();
+                            :}
                             | OPERATOR_ASSIG
+                            {:
+                              RESULT = new SymbolInstruction();
+                            :}
                             | INSTRUCTION_IN
+                            {:
+                              RESULT = new SymbolInstruction();
+                            :}
                             | INSTRUCTION_OUT 
+                            {:
+                              RESULT = new SymbolInstruction();
+                            :}
                             | DEFINE_FUNCTION;
+                            {:
+                              RESULT = new SymbolInstruction();
+                            :};
 
+DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
+                            {:
+                              Type type = declarations.getType();
+                              //COSES DE BACKEND
 
+                              symbolsTable.add(var_id, type);
 
-DECLARATIONS                ::=  id separator DECLARATIONS
-                            | id CONSTANT two_points id op_assig VALUE nextinstr 
+                              RESULT = new SymbolInstruction();
+                            :}
+                            | id:id_var CONSTANT:const two_points id:type_id op_assig VALUE:value nextinstr  
+                            {:
+                              boolean isConst = const.getIsConst();
+                              
+                              Type typeDes = symbolsTable.get(type_id);
+                              if(typeDes.getType() != TYPE.dtype){
+                                throw Error("Type not valid")
+                              }
+
+                              if(typeDes.getSubType() != SUBJACENTTYPE.st_boolean
+                                && typeDes.getSubType() != SUBJACENTTYPE.st_boolean
+                                && typeDes.getSubType() != SUBJACENTTYPE.st_boolean ){
+                                  throw Error("Invalid subjacent type")
+                              }
+
+                              //IF LITERALL (type = null) CHECK SUBJACENT TYPE
+                              if(value.getType() == TYPE.dnull && typeDes.getSubType() == value.getSubType()){
+                                throw Error("Value and type must have same subjacent type")
+                              }
+                              
+                              if(value.getType() != TYPE.dnull && value.getNameType() != type_id){
+                                throw Error("Value must have the same type")
+                              }
+                              Type varType;
+
+                              if(isConst){
+                                varType = new Type(TYPE.dconst, type_id, value.getValue());
+                              }
+                              else{
+                                varType = new Type(TYPE.dvar, type_id);
+                              }
+
+                              //COSES BACKEND
+                               
+                              symbolsTable.put(id_var, varType);
+                              SymbolDeclarations symDcls = new SymbolDeclarations(varType)
+
+                              RESULT = symDcls;
+                            :}
                             | spc_asgmul
                             | spc_asgdec    
                             | spc_dec
@@ -91,8 +189,14 @@ DECLARATIONS                ::=  id separator DECLARATIONS
                             | spc_inc;
 
 
-CONSTANT                    ::=  dconst
-                            |  ;
+CONSTANT                    ::=  dconst  
+                            {:
+                              RESULT = new SymbolConstant(true);
+                            :}
+                            |  
+                            {:
+                              RESULT = new SymbolConstant(false);
+                            :};
 
 
 OPERATOR_ASSIG              ::= id op_assig VALUE nextinstr;    
