@@ -10,9 +10,34 @@ package Symbols;
  * @author soyjo
  */
 public class SymbolArithmeticalOperator extends SymbolBase{
-    
-    public SymbolArithmeticalOperator() {
+
+    private String var_id;
+    private Object value;
+    private boolean isConst;
+
+    public SymbolArithmeticalOperator(String var_id) {
         super("Symbol Arithmetical Operator", 0);
+        this.var_id = var_id;
+        this.isConst = false;
+    }
+
+    public SymbolArithmeticalOperator(String var_id, Object value) {
+        super("Symbol Arithmetical Operator", 0);
+        this.var_id = var_id;
+        this.value = value;
+        this.isConst = true;
+    }
+
+    public String getVarId(){
+        return this.var_id;
+    }
+
+    public boolean getIsConst(){
+        return this.isConst;
+    }
+
+    public Object getValue(){
+        return this.value;
     }
     
 }

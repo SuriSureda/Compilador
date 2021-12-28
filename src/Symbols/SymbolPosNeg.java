@@ -11,8 +11,16 @@ package Symbols;
  */
 public class SymbolPosNeg extends SymbolBase{
     
-    public SymbolPosNeg() {
+
+    private boolean negative;
+
+    public SymbolPosNeg(boolean negative) {
         super("Symbol Positive/Negative ", 0);
+        this.negative = negative;
+    }
+
+    public boolean isNegative() {
+        return this.negative;
     }
     
 }

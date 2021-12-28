@@ -4,6 +4,7 @@ package compilador;
 import java_cup.runtime.Symbol;
 import Symbols.*;
 import SymbolsTable.*;
+import backend.Instruction; //For op Code
 
 class Parser;
 
@@ -148,22 +149,22 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
                               
                               Type typeDes = symbolsTable.get(type_id);
                               if(typeDes.getType() != TYPE.dtype){
-                                throw Error("Type not valid")
+                                throw new Error("Type not valid")
                               }
 
                               if(typeDes.getSubType() != SUBJACENTTYPE.st_boolean
                                 && typeDes.getSubType() != SUBJACENTTYPE.st_boolean
                                 && typeDes.getSubType() != SUBJACENTTYPE.st_boolean ){
-                                  throw Error("Invalid subjacent type")
+                                  throw new Error("Invalid subjacent type")
                               }
 
                               //IF LITERALL (type = null) CHECK SUBJACENT TYPE
                               if(value.getType() == TYPE.dnull && typeDes.getSubType() == value.getSubType()){
-                                throw Error("Value and type must have same subjacent type")
+                                throw new Error("Value and type must have same subjacent type")
                               }
                               
                               if(value.getType() != TYPE.dnull && value.getNameType() != type_id){
-                                throw Error("Value must have the same type")
+                                throw new Error("Value must have the same type")
                               }
                               Type varType;
 
@@ -180,13 +181,7 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
                               SymbolDeclarations symDcls = new SymbolDeclarations(varType)
 
                               RESULT = symDcls;
-                            :}
-                            | spc_asgmul
-                            | spc_asgdec    
-                            | spc_dec
-                            | spc_asgdiv
-                            | spc_asginc
-                            | spc_inc;
+                            :};
 
 
 CONSTANT                    ::=  dconst  
@@ -199,23 +194,257 @@ CONSTANT                    ::=  dconst
                             :};
 
 
-OPERATOR_ASSIG              ::= id op_assig VALUE nextinstr;    
+OPERATOR_ASSIG              ::= id:var_id op_assig VALUE:value nextinstr 
+                            {:
+                              Type varType = symbolsTable.get(id_var);
+                              if(varType.getType() == TYPE.dconst){
+                                throw new Error("Cant assign value to constant")
+                              }
+
+                              //IF LITERALL (type = null) CHECK SUBJACENT TYPE
+                              if(value.getType() == TYPE.dnull && typeDes.getSubType() == value.getSubType()){
+                                throw new Error("Value and type must have same subjacent type")
+                              }
+                              
+                              if(value.getType() != TYPE.dnull && value.getNameType() != type_id){
+                                throw new Error("Value must have the same type")
+                              }
+
+                              //COSES BACKEND
+
+                              RESULT = new SymbolOperatorAssignation();
+                            :};    
 
 
-INITIALIZE_ARITHMETICAL_OP  ::= lparen ARITHMETICAL_OP rparen ;
+INITIALIZE_ARITHMETICAL_OP  ::= lparen ARITHMETICAL_OP:arith_op rparen 
+                            {:
+                              SymbolInitArithOp sym; 
+                              if(arith_op.getIsConst()){
+                                sym = new SymbolInitArithOp(arith_op.getVarId(),arith_op.getValue());
+                              }else{
+                                sym = new SymbolInitArithOp(arith_op.getVarId());
+                              }
+
+                              RESULT = sym;
+                            :};
 
 
-ARITHMETICAL_OP             ::= ARITHMETICAL_OP op_arithmetical ARITHMETICAL_VALUE
-                            | ARITHMETICAL_VALUE op_arithmetical ARITHMETICAL_VALUE ;
+ARITHMETICAL_OP             ::= ARITHMETICAL_OP:arith_op op_arithmetical:op ARITHMETICAL_VALUE:arith_val
+                            {:
+                              
+                              SymbolArithmeticalOperator sym;
+                              boolean allConst = arith_op.getIsConst() && arith_val.getIsConst();
+
+                              Code op_code;
+                              switch(op){
+                                case "+" : 
+                                  op_code = Code.add;
+                                  break;
+                                case "-" : 
+                                  op_code = Code.sub;
+                                  break;
+                                case "*" : 
+                                  op_code = Code.prod;
+                                  break;
+                                case "/" : 
+                                  op_code = Code.div;
+                                  break;
+                                case "%" : 
+                                  op_code = Code.mod;
+                                  break;
+                                default : 
+                                  throw new Error("Invalid arithmetical operator");
+                              }
+
+                              Integer value;
+                              if(allConst) {
+                                Integer val1 = (Integer) aright_op.getValue();
+                                Integer val2 = (Integer) arith_val.getValue();
+
+                                switch(op){
+                                  case "+" : 
+                                    value = val1 + val2;
+                                    break;
+                                  case "-" : 
+                                    value = val1 - val2;
+                                    break;
+                                  case "*" : 
+                                    value = val1 * val2;
+                                    break;
+                                  case "/" : 
+                                    if(val2 == 0){
+                                      throw new Error("Cannot divide by zero");
+                                    }
+                                    value = val1 / val2;
+                                    break;
+                                  case "%" : 
+                                    value = val1 % val2;
+                                    break;
+                                }
+                              }
+
+                              //FER COSES BACKEND
+                                String var_id = "ABC"
+                              //FER COSES BACKEND
+                              if(allConst){
+                                sym = new SymbolArithmeticalOperator(var_id, value)
+                              }
+                              else{
+                                sym = new SymbolArithmeticalOperator(var_id)
+                              }
+
+                              RESULT = sym;
+
+                            :};
+                            | ARITHMETICAL_VALUE:arith_val1 op_arithmetical:op ARITHMETICAL_VALUE:arith_val2
+                              SymbolArithmeticalOperator sym;
+                              boolean allConst = arith_val1.getIsConst() && arith_val2.getIsConst();
+
+                              Code op_code;
+                              switch(op){
+                                case "+" : 
+                                  op_code = Code.add;
+                                  break;
+                                case "-" : 
+                                  op_code = Code.sub;
+                                  break;
+                                case "*" : 
+                                  op_code = Code.prod;
+                                  break;
+                                case "/" : 
+                                  op_code = Code.div;
+                                  break;
+                                case "%" : 
+                                  op_code = Code.mod;
+                                  break;
+                                default : 
+                                  throw new Error("Invalid arithmetical operator");
+                              }
+
+                              Integer value;
+                              if(allConst) {
+                                Integer val1 = (Integer) arith_val1.getValue();
+                                Integer val2 = (Integer) arith_val2.getValue();
+
+                                switch(op){
+                                  case "+" : 
+                                    value = val1 + val2;
+                                    break;
+                                  case "-" : 
+                                    value = val1 - val2;
+                                    break;
+                                  case "*" : 
+                                    value = val1 * val2;
+                                    break;
+                                  case "/" : 
+                                    if(val2 == 0){
+                                      throw new Error("Cannot divide by zero");
+                                    }
+                                    value = val1 / val2;
+                                    break;
+                                  case "%" : 
+                                    value = val1 % val2;
+                                    break;
+                                }
+                              }
+
+                              //FER COSES BACKEND
+                                String var_id = "ABC"
+                              //FER COSES BACKEND
+                              if(allConst){
+                                sym = new SymbolArithmeticalOperator(var_id, value);
+                              }
+                              else{
+                                sym = new SymbolArithmeticalOperator(var_id);
+                              }
+                              
+                              RESULT = sym;
+                            {:
+
+                            :};
 
  
-ARITHMETICAL_VALUE          ::= lparen ARITHMETICAL_OP rparen
-                            | POS_NEG number
-                            | id ;
+ARITHMETICAL_VALUE          ::= lparen ARITHMETICAL_OP:arith_op rparen
+                            {:
+                              SymbolArithValue sym;
+                              String var_id = arith_op.getVarId();
+
+                              if(arith_op.getIsConst()){
+                                sym = new SymbolArithmeticalValue(var_id, arith_op.getValue());
+                              }else{
+                                sym = new SymbolArithmeticalValue(var_id);
+                              }
+
+                              RESULT = sym;
+
+                            :}
+                            | POS_NEG:neg number:n_val
+                            {:
+                              Integer value;
+
+                              if(neg.isNegative()){
+                                value = new Integer("-" + n_val);
+                              }
+                              else{
+                                value = new Integer(n_val);
+                              }
+
+                              //FER COSES BACKEND
+                                String var_id = "ABC"
+                              //FER COSES BACKEND
+
+                              RESULT = new SymbolArithmeticalValue(var_id, value);
+                            :}
+                            | id:id_val
+                            {:
+
+                              Type var_type = symbolsTable.get(id_val);
+                              TYPE main_var_type = var_type.getType();
+
+                              if(main_var_type != TYPE.darg && main_var_type != TYPE.dconst && main_var_type != TYPE.dvar){
+                                throw new Error("Invalid arithmetic value type")
+                              }
+
+                              Type var_dtype = symbolsTable.get(var_type.getTypeName());
+
+                              if(var_dtype.getSubType() != SUBJACENTTYPE.st_integer){
+                                throw new Error("Invalid subjacent type")
+                              }
+
+                              SymbolArithValue sym;
+                              String var_id = var_type.getBackendId();
+
+                              if(main_var_type == TYPE.dconst){
+                                Integer value = (Integer) var_type.getValue();¡
+                                sym = new SymbolArithmeticalValue(var_id, value);
+                              }else{
+                                sym = new SymbolArithmeticalValue(var_id);
+                              }
+
+                              RESULT = sym;
+                            
+                            :} ;
 
 
-POS_NEG                     ::= op_arithmetical    /*  + 25  */
-                            |  ;
+POS_NEG                     ::= op_arithmetical:op
+                            {:
+
+                              if(!op.equals("+") && !op.equals("-")){
+                                throw new Error("Sign operator not valid")
+                              }
+
+                              boolean isNegative = true;
+                              
+                              if(op.equals("+")){
+                                isNegative = false;
+                              }
+
+                              RESULT = new SymbolPosNeg(isNegative);
+                            :}
+                            | 
+                            {:
+                              RESULT = new SymbolPosNeg(false);
+                            :};
 
 
 VALUE                       ::= INITIALIZE_ARITHMETICAL_OP

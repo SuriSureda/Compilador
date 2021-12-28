@@ -30,7 +30,7 @@ public class Type {
         this.highLimit = highLimit; 
     }
 
-    public int getBackendId() {
+    public int setBackendId() {
         return this.backendId;
     }
 
