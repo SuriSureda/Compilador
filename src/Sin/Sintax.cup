@@ -367,7 +367,7 @@ ARITHMETICAL_OP             ::= ARITHMETICAL_OP:arith_op op_arithmetical:op ARIT
 ARITHMETICAL_VALUE          ::= lparen ARITHMETICAL_OP:arith_op rparen
                             {:
                               SymbolArithValue sym;
-                              String var_id = arith_op.getVarId();
+                              String var_id = new String(arith_op.getVarId());
 
                               if(arith_op.getIsConst()){
                                 sym = new SymbolArithmeticalValue(var_id, arith_op.getValue());
@@ -412,7 +412,7 @@ ARITHMETICAL_VALUE          ::= lparen ARITHMETICAL_OP:arith_op rparen
                               }
 
                               SymbolArithValue sym;
-                              String var_id = var_type.getBackendId();
+                              String var_id = new String(var_type.getBackendId());
 
                               if(main_var_type == TYPE.dconst){
                                 Integer value = (Integer) var_type.getValue();¡
@@ -447,15 +447,91 @@ POS_NEG                     ::= op_arithmetical:op
                             :};
 
 
-VALUE                       ::= INITIALIZE_ARITHMETICAL_OP
-                            | POS_NEG number
-                            | character
-                            | string
-                            | bool
-                            | id
-                            | INITIALIZE_BOOLEAN_OP
-                            | CALL_FUNCTION
-                            | Void
+VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
+                            {:
+                              SymbolValue sym;
+                              String var_id = new String(arith_op.getVarId());
+                              if(arith_op.getIsConst()){
+                                sym = new SymbolValue(var_id, SUBJACENTTYPE.st_integer, arith_op.getValue())
+                              }else{
+                                sym = new SymbolValue(var_id, SUBJACENTTYPE.st_integer);
+                              }
+
+                              RESULT = sym;
+                            :}
+                            | POS_NEG:neg number:n_val
+                            {:
+                              Integer value;
+
+                              if(neg.isNegative()){
+                                value = new Integer("-" + n_val);
+                              }
+                              else{
+                                value = new Integer(n_val);
+                              }
+
+                              //FER COSES BACKEND
+                                String var_id = "ABC"
+                              //FER COSES BACKEND
+
+                              RESULT = new SymbolValue(var_id, SUBJACENTTYPE.st_integer, value);
+                            :}
+                            | string:str_val 
+                            {:
+                              String value = new String(str_val.replace("\"", "")); //delete quotes
+
+                              //FER COSES BACKEND
+                                String var_id = "ABC"
+                              //FER COSES BACKEND
+                              RESULT = new SymbolValue(var_id, SUBJACENTTYPE.st_string, value);
+                            :}
+                            | bool:bool_val
+                            {:
+                              Boolean value = new Boolean(bool_val);
+                              //FER COSES BACKEND
+                                String var_id = "ABC"
+                              //FER COSES BACKEND
+                              RESULT = new SymbolValue(var_id, SUBJACENTTYPE.st_boolean, value);
+                            :}
+                            | id:id_val
+                            {:
+                              SymbolValue sym;
+                              
+                              Type val_type = symbolsTable.get(id_val);
+                              String var_id = new String(val_type.getBackendId());
+
+                              if(val_type.getType() == TYPE.dconst){
+                                sym = new SymbolValue(var_id, val_type.getType(), val_type.getTypeName(), val_type.getValue());
+                              }
+                              else {
+                                sym = new SymbolValue(var_id, val_type.getType(), val_type.getTypeName());
+                              }
+
+                              RESULT = sym;
+                            :}
+                            | INITIALIZE_BOOLEAN_OP:bool_op
+                            {:
+                              SymbolValue sym;
+                              String var_id = new String(bool_op.getVarId());
+                              if(bool_op.getIsConst()){
+                                sym = new SymbolValue(var_id, SUBJACENTTYPE.st_boolean, bool_op.getValue())
+                              }else{
+                                sym = new SymbolValue(var_id, SUBJACENTTYPE.st_boolean);
+                              }
+
+                              RESULT = sym;
+                            :}
+                            | CALL_FUNCTION:call_fn
+                            {:
+                              Type fn_type = symbolsTable.get(call_fn);
+                              Type dfn_type = symbolsTable.get(fn_type.getTypeName());
+
+                              //FER COSES BACKEND
+                                String var_id = "ABC"
+                              //FER COSES BACKEND
+
+                              RESULT = new SymbolValue(var_id, TYPE.dfun, fn_type.getTypeName());
+                            :}
                             | instr_in lparen id rparen;
 
 INITIALIZE_BOOLEAN_OP       ::= lparen BOOLEAN_OP rparen ;

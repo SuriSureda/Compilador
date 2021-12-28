@@ -12,6 +12,7 @@ public class SymbolValue extends SymbolBase {
 	public boolean isConstant;
 	private Object value;
 
+	private String var_id;
 
 	public SymbolValue() {
 		super("value", 0);
@@ -20,30 +21,35 @@ public class SymbolValue extends SymbolBase {
 		this.isConstant = false;
 	}
 
-	public SymbolValue(SUBJACENTTYPE subType) {
+
+	public SymbolValue(String var_id, SUBJACENTTYPE subType) {
 		super("value", 0);
 		this.type = TYPE.dnull;
 		this.subType = subType;
 		this.isConstant = false;
 	}
 
-	public SymbolValue(SUBJACENTTYPE subType, Object value) {
+	// Literall or constant
+	public SymbolValue(String var_id, SUBJACENTTYPE subType, Object value) {
 		super("value", 0);
+		this.var_id = var_id;
 		this.type = TYPE.dnull;
 		this.subType = subType;
 		this.isConstant = true;
 		this.value = value;
 	}
 
-	public SymbolValue(TYPE type, String nameType) {
+	public SymbolValue(String var_id, TYPE type, String nameType) {
 		super("value", 0);
+		this.var_id = var_id;
 		this.type = type;
 		this.nameType = nameType;
 		this.isConstant = false;
 	}
 
-	public SymbolValue(TYPE type, String nameType, Object value) {
+	public SymbolValue(String var_id, TYPE type, String nameType, Object value) {
 		super("value", 0);
+		this.var_id = var_id;
 		this.type = type;
 		this.nameType = nameType;
 		this.isConstant = true;
@@ -51,24 +57,28 @@ public class SymbolValue extends SymbolBase {
 	}
 
 	public TYPE getType() {
-		return type;
+		return this.type;
+	}
+
+	public String getVarId(){
+		return this.var_id;
 	}
 
 	public SUBJACENTTYPE getSubType() {
-		return subType;
+		return this.subType;
 	}
 
 	public String getNameType() {
-		return nameType;
+		return this.nameType;
 	}
 
 
-	public boolean isConstant() {
-		return isConstant;
+	public boolean getIsConst() {
+		return this.isConstant;
 	}
 
 	public Object getValue() {
-		return value;
+		return this.value;
 	}
 
 }
