@@ -141,7 +141,6 @@ TWO_POINT       = (":")     //ok
 {BOOL}               {return new Symbol(sym.bool, yychar, yyline, yytext());}
 {DCONST}             {return new Symbol(sym.dconst, yychar, yyline, yytext());}
 
-{LETTER}             {return new Symbol(sym.character, yychar, yyline, yytext());}
 //==============================================================================
 {ID}                 {return new Symbol(sym.id, yychar, yyline, yytext());}
 {NUMBER}             {return new Symbol(sym.number, yychar, yyline, yytext());}
