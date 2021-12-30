@@ -11,7 +11,32 @@ package Symbols;
  */
 public class SymbolInitBoolOp extends SymbolBase{
     
-    public SymbolInitBoolOp() {
-        super("Symbol Initialize Boolean Operation", 0);
-    }    
+    private String var_id;
+    private boolean value;
+    private boolean isConst;
+
+    public SymbolInitBoolOp(String var_id) {
+        super("Symbol Init Boolean Operation", 0);
+        this.var_id = var_id;
+        this.isConst = false;
+    }
+
+    public SymbolInitBoolOp(String var_id, boolean value) {
+        super("Symbol Init Boolean Operation", 0);
+        this.var_id = var_id;
+        this.value = value;
+        this.isConst = true;
+    }
+
+    public String getVarId(){
+        return this.var_id;
+    }
+
+    public boolean getIsConst(){
+        return this.isConst;
+    }
+
+    public Object getValue(){
+        return this.value;
+    }
 }

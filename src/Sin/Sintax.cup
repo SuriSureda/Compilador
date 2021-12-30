@@ -534,9 +534,56 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
                             :}
                             | instr_in lparen id rparen;
 
-INITIALIZE_BOOLEAN_OP       ::= lparen BOOLEAN_OP rparen ;
+INITIALIZE_BOOLEAN_OP       ::= lparen BOOLEAN_OP:bool_op rparen 
+                            {:
+                              SymbolInitBoolOp sym; 
+                              if(bool_op.getIsConst()){
+                                sym = new SymbolInitBoolOp(bool_op.getVarId(),bool_op.getValue());
+                              }else{
+                                sym = new SymbolInitBoolOp(bool_op.getVarId());
+                              }
 
-BOOLEAN_OP                  ::= BOOLEAN_OP op_logical BOOLEAN_VALUE
+                              RESULT = sym;
+                            :};
+
+BOOLEAN_OP                  ::= BOOLEAN_OP:bool_op op_logical:op BOOLEAN_VALUE:bool_val
+                            {:
+                              SymbolBoolOp sym;
+                              boolean allConst = bool_op.getIsConst() && bool_val.getIsConst();
+                              Code op_code;
+                              switch(op){
+                                case "&&":
+                                  op_code = Code.and;
+                                  break;
+                                case "||":
+                                  op_code = Code.or;
+                                  break;
+                                default : 
+                                  throw new Error("Invalid boolean operator");
+                              }
+
+                              Boolean value;
+
+                              if(allConst){
+                                Boolean val1 = (Boolean) bool_op.getValue();
+                                Boolean val2 = (Boolean) bool_val.getValue();
+                                switch(op){
+                                case "&&":
+                                  value = val1 && val2;
+                                  break;
+                                case "||":
+                                  value = val1 || val2;
+                                  break;
+                              }
+
+                              //FER COSES BACKEND
+                                String var_id = "ABC"
+                              //FER COSES BACKEND
+                              if(allConst){
+                                sym = new SymbolBoolOp(var_id, value);
+                              }
+
+                            :}
                             | BOOLEAN_VALUE ;
 
 BOOLEAN_VALUE               ::= bool
