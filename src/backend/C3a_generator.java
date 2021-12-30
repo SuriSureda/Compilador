@@ -35,10 +35,10 @@ public class C3a_generator {
 //    private String temporalID = null;
 //
 //    private ArrayList<String> operands = new ArrayList<>();
-    private ArrayList<Instruction> instructions = new ArrayList<>();
+    private ArrayList<Instruction> instructions;
 
 //    private boolean operandsBool = true;
-    private Table table = new Table();
+    private Backend table;
 
 //    private String currentSubprogram;
 //    private String currentType = "";
@@ -51,11 +51,11 @@ public class C3a_generator {
     private Stack<String> trueStack;
     private Stack<String> falseStack;
 
-    public C3a_generator(Table input) {
+    public C3a_generator(Backend input) {
         variableNumber = 0;
         trueStack = new Stack<>();
         falseStack = new Stack<>();
-
+        this.instructions = new ArrayList<Instruction>();
         this.table = input;
     }
 
@@ -82,7 +82,7 @@ public class C3a_generator {
             writer.close();
         } catch (IOException ex) {
             System.out.println(" ERROR WRITING PROCES");
-            Logger.getLogger(Table.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Backend.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -102,11 +102,11 @@ public class C3a_generator {
         this.instructions = instructions;
     }
 
-    public Table getTable() {
+    public Backend getTable() {
         return table;
     }
 
-    public void setTable(Table table) {
+    public void setTable(Backend table) {
         this.table = table;
     }
 

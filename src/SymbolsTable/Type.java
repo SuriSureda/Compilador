@@ -30,8 +30,8 @@ public class Type {
         this.highLimit = highLimit; 
     }
 
-    public int setBackendId() {
-        return this.backendId;
+    public int setBackendId(int backId) {
+        return this.backendId = backId;
     }
 
     public void getBackendId(int id) {

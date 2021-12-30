@@ -40,6 +40,8 @@ public class Instruction {
         input, // System in
         output, // System print
         param_s,
+        Ctrue,   // conditional true
+        Cfalse,   // conditional false
         param_c
 
     }

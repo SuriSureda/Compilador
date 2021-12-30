@@ -11,11 +11,15 @@ class Parser;
 parser code
 {:
   private SymbolsTable symbolsTable;
+  private Backend backend;
   private LexerCup scanner;
+  private C3a_generator c3a_g;
 
   public Parser(LexerCup scanner){
     super(scanner)
     this.symbolsTable = new SymbolsTable();
+    this.backend = new Backend();
+    this.c3a_g = new C3a_generator(backend);
   }
 
   public void syntax_error(Symbol current_token) {
@@ -137,11 +141,27 @@ INSTRUCTION                 ::=  DECLARATIONS
 DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
                             {:
                               Type type = declarations.getType();
-                              //COSES DE BACKEND
+
+                              int backId = backend.addVar(
+                                var_id, 
+                                0,
+                                backend.getLastProcedureId(),
+                                0,
+                                type.getSize()
+                              )
+
+                              type.setBackendId(backId);
 
                               symbolsTable.add(var_id, type);
 
-                              RESULT = new SymbolInstruction();
+                              c3a_g.generateC3aInstr(
+                                Code.copy,
+                                declarations.getIdVar(),
+                                null,
+                                backId
+                              )
+
+                              RESULT = declarations;
                             :}
                             | id:id_var CONSTANT:const two_points id:type_id op_assig VALUE:value nextinstr  
                             {:
@@ -471,6 +491,7 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
                               }
 
                               //FER COSES BACKEND
+
                                 String var_id = "ABC"
                               //FER COSES BACKEND
 
@@ -483,6 +504,7 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
                               //FER COSES BACKEND
                                 String var_id = "ABC"
                               //FER COSES BACKEND
+
                               RESULT = new SymbolValue(var_id, SUBJACENTTYPE.st_string, value);
                             :}
                             | bool:bool_val
@@ -561,85 +583,343 @@ BOOLEAN_OP                  ::= BOOLEAN_OP:bool_op op_logical:op BOOLEAN_VALUE:b
                                 default : 
                                   throw new Error("Invalid boolean operator");
                               }
-
+                              // REVISAR CONDICIONAL
                               Boolean value;
-
-                              if(allConst){
+                              Code opCodeVariable = Code.and;
+                              Code opCodeConditional = Code.Ctrue;
+                              if(op){
                                 Boolean val1 = (Boolean) bool_op.getValue();
                                 Boolean val2 = (Boolean) bool_val.getValue();
                                 switch(op){
                                 case "&&":
-                                  value = val1 && val2;
+                                  //value = val1 && val2;
+                                  opCodeVariable = OpCode.and;
+                                  opCodeConditional = OpCode.Cfalse;
                                   break;
                                 case "||":
-                                  value = val1 || val2;
+                                  //value = val1 || val2;
+                                  opCodeVariable = OpCode.or;
+                                  opCodeConditional = OpCode.condTrue;
                                   break;
                               }
 
                               //FER COSES BACKEND
                                 String var_id = "ABC"
                               //FER COSES BACKEND
+                              
                               if(allConst){
                                 sym = new SymbolBoolOp(var_id, value);
+                              }else{
+                                sym = new SymbolBoolOp(var_id);
                               }
 
+                              RESULT = sym;
+
                             :}
-                            | BOOLEAN_VALUE ;
+                            | BOOLEAN_VALUE:bool_val
+                            {:
+                              SymbolBoolOp sym;
 
-BOOLEAN_VALUE               ::= bool
-                            | id
-                            | lparen BOOLEAN_OP rparen
-                            | VALUE_COMPARISON ;
+                              String var_id = new String(bool_val.getVarId());
+                              if(bool_val.getIsConst()){
+                                sym = new SymbolBoolOp(var_id, bool_val.getValue());
+                              }
+                              else{
+                                sym = new SymbolBoolOp(var_id);
+                              }
 
-VALUE_COMPARISON            ::= lparen VALUE op_relational VALUE rparen ;
+                              RESULT = sym;
+                              
+                            :};
 
+BOOLEAN_VALUE               ::= bool:bool_val  
+                            {:
+                              Boolean value = new Boolean(bool_val);
+                              SymbolValue symB = new SymbolBoolValue(value,SUBJACENTTYPE.st_boolean);
+                              
+                              Type type_dtype = symbolsTable.get("boolean);
+                              int isArg = 0;
+                              int idVar = Backend.addTempVar(Backend.getActualProcedure(), 0, type_dtype.getSize(), 0,  type_dtype.getSubType());
+
+                              c3a_g.generateC3aInstr(
+                                Code.copy,
+                                bool_val,
+                                null,
+                                idVar
+                              );
+
+                              RESULT = new SymbolBoolValue(idVar, value);
+
+                            :}
+                            | id:id_var
+                            {:
+                              Type var_type = symbolsTable.get(id_var);
+                              TYPE main_var_type = var_type.getType();
+
+                              if(main_var_type != TYPE.dconst || main_var_type != TYPE.dvar || main_var_type != TYPE.darg){
+                                throw new Error("");
+                              }
+                              
+                              Type dtype_type = symbolsTable.get(var_type.nameType);
+                              if(dtype_type.getSubType() != SUBJACENTTYPE.st_boolean){
+                                throw new Error("Must be boolean value");
+                              }
+
+                              SymbolBoolValue sym;
+                              String backId = new String(var_type.getBackendId());
+
+                              if(id_var.getIsConst()){
+                                sym = new SymbolBoolValue(backId, value);
+                              }else{
+                                sym = new SymbolBoolValue(backId);
+                              }
+
+                              RESULT = sym;
+                            :}
+                            | lparen BOOLEAN_OP:bool_op rparen
+                            {:
+                              SymbolBoolValue sym;
+                              String id = new String(bool_op.getVarId()); 
+                              if(bool_op.getIsConst()){
+                                sym = new SymbolBoolValue(id, value);
+                              }else{
+                                sym = new SymbolBoolValue(id); 
+                              }
+
+                              RESULT = sym;
+                              
+                            :}
+                            | VALUE_COMPARISON:comp_val
+                            {:
+                              SymbolBoolValue sym;
+                              String id = new String(comp_val.getVarId()); 
+                              if(comp_val.getIsConst()){
+                                sym = new SymbolBoolValue(id, comp_val.getValue());
+                              }else{
+                                sym = new SymbolBoolValue(id); 
+                              }
+
+                              RESULT = sym;
+                            :};
+
+VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rparen ;
+                            {:
+
+                              SymbolValueComparison sym;
+
+                              TYPE type1 = val1.getType();
+                              SUBJACENTTYPE subType1;
+                              
+                              if(val1.getType() == TYPE.dnull){
+                                subType1 = val1.getSubType();
+                              }else{
+                                if(type1 != TYPE.dvar && type1 != TYPE.dconst && type1 != TYPE.darg && type1 != TYPE.dfun) {
+                                  throw Error("Value 1 of comparison wrong type");
+                                }
+                                Type dtype_type = symbolsTable.get(val1.getNameType());
+                                subType1 = dtype_type.getSubType();
+                              }
+                              // SAME FOR VALUE2
+                              TYPE type2 = val2.getType();
+                              SUBJACENTTYPE subType2;
+
+                              if(val2.getType() == TYPE.dnull){
+                                subType2 = val2.getSubType();
+                              }else{
+                                if(type2 != TYPE.dvar && type2 != TYPE.dconst && type2 != TYPE.darg && type2 != TYPE.dfun) {
+                                  throw Error("Value 2 of comparison wrong type");
+                                }
+                                Type dtype_type = symbolsTable.get(val2.getNameType());
+                                subType2 = dtype_type.getSubType();
+                              }
+
+                              //Check same subtype
+                              if(subType1 != subType2) {
+                                throw Error("Value 1 subtype is different from value 2");
+                              }
+
+                              Code op_code;
+                              switch(op){
+                                case "=":
+                                  op_code = Code.if_EQ;
+                                  break;
+                                case "!=":
+                                  op_code = Code.if_NE;
+                                  break;
+                                case "<": 
+                                  if(subtype1 != SUBJACENTTYPE.st_integer) throw new Error("This operator only works with integer subtypes");
+                                  op_code = Code.if_LT;
+                                  break;
+                                case "<=":
+                                  if(subtype1 != SUBJACENTTYPE.st_integer) throw new Error("This operator only works with integer subtypes");
+                                  op_code = Code.if_LE;
+                                  break;
+                                case ">": 
+                                  if(subtype1 != SUBJACENTTYPE.st_integer) throw new Error("This operator only works with integer subtypes");
+                                  op_code = Code.if_GT;
+                                  break;
+                                case ">=":
+                                  if(subtype1 != SUBJACENTTYPE.st_integer) throw new Error("This operator ("+op+") only works with integer subtypes");
+                                  op_code = Code.if_GE;
+                                  break;
+                              }
+
+                              boolean allConst = val1.getIsConst() && val2.getIsConst();
+                              
+                              Boolean value;
+                              if(allConst){
+                                switch(op){
+                                  case "=":
+                                    if(subtype1 == SUBJACENTTYPE.st_integer){
+                                       val = (Integer) val1.getValue() == (Integer) val2.getValue();
+                                    }
+                                    if(subtype1 == SUBJACENTTYPE.st_string){
+                                      val = (String) val1.getValue().equals((String) val2.getValue());
+                                    }
+                                    if(subtype1 == SUBJACENTTYPE.st_boolean){
+                                      val = (Boolean) val1.getValue() == (Boolean) val2.getValue();
+                                    }
+                                    break;
+                                  case "!=":
+                                    if(subtype1 == SUBJACENTTYPE.st_integer){
+                                      val = (Integer) val1.getValue() != (Integer) val2.getValue();
+                                    }
+                                    if(subtype1 == SUBJACENTTYPE.st_string){
+                                      val = !(String) val1.getValue().equals((String) val2.getValue());
+                                    }
+                                    if(subtype1 == SUBJACENTTYPE.st_boolean){
+                                      val = (Boolean) val1.getValue() != (Boolean) val2.getValue();
+                                    }
+                                    break;
+                                  // only integer operators
+                                  case "<": 
+                                    val = (Integer) val1.getValue() < (Integer) val2.getValue();
+                                    break;
+                                  case "<=":
+                                    val = (Integer) val1.getValue() <= (Integer) val2.getValue();
+                                    break;
+                                  case ">": 
+                                    val = (Integer) val1.getValue() > (Integer) val2.getValue();
+                                    break;
+                                  case ">=":
+                                    val = (Integer) val1.getValue() >= (Integer) val2.getValue();
+                                    break;
+                                }
+                              }
+
+                              //COSES BACKEND
+                              String var_id = "ABC";
+                              //COSES BACKEND
+                              
+                              if(allConst){
+                                sym = new SymbolValueComparison(var_id, value);
+                              }else{
+                                sym = new SymbolValueComparison(var_id);
+                              }
+
+                              RESULT = sym;
+                            :}
 
 
 INSTRUCTION_IF               ::= inst_if lparen INITIALIZE_BOOLEAN_OP rparen lbracket INSTRUCTIONS rbracket OTHER_CASES; // if(( x < y)){}
+                            {:    
+                              RESULT = new SymbolInstructionIf();
+                            :}
 
 OTHER_CASES                  ::= inst_else lbracket INSTRUCTIONS rbracket  // else{}
                              | inst_elif lparen INITIALIZE_BOOLEAN_OP rparen lbracket INSTRUCTIONS rbracket OTHER_CASES // elif ((x > y)){}
                              | ;
+                             {:
+                             RESULT = new SymbolOtherCases();
+                            :}
 
  
 INSTRUCTION_WHILE            ::= inst_while lparen INITIALIZE_BOOLEAN_OP rparen lbracket INSTRUCTIONS rbracket;         // while(( x < 10)){}
-
+                            {:
+                            RESULT = new SymbolInstructionWhile();
+                            :}
 
 INSTRUCTION_FOR              ::= inst_for lparen INTERNAL_FOR rparen lbracket INSTRUCTIONS rbracket;
+                            {:
+                            RESULT = new SymbolInstructionFor();
+                            :}
 INTERNAL_FOR                 ::= OPERATOR_ASSIG nextinstr INITIALIZE_BOOLEAN_OP nextinstr ARITHMETICAL_OP 
                              | ;
+                            {:
+                            RESULT = new SymbolInternalFor();
+                            :}
 
 
 INSTRUCTION_SWITCH           ::= inst_switch lparen VALUE rparen lbracket CASES rbracket ;
+                             {:
+                             RESULT = new SymbolInstructionSwitch();
+                             :}
 CASES                        ::= inst_case VALUE two_points INSTRUCTIONS inst_break nextinstr CASES
                              | CASE_DEFAULT;
+                             {:
+                             RESULT = new SymbolCases();
+                             :}
+
 CASE_DEFAULT                 ::= inst_default INSTRUCTIONS inst_break nextinstr
                              | ;
+                             {:
+                             RESULT = new SymbolCaseDefault();
+                             :}
 
 
 CALL_FUNCTION               ::= inst_call lparen CALL_BODY rparen nextinstr;
+                            {:
+                            RESULT = new SymbolCallFunction();
+                            :}
 
 CALL_BODY                   ::= CALL_BODY separator VALUE
                             | id;
+                            {:
+                            RESULT = new SymbolCallBody();
+                            :}
 
 
 INSTRUCTION_OUT             ::= instr_out lparen VALUE rparen nextinstr;
+                            {:
+                            RESULT = new SymbolInstructionOut();
+                            :}
 
 
 DEFINE_FUNCTION             ::= FUNCTION_BEG id  rparen lbracket FUNCTION_BODY RETURN_TYPE  rbracket;
+                            {:
+                            RESULT = new SymbolDefFunction();
+                            :}
 
 FUNCTION_BEG                ::= inst_function id id lparen PARAMETERS rparen;
+                            {:
+                            RESULT = new SymbolFunctionBeg();
+                            :}
 
 PARAMETERS                  ::= HAS_PARAMETERS
                             | ;
+                            {:
+                            RESULT = new SymbolParameters();
+                            :}
 
 HAS_PARAMETERS              ::=  id id HAS_MORE_PARAMETERS ;
+                            {:
+                            RESULT = new SymbolHasParameters();
+                            :}
 
 HAS_MORE_PARAMETERS         ::= separator id id HAS_MORE_PARAMETERS
                             | ;
+                            {:
+                            RESULT = new SymbolHasParameters();
+                            :}
 
 FUNCTION_BODY               ::= INSTRUCTIONS
                             | ;
+                            {:
+                            RESULT = new SymbolFunctionBody();
+                            :}
 
 RETURN_TYPE                 ::= inst_return VALUE nextinstr
                             | ;
+                            {:
+                            RESULT = new SymbolReturnType();
+                            :}

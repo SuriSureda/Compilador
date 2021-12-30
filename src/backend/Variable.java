@@ -7,7 +7,7 @@ package backend;
 
 import SymbolsTable.Type;
 
-/**
+/*
  *
  * @author Antoni Payeras Munar
  */
@@ -16,7 +16,7 @@ import SymbolsTable.Type;
 public class Variable {
 
     private String name;    // variable name
-    private int code;       // variable code id
+    private int code;       // variable code id  "NV"
     private int idParent;   // parent id
     private int offset;     // offset
     private int size;       // space occupation

@@ -125,7 +125,12 @@ public class Backend {
         return procTable;
     }
     
-    
+    public int getLastProcedureId(){
+        return procTable.get(procTable.size() - 1).getNv();
+    }
+    public int getActualProcedure(){
+        return procTable.size() - 1;
+    }
 
 
 }
