@@ -251,7 +251,14 @@ OPERATOR_ASSIG              ::= id:var_id op_assig VALUE:value nextinstr
                                 throw new Error("Value must have the same type")
                               }
 
-                              //COSES BACKEND
+                              // Fet
+
+                                c3a_g.generateC3aInstr(
+                                 Code.copy,
+                                 varType.getIdVar(),
+                                 null,
+                                  varType.getBackendId()
+                              );
 
                               RESULT = new SymbolOperatorAssignation();
                             :};    
@@ -324,14 +331,23 @@ ARITHMETICAL_OP             ::= ARITHMETICAL_OP:arith_op op_arithmetical:op ARIT
                                 }
                               }
 
-                              //FER COSES BACKEND
-                                String var_id = "ABC"
-                              //FER COSES BACKEND
+                              //Fet
+                              Type type_int = symbolsTable.get("int);
+                              int isArg = 0;
+                              int idVar = Backend.addTempVar(Backend.getActualProcedure(), 0, type_int.getSize(), 0,  type_int.getSubType());
+
+                              c3a_g.generateC3aInstr(
+                                Code.add,
+                                val1.getIdVar(),
+                                val2.getIdVar(),
+                                idVar
+                              );
+
                               if(allConst){
-                                sym = new SymbolArithmeticalOperator(var_id, value)
+                                sym = new SymbolArithmeticalOperator(idVar, value)
                               }
                               else{
-                                sym = new SymbolArithmeticalOperator(var_id)
+                                sym = new SymbolArithmeticalOperator(idVar)
                               }
 
                               RESULT = sym;
@@ -390,13 +406,22 @@ ARITHMETICAL_OP             ::= ARITHMETICAL_OP:arith_op op_arithmetical:op ARIT
                               }
 
                               //FER COSES BACKEND
-                                String var_id = "ABC"
-                              //FER COSES BACKEND
+                              Type type_int = symbolsTable.get("int);
+                              int isArg = 0;
+                              int idVar = Backend.addTempVar(Backend.getActualProcedure(), 0, type_int.getSize(), 0,  type_int.getSubType());
+
+                              c3a_g.generateC3aInstr(
+                                Code.add,
+                                val1.getIdVar(),
+                                val2.getIdVar(),
+                                idVar
+                              );
+
                               if(allConst){
-                                sym = new SymbolArithmeticalOperator(var_id, value);
+                                sym = new SymbolArithmeticalOperator(idVar, value);
                               }
                               else{
-                                sym = new SymbolArithmeticalOperator(var_id);
+                                sym = new SymbolArithmeticalOperator(idVar);
                               }
                               
                               RESULT = sym;
