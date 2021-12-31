@@ -40,4 +40,4 @@ public class SymbolBoolOp extends SymbolBase{
         return this.value;
     }
 }
-}
+

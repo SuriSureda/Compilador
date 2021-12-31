@@ -195,11 +195,32 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
                                 varType = new Type(TYPE.dvar, type_id);
                               }
 
-                              //COSES BACKEND
-                               
+                              //Fet
+
+                              int size = typeDes.getSize();
+                              SymbolValue symVal = new SymbolValue();
+                              if(symVal.getIsString()){
+                                size = symVal.getStringSize();
+                              }
+
+                              int idVar = Backend.addTempVar(Backend.getActualProcedure(), 0, type_dtype.getSize(), 0,  type_dtype.getSubType());
+
+                              varType.setBackendId() = idVar;
+
+                              // aixo es d'andreu
                               symbolsTable.put(id_var, varType);
                               SymbolDeclarations symDcls = new SymbolDeclarations(varType)
+                              // aixo es d'andreu
 
+                              symDcls.setIdVar(symVal.getIdVar());
+
+                              c3a_g.generateC3aInstr(
+                                Code.copy,
+                                symDcls.getIdVar,
+                                null,
+                                idVar
+                              );
+                               
                               RESULT = symDcls;
                             :};
 
