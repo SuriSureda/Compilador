@@ -14,23 +14,23 @@ import SymbolsTable.Type;
 public class SymbolDeclarations extends SymbolBase{
     
     private Type type;
-    private String idVar;
+    private String var_id;
 
     public SymbolDeclarations() {
         super("SymbolDeclarations", 0);
     }
 
-    public SymbolDeclarations(String idVar, Type type) {
+    public SymbolDeclarations(String var_id, Type type) {
         super("SymbolDeclarations", 0);
         this.type = type;
-        this.idVar = idVar;
+        this.var_id = var_id;
     }
 
     public Type getType() {
         return this.type;
     }
 
-    public String getIdVar() {
-        return this.idVar;
+    public String getVarId() {
+        return this.var_id;
     }
 }
