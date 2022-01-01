@@ -6,6 +6,7 @@
 package backend;
 
 import SymbolsTable.*;
+import backend.Instruction.Code;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -80,82 +81,82 @@ public class AssemblerGenerator {
     }
 
     public void toAssembly(Instruction instruction, Instruction nextInstruction) {
-        switch (instruction.getOpCode().toString()) {
+        switch (instruction.getOpCode()) {
             // .global main
             // 
             // Pop %rsp
             // Place:
-            case "skip":
+            case skip:
                 skipInstruction(instruction);
                 break;
-            case "rtn":
+            case rtn:
                 returnInstruction(instruction);
                 break;
             // "jump X place"
-            case "go_to":
+            case go_to:
                 writeLine("jmp " + instruction.getDest());
                 break;
             // Arithmetical expressions
             // Sume
-            case "add":
+            case add:
                 calculateSumRes(instruction, "add");
                 break;
             // Substract
-            case "sub":
+            case sub:
                 calculateSumRes(instruction, "sub");
                 break;
             // Modul
-            case "mod":
+            case mod:
                 calculateDivision(instruction, "idiv", 1);
                 break;
             // Product
-            case "prod":
+            case prod:
                 calculateMulu(instruction, "imul");
                 break;
             // Division
-            case "div":
+            case div:
                 calculateDivision(instruction, "idiv", 2);
                 break;
             // Funtion related expressions
-            case "call":
+            case call:
                 callInstruction(instruction);
                 break;
-            case "param":
+            case param:
                 paramInstruction(instruction, nextInstruction);
                 break;
             // Preamble expression
-            case "pmb":
+            case pmb:
                 pmbInstruction(instruction);
                 break;
             // Copy expression
-            case "copy":
+            case copy:
                 copyInstruction(instruction);
                 break;
             // In order to obtain which branch is we are using an auxiliar method
             // called substract Jump
 
             // Lower than
-            case "if_LT":
+            case if_LT:
                 substractJump(instruction, "jl ");
                 break;
             // Lower/equals
-            case "if_LE":
+            case if_LE:
                 substractJump(instruction, "jle ");
                 break;
             // Equals
-            case "if_EQ":
+            case if_EQ:
                 substractJump(instruction, "je ");
                 break;
             // Negative
-            case "if_NE":
+            case if_NE:
                 substractJump(instruction, "jne ");
                 break;
             // Greater/equals
-            case "if_GE":
+            case if_GE:
                 substractJump(instruction, "jge ");
                 break;
             // Greater
-            case "if_GT":
+            case if_GT:
                 substractJump(instruction, "jg ");
                 break;
         }
