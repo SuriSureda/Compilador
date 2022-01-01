@@ -142,13 +142,7 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
                             {:
                               Type type = declarations.getType();
 
-                              int backId = backend.addVar(
-                                var_id, 
-                                0,
-                                backend.getLastProcedureId(),
-                                0,
-                                type.getSize()
-                              )
+                              int backId = backend.addVar(var_id,  0, backend.getLastProcedureId(), 0,type.getSize(), type.getSubType());
 
                               type.setBackendId(backId);
 
@@ -156,7 +150,7 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
 
                               c3a_g.generateC3aInstr(
                                 Code.copy,
-                                declarations.getIdVar(),
+                                declarations.getVarId(),
                                 null,
                                 backId
                               )
@@ -166,59 +160,54 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
                             | id:id_var CONSTANT:const two_points id:type_id op_assig VALUE:value nextinstr  
                             {:
                               boolean isConst = const.getIsConst();
-                              
-                              Type typeDes = symbolsTable.get(type_id);
-                              if(typeDes.getType() != TYPE.dtype){
+
+                              Type type = symbolsTable.get(type_id);
+
+                              if(type.getType() != TYPE.dtype){
                                 throw new Error("Type not valid")
                               }
 
-                              if(typeDes.getSubType() != SUBJACENTTYPE.st_boolean
-                                && typeDes.getSubType() != SUBJACENTTYPE.st_boolean
-                                && typeDes.getSubType() != SUBJACENTTYPE.st_boolean ){
+                              if(type.getSubType() != SUBJACENTTYPE.st_boolean
+                                && type.getSubType() != SUBJACENTTYPE.st_boolean
+                                && type.getSubType() != SUBJACENTTYPE.st_boolean ){
                                   throw new Error("Invalid subjacent type")
                               }
 
                               //IF LITERALL (type = null) CHECK SUBJACENT TYPE
-                              if(value.getType() == TYPE.dnull && typeDes.getSubType() == value.getSubType()){
+                              if(value.getType() == TYPE.dnull && type.getSubType() == value.getSubType()){
                                 throw new Error("Value and type must have same subjacent type")
                               }
                               
                               if(value.getType() != TYPE.dnull && value.getNameType() != type_id){
                                 throw new Error("Value must have the same type")
                               }
-                              Type varType;
+
+                              Type var_type;
 
                               if(isConst){
-                                varType = new Type(TYPE.dconst, type_id, value.getValue());
+                                var_type = new Type(TYPE.dconst, type_id, value.getValue());
                               }
                               else{
-                                varType = new Type(TYPE.dvar, type_id);
+                                var_type = new Type(TYPE.dvar, type_id); 
                               }
 
-                              //Fet
-
-                              int size = typeDes.getSize();
-                              SymbolValue symVal = new SymbolValue();
-                              if(symVal.getIsString()){
-                                size = symVal.getStringSize();
+                              int size = type.getSize();
+                              if(value.getIsString()){
+                                size = value.getStringSize();
                               }
 
-                              int idVar = Backend.addTempVar(Backend.getActualProcedure(), 0, type_dtype.getSize(), 0,  type_dtype.getSubType());
+                              int var_id = backend.addVar(id_var, 0, backend.getActualProcedure(), 0, type.getSize(), type.getSubType());
+                              var_type.setBackendId() = var_id;
 
-                              varType.setBackendId() = idVar;
-
-                              // aixo es d'andreu
-                              symbolsTable.put(id_var, varType);
-                              SymbolDeclarations symDcls = new SymbolDeclarations(varType)
-                              // aixo es d'andreu
-
-                              symDcls.setIdVar(symVal.getIdVar());
+                              String val_id = value.getVarId();
+                              symbolsTable.put(id_var, var_type);
+                              SymbolDeclarations symDcls = new SymbolDeclarations(val_id, var_type);
 
                               c3a_g.generateC3aInstr(
                                 Code.copy,
-                                symDcls.getIdVar,
+                                val_id,
                                 null,
-                                idVar
+                                var_id
                               );
                                
                               RESULT = symDcls;
@@ -251,13 +240,11 @@ OPERATOR_ASSIG              ::= id:var_id op_assig VALUE:value nextinstr
                                 throw new Error("Value must have the same type")
                               }
 
-                              // Fet
-
-                                c3a_g.generateC3aInstr(
-                                 Code.copy,
-                                 varType.getIdVar(),
-                                 null,
-                                  varType.getBackendId()
+                              c3a_g.generateC3aInstr(
+                                Code.copy,
+                                value.getVarId(),
+                                null,
+                                varType.getBackendId()
                               );
 
                               RESULT = new SymbolOperatorAssignation();
@@ -331,23 +318,22 @@ ARITHMETICAL_OP             ::= ARITHMETICAL_OP:arith_op op_arithmetical:op ARIT
                                 }
                               }
 
-                              //Fet
                               Type type_int = symbolsTable.get("int);
-                              int isArg = 0;
-                              int idVar = Backend.addTempVar(Backend.getActualProcedure(), 0, type_int.getSize(), 0,  type_int.getSubType());
+                              
+                              int var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_int.getSize(), type_int.getSubType());
 
                               c3a_g.generateC3aInstr(
                                 Code.add,
-                                val1.getIdVar(),
-                                val2.getIdVar(),
-                                idVar
+                                val1.getVarId(),
+                                val2.getVarId(),
+                                var_id
                               );
 
                               if(allConst){
-                                sym = new SymbolArithmeticalOperator(idVar, value)
+                                sym = new SymbolArithmeticalOperator(var_id, value)
                               }
                               else{
-                                sym = new SymbolArithmeticalOperator(idVar)
+                                sym = new SymbolArithmeticalOperator(var_id)
                               }
 
                               RESULT = sym;
@@ -405,23 +391,22 @@ ARITHMETICAL_OP             ::= ARITHMETICAL_OP:arith_op op_arithmetical:op ARIT
                                 }
                               }
 
-                              //Fet
                               Type type_int = symbolsTable.get("int);
-                              int isArg = 0;
-                              int idVar = Backend.addTempVar(Backend.getActualProcedure(), 0, type_int.getSize(), 0,  type_int.getSubType());
+                              
+                              int var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_int.getSize(), type_int.getSubType());
 
                               c3a_g.generateC3aInstr(
                                 Code.add,
-                                val1.getIdVar(),
-                                val2.getIdVar(),
-                                idVar
+                                val1.getVarId(),
+                                val2.getVarId(),
+                                var_id
                               );
 
                               if(allConst){
-                                sym = new SymbolArithmeticalOperator(idVar, value);
+                                sym = new SymbolArithmeticalOperator(var_id, value);
                               }
                               else{
-                                sym = new SymbolArithmeticalOperator(idVar);
+                                sym = new SymbolArithmeticalOperator(var_id);
                               }
                               
                               RESULT = sym;
@@ -447,7 +432,6 @@ ARITHMETICAL_VALUE          ::= lparen ARITHMETICAL_OP:arith_op rparen
                             | POS_NEG:neg number:n_val
                             {:
                               Integer value;
-                              Integer localNum = new Integer(n_val);
                               if(neg.isNegative()){
                                 value = new Integer("-" + n_val);
                               }
@@ -455,19 +439,18 @@ ARITHMETICAL_VALUE          ::= lparen ARITHMETICAL_OP:arith_op rparen
                                 value = new Integer(n_val);
                               }
 
-                              //Fet
-                              Type type_int = symbolsTable.get("int);
-                              int isArg = 0;
-                              int idVar = Backend.addTempVar(Backend.getActualProcedure(), 0, type_int.getSize(), 0,  type_int.getSubType());
+                              Type type_int = symbolsTable.get("int");
+                              
+                              int var_id = backend.addTempVar(0, backend.getActualProcedure(),  0, type_int.getSize(),  type_int.getSubType());
 
                               c3a_g.generateC3aInstr(
                                 Code.copy,
-                                localNum,
+                                value,
                                 null,
-                                idVar
+                                var_id
                               );
 
-                              RESULT = new SymbolArithmeticalValue(idVar, value);
+                              RESULT = new SymbolArithmeticalValue(var_id, value);
                             :}
                             | id:id_val
                             {:
@@ -544,62 +527,58 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
                                 value = new Integer(n_val);
                               }
 
-                              //Fet
                               Type type_int = symbolsTable.get("int");
-                              int isArg = 0;
-                              int idVar = Backend.addTempVar(Backend.getActualProcedure(), 0, type_int.getSize(), 0,  type_int.getSubType());
+                              
+                              int var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_int.getSize(), type_int.getSubType());
 
                               c3a_g.generateC3aInstr(
                                 Code.copy,
                                 value,
                                 null,
-                                idVar
+                                var_id
                               );
 
-                              RESULT = new SymbolValue(idVar, SUBJACENTTYPE.st_integer, value);
+                              RESULT = new SymbolValue(var_id, SUBJACENTTYPE.st_integer, value);
                             :}
                             | string:str_val 
                             {:
-                              String value = new String(str_val.replace("\"", "")); //delete quotes
-
-                              //Fet
-
+                              System.out.println("AIXO ES UNA PROBA" + str_val);
+                              String value = new String(str_val);
                               Type type_string = symbolsTable.get("string");
-                              int isArg = 0;
-                              int stringSize = str_val.lenght() * 2;
+                              
+                              int stringSize = value * type_string.getSize();
 
-                              if (value.lenght() > 255){
-                                throw new Error("Invalid String Size!! It must be shorter than 255.");
+                              if (value.lenght() > 999){
+                                throw new Error("String must be shorter than 1000 characters.");
                               }
 
-                              int idVar = Backend.addTempVar(Backend.getActualProcedure(), 0, stringSize, 0,  type_string.getSubType());
+                              int var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, stringSize, type_string.getSubType());
 
                               c3a_g.generateC3aInstr(
                                 Code.copy,
                                 str_val,
                                 null,
-                                idVar
+                                var_id
                               );                          
 
-                              RESULT = new SymbolValue(idVar, SUBJACENTTYPE.st_string, value);
+                              RESULT = new SymbolValue(var_id, SUBJACENTTYPE.st_string, value);
                             :}
                             | bool:bool_val
                             {:
                               Boolean value = new Boolean(bool_val);
-                              //Fet
                               Type type_bool = symbolsTable.get("boolean");
-                              int isArg = 0;
+                              
 
-                              int idVar = Backend.addTempVar(Backend.getActualProcedure(), 0, type_bool.size(), 0,  type_bool.getSubType());
+                              int var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_bool.size(), type_bool.getSubType());
 
                               c3a_g.generateC3aInstr(
                                 Code.copy,
                                 bool_val,
                                 null,
-                                idVar
+                                var_id
                               );                                 
 
-                              RESULT = new SymbolValue(idVar, SUBJACENTTYPE.st_boolean, value);
+                              RESULT = new SymbolValue(var_id, SUBJACENTTYPE.st_boolean, value);
                             :}
                             | id:id_val
                             {:
@@ -631,23 +610,20 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
                             :}
                             | CALL_FUNCTION:call_fn
                             {:
-                              Type fn_type = symbolsTable.get(call_fn);
+                              Type fn_type = symbolsTable.get(call_fn.getFunctionId());
                               Type dfn_type = symbolsTable.get(fn_type.getTypeName());
-                              SymbolCallFunction sym = call;
-                              //Fet
-                              int isArg = 0;
-                              int idVar = Backend.addTempVar(Backend.getActualProcedure(), 0, fn_type.size(), isArg,  dfn_type.getSubType());
+                              
+                              int var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, fn_type.size(), dfn_type.getSubType());
 
                               c3a_g.generateC3aInstr(
                                 Code.copy,
-                                sym.backId,
+                                call_fn.getBackendId(),
                                 null,
-                                idVar
+                                var_id
                               );                                
 
-                              RESULT = new SymbolValue(idVar, TYPE.dfun, fn_type.getTypeName());
+                              RESULT = new SymbolValue(var_id, TYPE.dfun, fn_type.getTypeName());
                             :}
-                            // REVISAR ANDREU!!!!!
                             | instr_in lparen id rparen;
 
 INITIALIZE_BOOLEAN_OP       ::= lparen BOOLEAN_OP:bool_op rparen 
@@ -697,30 +673,26 @@ BOOLEAN_OP                  ::= BOOLEAN_OP:bool_op op_logical:op BOOLEAN_VALUE:b
                                   break;
                               }
 
-                              //"Fet"
-
                               c3a_g.generateC3aInstr(
                                 opCodeConditional,
-                                val1.getIdVar(),
+                                val1.getVarId(),
                                 null,
-                                idVar // AQUI POSA ALGO D'ETIQUETES
+                                var_id // AQUI POSA ALGO D'ETIQUETES
                               );   
 
                               c3a_g.generateC3aInstr(
                                 opCodeConditional,
-                                val2.getIdVar(),
+                                val2.getVarId(),
                                 null,
-                                val1.getIdVar()
+                                val1.getVarId()
                               ); 
 
                            // symbolOpBoolean.idLabel = symbolOpBooleanVal1.idLabel;
-                           // symbolOpBoolean.idVariable = symbolOpBooleanVal1.idVariable;
+                           // symbolOpBoolean.idVar = symbolOpBooleanVal1.idVariable;
                            // symbolOpBoolean.indexQuadruples = backendManager.getSizeOfC3DList();
                            // symbolOpBoolean.isSingleBoolean = false;                              
 
-
-                              
-                                String var_id = "ABC"
+                              String var_id = "ABC"
                               //REVISAR AIXO, NO COINCIDEIX
                               
                               if(allConst){
@@ -751,20 +723,18 @@ BOOLEAN_OP                  ::= BOOLEAN_OP:bool_op op_logical:op BOOLEAN_VALUE:b
 BOOLEAN_VALUE               ::= bool:bool_val  
                             {:
                               Boolean value = new Boolean(bool_val);
-                              SymbolValue symB = new SymbolBoolValue(value,SUBJACENTTYPE.st_boolean);
                               
-                              Type type_dtype = symbolsTable.get("boolean);
-                              int isArg = 0;
-                              int idVar = Backend.addTempVar(Backend.getActualProcedure(), 0, type_dtype.getSize(), 0,  type_dtype.getSubType());
+                              Type type_bool = symbolsTable.get("boolean");
+                              int var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_bool.getSize(), type_bool.getSubType());
 
                               c3a_g.generateC3aInstr(
                                 Code.copy,
                                 bool_val,
                                 null,
-                                idVar
+                                var_id
                               );
 
-                              RESULT = new SymbolBoolValue(idVar, value);
+                              RESULT = new SymbolBoolValue(var_id, value);
 
                             :}
                             | id:id_var
