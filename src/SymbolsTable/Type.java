@@ -30,12 +30,12 @@ public class Type {
         this.highLimit = highLimit; 
     }
 
-    public int setBackendId(int backId) {
-        return this.backendId = backId;
+    public void setBackendId(int backId) {
+        this.backendId = backId;
     }
 
-    public void getBackendId(int id) {
-        this.backendId = id;
+    public int getBackendId() {
+        return this.backendId;
     }
 
     public TYPE getType(){
