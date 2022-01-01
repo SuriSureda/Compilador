@@ -36,15 +36,14 @@ public class Instruction {
         if_GT, // >    jg
         pmb,
         call,
+        param,
         rtn,
         input, // System in
         output, // System print
-        param_s,
         Ctrue,   // conditional true
         Cfalse,   // conditional false
-        param_c
-
     }
+
     public Code opCode;
     public String op1, op2, dest;
 
@@ -64,28 +63,28 @@ public class Instruction {
     }
     
     public String signeOperador() {
-        switch (this.opCode.toString()) {
-            case "add":
+        switch (this.opCode) {
+            case add:
                 return "+";
-            case "div":
+            case div:
                 return "%";
-            case "sub":
+            case sub:
                 return "-";
-            case "mod":
+            case mod:
                 return "%";
-            case "mul":
+            case prod:
                 return "*";
-            case "if::LT":
+            case if_LT:
                 return "<";
-            case "if::LE":
+            case if_LE:
                 return "<=";
-            case "if::EQ":
+            case if_EQ:
                 return "=";
-            case "if::NE":
+            case if_NE:
                 return "!=";
-            case "if::GE":
+            case if_GE:
                 return ">=";
-            case "if::GT":
+            case if_GT:
                 return ">";
         }
         return null;
@@ -147,8 +146,6 @@ public class Instruction {
         return op1.matches("true") || op1.matches("false");
     }
     
-    
-
     public boolean isString(String n) {
         return !isBoolean(n) && !isInt(n);
     }
