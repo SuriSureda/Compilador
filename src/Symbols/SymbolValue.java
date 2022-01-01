@@ -14,6 +14,10 @@ public class SymbolValue extends SymbolBase {
 
 	private String var_id;
 
+	private boolean isString;
+	private int stringSize;
+
+
 	public SymbolValue() {
 		super("value", 0);
 		this.type = TYPE.dnull;
@@ -79,6 +83,14 @@ public class SymbolValue extends SymbolBase {
 
 	public Object getValue() {
 		return this.value;
+	}
+
+	public boolean getIsString(){
+		return this.isString;
+	}
+
+	public int getStringSize(){
+		return this.stringSize;
 	}
 
 }
