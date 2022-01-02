@@ -391,7 +391,7 @@ ARITHMETICAL_OP             ::= ARITHMETICAL_OP:arith_op op_arithmetical:op ARIT
                                 }
                               }
 
-                              Type type_int = symbolsTable.get("int);
+                              Type type_int = symbolsTable.get("int");
                               
                               int var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_int.getSize(), type_int.getSubType());
 
@@ -645,8 +645,8 @@ INITIALIZE_BOOLEAN_OP       ::= lparen BOOLEAN_OP:bool_op rparen
 BOOLEAN_OP                  ::= BOOLEAN_OP:bool_op op_logical:op BOOLEAN_VALUE:bool_val
                             {:
                               SymbolBoolOp sym;
-                              boolean allConst = bool_op.getIsConst() && bool_val.getIsConst();
                               Code op_code;
+
                               switch(op){
                                 case "&&":
                                   op_code = Code.and;
@@ -657,20 +657,33 @@ BOOLEAN_OP                  ::= BOOLEAN_OP:bool_op op_logical:op BOOLEAN_VALUE:b
                                 default : 
                                   throw new Error("Invalid boolean operator");
                               }
-                              // REVISAR CONDICIONAL
+
+                              boolean allConst = bool_op.getIsConst() && bool_val.getIsConst();
                               Boolean value;
-                              Code opCodeVariable = Code.and;
-                              if(op){
+
+                              if(allConst){
                                 Boolean val1 = (Boolean) bool_op.getValue();
                                 Boolean val2 = (Boolean) bool_val.getValue();
                                 switch(op){
                                 case "&&":
-                                  opCodeVariable = OpCode.and;
+                                  value = val1 && val2;
                                   break;
                                 case "||":
-                                  opCodeVariable = OpCode.or;
+                                  value = val1 || val2; 
                                   break;
-                              }                         
+                              }
+
+                              Type type_bool = symbolsTable.get("boolean"); 
+                              int var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_bool.getSize(), type_bool.getSubType());
+                              
+                              int val1_id = bool_val.getVarId();
+                              int val2_id = bool_op.getVarId();
+                              c3a_g.generateC3aInstr(
+                                op_code,
+                                val1_id,
+                                val2_id,
+                                var_id
+                              )                         
                               
                               if(allConst){
                                 sym = new SymbolBoolOp(var_id, value);
@@ -725,7 +738,7 @@ BOOLEAN_VALUE               ::= bool:bool_val
                               
                               Type dtype_type = symbolsTable.get(var_type.nameType);
                               if(dtype_type.getSubType() != SUBJACENTTYPE.st_boolean){
-                                throw new Error("Must be boolean value");
+                                throw new Error("Must be boolean variable or constant");
                               }
 
                               SymbolBoolValue sym;
@@ -810,15 +823,15 @@ VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rp
                                   op_code = Code.if_NE;
                                   break;
                                 case "<": 
-                                  if(subtype1 != SUBJACENTTYPE.st_integer) throw new Error("This operator only works with integer subtypes");
+                                  if(subtype1 != SUBJACENTTYPE.st_integer) throw new Error("This operator ("+op+") only works with integer subtypes");
                                   op_code = Code.if_LT;
                                   break;
                                 case "<=":
-                                  if(subtype1 != SUBJACENTTYPE.st_integer) throw new Error("This operator only works with integer subtypes");
+                                  if(subtype1 != SUBJACENTTYPE.st_integer) throw new Error("This operator ("+op+") only works with integer subtypes");
                                   op_code = Code.if_LE;
                                   break;
                                 case ">": 
-                                  if(subtype1 != SUBJACENTTYPE.st_integer) throw new Error("This operator only works with integer subtypes");
+                                  if(subtype1 != SUBJACENTTYPE.st_integer) throw new Error("This operator ("+op+") only works with integer subtypes");
                                   op_code = Code.if_GT;
                                   break;
                                 case ">=":
@@ -854,6 +867,7 @@ VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rp
                                       val = (Boolean) val1.getValue() != (Boolean) val2.getValue();
                                     }
                                     break;
+
                                   // only integer operators
                                   case "<": 
                                     val = (Integer) val1.getValue() < (Integer) val2.getValue();
@@ -870,9 +884,8 @@ VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rp
                                 }
                               }
 
-                              //COSES BACKEND
-                              String var_id = "ABC";
-                              //COSES BACKEND
+                              Type type_bool = symbolsTable.get("boolean");
+                              int var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_bool.getSize(), type_bool.getSubType());
                               
                               if(allConst){
                                 sym = new SymbolValueComparison(var_id, value);
@@ -884,8 +897,18 @@ VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rp
                             :}
 
 
-INSTRUCTION_IF               ::= inst_if lparen INITIALIZE_BOOLEAN_OP rparen lbracket INSTRUCTIONS rbracket OTHER_CASES; // if(( x < y)){}
+INSTRUCTION_IF               ::= inst_if INITIALIZE_BOOLEAN_OP:bool_op lbracket INSTRUCTIONS:instructions rbracket OTHER_CASES:others ;
                             {:    
+                              
+                              int other_next_label = others.getFirstLabel();
+                              // if bool_op.value == false jump to next case if there is
+                              c3a_g.generateC3aInstr(
+                                Code.if_EQ,
+                                bool_op.getVarId(),
+                                "false",
+                                other_next_label
+                              )
+
                               RESULT = new SymbolInstructionIf();
                             :}
 

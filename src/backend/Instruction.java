@@ -24,8 +24,6 @@ public class Instruction {
         and,
         or,
         not,
-        ind_val,
-        ind_ass,
         skip,
         go_to, // UN-conditional jump
         if_LT, // <    jl
