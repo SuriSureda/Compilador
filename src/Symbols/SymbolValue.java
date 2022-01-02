@@ -93,4 +93,10 @@ public class SymbolValue extends SymbolBase {
 		return this.stringSize;
 	}
 
+	// on set string size, we set isString to true
+	public void setStringSize(int size) {
+		this.stringSize = size;
+		this.isString = true;
+	}
+
 }

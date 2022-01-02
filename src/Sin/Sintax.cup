@@ -542,11 +542,12 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
                             :}
                             | string:str_val 
                             {:
-                              System.out.println("AIXO ES UNA PROBA" + str_val);
-                              String value = new String(str_val);
+                             //delete quotes
+                              String value = new String(str_val.replace("\"", ""));
                               Type type_string = symbolsTable.get("string");
                               
-                              int stringSize = value * type_string.getSize();
+                              // string size in bytes
+                              int stringSize = value.length() * type_string.getSize();
 
                               if (value.lenght() > 999){
                                 throw new Error("String must be shorter than 1000 characters.");
@@ -560,8 +561,11 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
                                 null,
                                 var_id
                               );                          
+                              
+                              SymbolValue sym = new SymbolValue(var_id, SUBJACENTTYPE.st_string, value);
+                              sym.setStringSize(stringSize);
 
-                              RESULT = new SymbolValue(var_id, SUBJACENTTYPE.st_string, value);
+                              RESULT = sym;
                             :}
                             | bool:bool_val
                             {:
