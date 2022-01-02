@@ -6,7 +6,7 @@
 package backend;
 
 import SymbolsTable.Type;
-import static SymbolsTable.Type.SUBJACENTTYPE.st_boolean;
+import SymbolsTable.Type.SUBJACENTTYPE;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -47,7 +47,7 @@ public class Backend {
 //    private int offset;     // offset
 //    private int size;       // space occupation
 //    private Type type;      // type
-    public int addVar(String name, int code, int idParent, int offset, int size, Type type) {
+    public int addVar(String name, int code, int idParent, int offset, int size, SUBJACENTTYPE type) {
         // We add '@' for easier data manipulation
         name = "@" + name;
         // We add the variable into the table
@@ -56,7 +56,7 @@ public class Backend {
         return varTable.size() - 1;
     }
 
-    public int addTempVar(int code, int idParent, int offset, int size, Type type) {
+    public int addTempVar(int code, int idParent, int offset, int size, SUBJACENTTYPE type) {
         // We add '@' for easier data manipulation
         String name = "@TEMPORAL_VARIABLE";
         // We add the variable into the table
