@@ -660,44 +660,17 @@ BOOLEAN_OP                  ::= BOOLEAN_OP:bool_op op_logical:op BOOLEAN_VALUE:b
                               // REVISAR CONDICIONAL
                               Boolean value;
                               Code opCodeVariable = Code.and;
-                              Code opCodeConditional = Code.Ctrue;
                               if(op){
                                 Boolean val1 = (Boolean) bool_op.getValue();
                                 Boolean val2 = (Boolean) bool_val.getValue();
                                 switch(op){
                                 case "&&":
-                                  //value = val1 && val2;
                                   opCodeVariable = OpCode.and;
-                                  opCodeConditional = OpCode.Cfalse;
                                   break;
                                 case "||":
-                                  //value = val1 || val2;
                                   opCodeVariable = OpCode.or;
-                                  opCodeConditional = OpCode.condTrue;
                                   break;
-                              }
-
-                              c3a_g.generateC3aInstr(
-                                opCodeConditional,
-                                val1.getVarId(),
-                                null,
-                                var_id // AQUI POSA ALGO D'ETIQUETES
-                              );   
-
-                              c3a_g.generateC3aInstr(
-                                opCodeConditional,
-                                val2.getVarId(),
-                                null,
-                                val1.getVarId()
-                              ); 
-
-                           // symbolOpBoolean.idLabel = symbolOpBooleanVal1.idLabel;
-                           // symbolOpBoolean.idVar = symbolOpBooleanVal1.idVariable;
-                           // symbolOpBoolean.indexQuadruples = backendManager.getSizeOfC3DList();
-                           // symbolOpBoolean.isSingleBoolean = false;                              
-
-                              String var_id = "ABC"
-                              //REVISAR AIXO, NO COINCIDEIX
+                              }                         
                               
                               if(allConst){
                                 sym = new SymbolBoolOp(var_id, value);
