@@ -1,5 +1,6 @@
 package compilador;
 
+// TODO : rbracket -> BLOCK_IN, lbracket -> BLOCK_OUT
 
 import java_cup.runtime.Symbol;
 import Symbols.*;
@@ -15,11 +16,16 @@ parser code
   private LexerCup scanner;
   private C3a_generator c3a_g;
 
+  private Stack<Integer> labelTrueStack;
+  private Stack<Integer> labelFalseStack;
+
   public Parser(LexerCup scanner){
     super(scanner)
     this.symbolsTable = new SymbolsTable();
     this.backend = new Backend();
     this.c3a_g = new C3a_generator(backend);
+    this.labelTrueStack = new Stack<Integer>();
+    this.labelFalseStack = new Stack<Integer>();
   }
 
   public void syntax_error(Symbol current_token) {
@@ -59,8 +65,13 @@ non terminal  SymbolBoolOp                BOOLEAN_OP;
 non terminal  SymbolInitBoolOp            INITIALIZE_BOOLEAN_OP;
 non terminal  SymbolBoolValue             BOOLEAN_VALUE;
 non terminal  SymbolValueComparison       VALUE_COMPARISON;
+non terminal  SymbolMEnd                  M_END;
+non terminal  SymbolCondition             COND;
+non terminal  SymbolConditionFalse        COND_FALSE;
+non terminal  SymbolConditionTrue         COND_TRUE; 
 non terminal  SymbolInstructionIf         INSTRUCTION_IF;
-non terminal  SymbolOtherCases            OTHER_CASES;
+non terminal  SymbolElif                  ELIF;
+non terminal  SymbolElse                  ELSE;
 non terminal  SymbolInstructionWhile      INSTRUCTION_WHILE;
 non terminal  SymbolInstructionFor        INSTRUCTION_FOR;
 non terminal  SymbolInternalFor           INTERNAL_FOR;
@@ -896,29 +907,115 @@ VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rp
                               RESULT = sym;
                             :}
 
+COND                         ::=  INITIALIZE_BOOLEAN_OP:bool_op
+                              {:
+                                int var_id = bool_op.getVarId();
 
-INSTRUCTION_IF               ::= inst_if INITIALIZE_BOOLEAN_OP:bool_op lbracket INSTRUCTIONS:instructions rbracket OTHER_CASES:others ;
-                            {:    
+                                int true_label = backend.addLabel();
+                                int false_label = backend.addLabel();
+
+                                labelTrueStack.push(true_label);
+                                labelFalseStack.push(false_label);
+                                
+                                c3a_g.generateC3aInstr(
+                                  Code.if_EQ,
+                                  var_id,
+                                  "true", //TODO : revisar quin valor asignar aqui
+                                  true_label
+                                );
+
+                                c3a_g.generateC3aInstr(
+                                  Code.jmp,
+                                  null,
+                                  null,
+                                  false_label
+                                );
+
+                                RESULT = new SymbolCondition();
+                              :}
+
+COND_T                        ::= 
+                              {:
+                                int label = labelTrueStack.pop();
+
+                                c3a_g.generateC3aInstr(
+                                  Code.skip,
+                                  null,
+                                  null,
+                                  label
+                                );
+
+                                RESULT = new SymbolConditionTrue();   
+                              :}
                               
-                              int other_next_label = others.getFirstLabel();
-                              // if bool_op.value == false jump to next case if there is
-                              c3a_g.generateC3aInstr(
-                                Code.if_EQ,
-                                bool_op.getVarId(),
-                                "false",
-                                other_next_label
-                              )
+COND_F                        ::= 
+                              {:
+                                int label = labelFalseStack.pop();
 
+                                c3a_g.generateC3aInstr(
+                                  Code.skip,
+                                  null,
+                                  null,
+                                  label
+                                );
+
+                                RESULT = new SymbolConditionFalse();   
+                              :}
+
+INSTRUCTION_IF               ::= inst_if COND COND_T lbracket INSTRUCTIONS rbracket ELIF ELSE
+                            {:
                               RESULT = new SymbolInstructionIf();
-                            :}
+                            :};
 
-OTHER_CASES                  ::= inst_else lbracket INSTRUCTIONS rbracket  // else{}
-                             | inst_elif lparen INITIALIZE_BOOLEAN_OP rparen lbracket INSTRUCTIONS rbracket OTHER_CASES // elif ((x > y)){}
-                             | ;
-                             {:
-                             RESULT = new SymbolOtherCases();
-                            :}
+M_END                       ::=
+                            {:
+                              int label = backend.addLabel();
 
+                              c3a_g.generateC3aInstr(
+                                Code.jmp,
+                                null,
+                                null,
+                                label
+                              );
+
+                              RESULT = new SymbolMEnd(label);
+                            :};
+
+ELIF                        ::= M_END:mend inst_elif COND_F COND COND_T lbracket INSTRUCTIONS rbracket ELIF
+                            {:
+                              int label = mend.getLabel();
+
+                              c3a_g.generateC3aInstr(
+                                Code.skip,
+                                null,
+                                null,
+                                label
+                              );
+
+                              RESULT = new SymbolElif();
+                            :}
+                            | 
+                            {:
+                              RESULT = new SymbolElif();
+                            :};
+
+ELSE                        ::= M_END:mend inst_else COND_F lbracket INSTRUCTIONS rbracket
+                            {:
+                              int label = mend.getLabel();
+
+                              c3a_g.generateC3aInstr(
+                                Code.skip,
+                                null,
+                                null,
+                                label
+                              );
+
+                              RESULT = new SymbolElse();
+                            :}
+                            | COND_F
+                            {:
+                              RESULT = new SymbolElse();
+                            :};
  
 INSTRUCTION_WHILE            ::= inst_while lparen INITIALIZE_BOOLEAN_OP rparen lbracket INSTRUCTIONS rbracket;         // while(( x < 10)){}
                             {:
