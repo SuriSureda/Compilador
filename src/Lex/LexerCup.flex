@@ -6,6 +6,7 @@
 package Lex;                         // PAQUETE AL QUE PERTENECE
 import java_cup.runtime.Symbol;      // CLASE SYMBOL PARA LOS TOKENS DE CUP
 import compilador.sym;
+import Tokens.*;
 
 %%                              //INICIO DE OPCIONES
 
@@ -18,6 +19,20 @@ import compilador.sym;
 %type java_cup.runtime.Symbol   
 
 %{
+    public static final String TOKENS_PATH = "src/output/Tokens.txt";
+
+    public static ArrayList<TokenLex> tokensArray = new ArrayList<TokenLex>();
+
+    public void writeTokens(){
+        BufferedWriter out = new BufferedWriter(new FileWriter(TOKENS_PATH));
+        out.write("--Token Data--\n");
+        for(int i = 0; i<tokensArray.size();i++){
+            out.write(tokensArray.get(i).toString());
+        }
+        out.write("-- All token data shown! --");
+        out.close();
+    }
+
     private Symbol symbol(int type){
         return new Symbol(type,yyline,yycolumn);
     }
@@ -105,57 +120,191 @@ TWO_POINT       = (":")     //ok
 {BLANK}              {/*Ignore*/}
 {COMMENT}            {/*Ignore*/}
 
-{INST_IF}            {return new Symbol(sym.inst_if, yychar, yyline, yytext());}
-{INST_ELSE}          {return new Symbol(sym.inst_else, yychar, yyline, yytext());}
-{INST_ELIF}          {return new Symbol(sym.inst_elif, yychar, yyline, yytext());}
+{INST_IF}            {
+                        Tokens token = new Tokens(Tokens.id.INST_IF,yyline,yycolumn);
+                        tokensArray.add(token);
+                        return new Symbol(sym.inst_if, yychar, yyline, yytext());
+                     }
+{INST_ELSE}          {
+                        Tokens token = new Tokens(Tokens.id.INST_ELSE,yyline,yycolumn);
+                        tokensArray.add(token);
+                        return new Symbol(sym.inst_else, yychar, yyline, yytext());
+                     }
+{INST_ELIF}          {
+                        Tokens token = new Tokens(Tokens.id.INST_ELSE,yyline,yycolumn);
+                        tokensArray.add(token);
+                        return new Symbol(sym.inst_elif, yychar, yyline, yytext());
+                    }   
 
-{INST_WHILE}         {return new Symbol(sym.inst_while, yychar, yyline, yytext());}
-{INST_FOR}           {return new Symbol(sym.inst_for, yychar, yyline, yytext());}
+{INST_WHILE}         {
+                        Tokens token = new Tokens(Tokens.id.INST_WHILE,yyline,yycolumn);
+                        tokensArray.add(token);
+                        return new Symbol(sym.inst_while, yychar, yyline, yytext());
+                     }
+{INST_FOR}           {
+                        Tokens token = new Tokens(Tokens.id.INST_FOR,yyline,yycolumn);
+                        tokensArray.add(token);
+                        return new Symbol(sym.inst_for, yychar, yyline, yytext());
+                    }
 
-{INST_SWITCH}        {return new Symbol(sym.inst_switch, yychar, yyline, yytext());}
-{INST_CASE}          {return new Symbol(sym.inst_case, yychar, yyline, yytext());}
-{INST_BREAK}         {return new Symbol(sym.inst_break, yychar, yyline, yytext());}
-{INST_DEFAULT}       {return new Symbol(sym.inst_default, yychar, yyline, yytext());}
+{INST_SWITCH}        {
+                      Tokens token = new Tokens(Tokens.id.INST_SWITCH,yyline,yycolumn);
+                      tokensArray.add(token);
+                      return new Symbol(sym.inst_switch, yychar, yyline, yytext());
+                      }
+{INST_CASE}          {
+                      Tokens token = new Tokens(Tokens.id.INST_CASE,yyline,yycolumn);
+                      tokensArray.add(token);
+                      return new Symbol(sym.inst_case, yychar, yyline, yytext());
+                      }
+{INST_BREAK}         {
+                      Tokens token = new Tokens(Tokens.id.INST_BREAK,yyline,yycolumn);
+                      tokensArray.add(token);
+                      return new Symbol(sym.inst_break, yychar, yyline, yytext());
+                      }
+{INST_DEFAULT}       {
+                      Tokens token = new Tokens(Tokens.id.INST_DEFAULT,yyline,yycolumn);
+                      tokensArray.add(token);
+                      return new Symbol(sym.inst_default, yychar, yyline, yytext());
+                      }
 
-{INST_FUNCTION}      {return new Symbol(sym.inst_function, yychar, yyline, yytext());}
-{INST_RETURN}        {return new Symbol(sym.inst_return, yychar, yyline, yytext());}
-{INST_CALL}          {return new Symbol(sym.inst_call, yychar, yyline, yytext());}
-{INST_MAIN}          {return new Symbol(sym.inst_main, yychar, yyline, yytext());}      //*
+{INST_FUNCTION}      {
+                     Tokens token = new Tokens(Tokens.id.INST_FUNCTION,yyline,yycolumn);
+                     tokensArray.add(token);
+                     return new Symbol(sym.inst_function, yychar, yyline, yytext());
+                     }
+{INST_RETURN}        {
+                     Tokens token = new Tokens(Tokens.id.INST_RETURN,yyline,yycolumn);
+                     tokensArray.add(token);return new Symbol(sym.inst_return, yychar, yyline, yytext());
+                     }
+{INST_CALL}          {
+                     Tokens token = new Tokens(Tokens.id.INST_CALL,yyline,yycolumn);
+                     tokensArray.add(token);
+                     return new Symbol(sym.inst_call, yychar, yyline, yytext());
+                     }
+{INST_MAIN}          {
+                     Tokens token = new Tokens(Tokens.id.INST_MAIN,yyline,yycolumn);
+                     tokensArray.add(token);
+                     return new Symbol(sym.inst_main, yychar, yyline, yytext());
+                     }      //*
 //==============================================================================
-{INSTR_IN}           {return new Symbol(sym.instr_in, yychar, yyline, yytext());}
-{INSTR_OUT}          {return new Symbol(sym.instr_out, yychar, yyline, yytext());}
+{INSTR_IN}           {
+                     Tokens token = new Tokens(Tokens.id.INSTR_IN,yyline,yycolumn);
+                     tokensArray.add(token);
+                     return new Symbol(sym.instr_in, yychar, yyline, yytext());}
+{INSTR_OUT}          {
+                     Tokens token = new Tokens(Tokens.id.INSTR_OUT,yyline,yycolumn);
+                     tokensArray.add(token);return new Symbol(sym.instr_out, yychar, yyline, yytext());
+                     }
 //==============================================================================
-{LPAREN}             {return new Symbol(sym.lparen, yychar, yyline, yytext());}
-{RPAREN}             {return new Symbol(sym.rparen, yychar, yyline, yytext());}    
-{LBRACKET}           {return new Symbol(sym.lbracket, yychar, yyline, yytext());}
-{RBRACKET}           {return new Symbol(sym.rbracket, yychar, yyline, yytext());}
-{NEXTINTR}           {return new Symbol(sym.nextinstr, yychar, yyline, yytext());}
-{SEPARATOR}          {return new Symbol(sym.separator, yychar, yyline, yytext());}
-{TWO_POINT}          {return new Symbol(sym.two_points, yychar, yyline, yytext());}
+{LPAREN}             {
+                     Tokens token = new Tokens(Tokens.id.LPAREN,yyline,yycolumn);
+                     tokensArray.add(token);
+                     return new Symbol(sym.lparen, yychar, yyline, yytext());
+                     }
+{RPAREN}             {
+                     Tokens token = new Tokens(Tokens.id.RPAREN,yyline,yycolumn);
+                     tokensArray.add(token);return new Symbol(sym.rparen, yychar, yyline, yytext());
+                     }    
+{LBRACKET}           {
+                     Tokens token = new Tokens(Tokens.id.LBRACKET,yyline,yycolumn);
+                     tokensArray.add(token);return new Symbol(sym.lbracket, yychar, yyline, yytext());
+                     }
+{RBRACKET}           {
+                     Tokens token = new Tokens(Tokens.id.RBRACKET,yyline,yycolumn);
+                     tokensArray.add(token);return new Symbol(sym.rbracket, yychar, yyline, yytext());
+                     }
+{NEXTINTR}           {
+                     Tokens token = new Tokens(Tokens.id.NEXTINTR,yyline,yycolumn);
+                     tokensArray.add(token);return new Symbol(sym.nextinstr, yychar, yyline, yytext());
+                     }
+{SEPARATOR}          {
+                     Tokens token = new Tokens(Tokens.id.SEPARATOR,yyline,yycolumn);
+                     tokensArray.add(token);
+                     return new Symbol(sym.separator, yychar, yyline, yytext());}
+{TWO_POINT}          {
+                     Tokens token = new Tokens(Tokens.id.TWO_POINT,yyline,yycolumn);
+                     tokensArray.add(token);
+                     return new Symbol(sym.two_points, yychar, yyline, yytext());}
 //==============================================================================
-{OP_ARITHMETICAL}    {return new Symbol(sym.op_arithmetical, yychar, yyline, yytext());}
-{OP_RELATIONAL}      {return new Symbol(sym.op_relational, yychar, yyline, yytext());}
-{OP_LOGICAL}         {return new Symbol(sym.op_logical, yychar, yyline, yytext());}
+{OP_ARITHMETICAL}    {
+                     Tokens token = new Tokens(Tokens.id.OP_ARITHMETICAL,yyline,yycolumn);
+                     tokensArray.add(token);return new Symbol(sym.op_arithmetical, yychar, yyline, yytext());
+                     }
+{OP_RELATIONAL}      {
+                     Tokens token = new Tokens(Tokens.id.OP_RELATIONAL,yyline,yycolumn);
+                     tokensArray.add(token);
+                     return new Symbol(sym.op_relational, yychar, yyline, yytext());}
+{OP_LOGICAL}         {
+                     Tokens token = new Tokens(Tokens.id.OP_LOGICAL,yyline,yycolumn);
+                     tokensArray.add(token);return new Symbol(sym.op_logical, yychar, yyline, yytext());}
 {OP_ASSIG}           {return new Symbol(sym.op_assig, yychar, yyline, yytext());}
 //==============================================================================
-{BOOL}               {return new Symbol(sym.bool, yychar, yyline, yytext());}
-{DCONST}             {return new Symbol(sym.dconst, yychar, yyline, yytext());}
+{BOOL}               {
+                     Tokens token = new Tokens(Tokens.id.BOOL,yyline,yycolumn);
+                     tokensArray.add(token);return new Symbol(sym.bool, yychar, yyline, yytext());
+                     }
+{DCONST}             {
+                     Tokens token = new Tokens(Tokens.id.DCONST,yyline,yycolumn);
+                     tokensArray.add(token);
+                     return new Symbol(sym.dconst, yychar, yyline, yytext());}
 
 //==============================================================================
-{ID}                 {return new Symbol(sym.id, yychar, yyline, yytext());}
-{NUMBER}             {return new Symbol(sym.number, yychar, yyline, yytext());}
-{STRING}             {return new Symbol(sym.string, yychar, yyline, yytext());}
+{ID}                 {
+                     Tokens token = new Tokens(Tokens.id.ID,yyline,yycolumn);
+                     tokensArray.add(token);
+                     return new Symbol(sym.id, yychar, yyline, yytext());
+                     }
+{NUMBER}             {
+                     Tokens token = new Tokens(Tokens.id.NUMBER,yyline,yycolumn);
+                     tokensArray.add(token);
+                     return new Symbol(sym.number, yychar, yyline, yytext());
+                     }
+{STRING}             {
+                     Tokens token = new Tokens(Tokens.id.STRING,yyline,yycolumn);
+                     tokensArray.add(token);
+                     return new Symbol(sym.string, yychar, yyline, yytext());
+                     }
 //==============================================================================
 //==============================================================================
 
-{SPC_INC}            {return new Symbol(sym.spc_inc, yychar, yyline, yytext());}
-{SPC_DEC}            {return new Symbol(sym.spc_dec, yychar, yyline, yytext());}
-{SPC_ASGINC}         {return new Symbol(sym.spc_asginc, yychar, yyline, yytext());}
-{SPC_ASGDEC}         {return new Symbol(sym.spc_asgdec, yychar, yyline, yytext());}
-{SPC_ASGDIV}         {return new Symbol(sym.spc_asgdiv, yychar, yyline, yytext());}
-{SPC_ASGMUL}         {return new Symbol(sym.spc_asgmul, yychar, yyline, yytext());}
+{SPC_INC}            {
+                     Tokens token = new Tokens(Tokens.id.SPC_INC,yyline,yycolumn);
+                     tokensArray.add(token);
+                     return new Symbol(sym.spc_inc, yychar, yyline, yytext());
+                     }
+{SPC_DEC}            {
+                     Tokens token = new Tokens(Tokens.id.SPC_DEC,yyline,yycolumn);
+                     tokensArray.add(token);return new Symbol(sym.spc_inc, yychar, yyline, yytext());
+                     return new Symbol(sym.spc_dec, yychar, yyline, yytext());}
+                     }
+                     
+{SPC_ASGINC}         {
+                     Tokens token = new Tokens(Tokens.id.SPC_ASGINC,yyline,yycolumn);
+                     tokensArray.add(token);
+                     return new Symbol(sym.spc_asginc, yychar, yyline, yytext());
+                     }
+{SPC_ASGDEC}         {
+                     Tokens token = new Tokens(Tokens.id.SPC_ASGDEC,yyline,yycolumn);
+                     tokensArray.add(token);
+                     return new Symbol(sym.spc_asgdec, yychar, yyline, yytext());
+                     }
+{SPC_ASGDIV}         {
+                     Tokens token = new Tokens(Tokens.id.SPC_ASGDIV,yyline,yycolumn);
+                     tokensArray.add(token);
+                     return new Symbol(sym.spc_asgdiv, yychar, yyline, yytext());
+                     }
+{SPC_ASGMUL}         {
+                     Tokens token = new Tokens(Tokens.id.SPC_ASGMUL,yyline,yycolumn);
+                     tokensArray.add(token);
+                     return new Symbol(sym.spc_asgmul, yychar, yyline, yytext());
+                     }
 //==============================================================================
-[^]                  {/*return new Symbol(sym.ERROR, yychar, yyline, yytext());*/}
+[^]                  {
+                     Tokens token = new Tokens(Tokens.id.ERROR,yyline,yycolumn);
+                     tokensArray.add(token);
+                     return new Symbol(sym.ERROR, yychar, yyline, yytext());
+                     }
 //==============================================================================
 
 
