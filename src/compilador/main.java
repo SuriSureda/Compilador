@@ -183,4 +183,20 @@ public class main {
         System.out.println(" -------------------------------------------------");
         System.out.print  (" Choose an option: ");
     }
+
+        private static void executeLex(){
+        
+        // Remove all output files from other executions
+        
+        String filenameSourceCode = "src/compilador/input.txt";
+        
+        try {
+            LexScanner scanner = new LexScanner(new FileReader(filenameSourceCode));
+            // writeTokens();
+            
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    }
 }
