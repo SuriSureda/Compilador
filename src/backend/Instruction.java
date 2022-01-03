@@ -38,8 +38,6 @@ public class Instruction {
         rtn,
         input, // System in
         output, // System print
-        Ctrue,   // conditional true
-        Cfalse,   // conditional false
     }
 
     public Code opCode;

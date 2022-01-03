@@ -1,6 +1,7 @@
 package compilador;
 
 // TODO : rbracket -> BLOCK_IN, lbracket -> BLOCK_OUT
+// TODO : pila per a expression condicionals parcials
 
 import java_cup.runtime.Symbol;
 import Symbols.*;
@@ -72,6 +73,7 @@ non terminal  SymbolConditionTrue         COND_TRUE;
 non terminal  SymbolInstructionIf         INSTRUCTION_IF;
 non terminal  SymbolElif                  ELIF;
 non terminal  SymbolElse                  ELSE;
+non terminal  SymbolMWhile                M_WHILE;
 non terminal  SymbolInstructionWhile      INSTRUCTION_WHILE;
 non terminal  SymbolInstructionFor        INSTRUCTION_FOR;
 non terminal  SymbolInternalFor           INTERNAL_FOR;
@@ -1016,11 +1018,33 @@ ELSE                        ::= M_END:mend inst_else COND_F lbracket INSTRUCTION
                             {:
                               RESULT = new SymbolElse();
                             :};
- 
-INSTRUCTION_WHILE            ::= inst_while lparen INITIALIZE_BOOLEAN_OP rparen lbracket INSTRUCTIONS rbracket;         // while(( x < 10)){}
-                            {:
-                            RESULT = new SymbolInstructionWhile();
+
+M_WHILE                     ::= {:
+                              int label = backend.addLabel();
+                              RESULT = new SymbolMWhile(label);
                             :}
+                  
+ 
+INSTRUCTION_WHILE            ::= inst_while M_WHILE:mwhile COND COND_T lbracket  INSTRUCTIONS rbracket;         
+                            {:
+                              int loop_label = mwhile.getLabel();
+                              c3a_g.generateC3aInstr(
+                                Code.jmp,
+                                null,
+                                null,
+                                loop_label
+                              );
+
+                              int end_label = labelFalseStack.pop();
+                              c3a_g.generateC3aInstr(
+                                Code.jmp,
+                                null,
+                                null,
+                                end_label
+                              );
+
+                              RESULT = new SymbolInstructionWhile();
+                            :};
 
 INSTRUCTION_FOR              ::= inst_for lparen INTERNAL_FOR rparen lbracket INSTRUCTIONS rbracket;
                             {:
