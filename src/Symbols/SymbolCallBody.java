@@ -10,8 +10,24 @@ package Symbols;
  * @author soyjo
  */
 public class SymbolCallBody extends SymbolBase{
+
+    private String fun_id;
+    private int fun_back_id;
+    private int num_params;
     
     public SymbolCallBody() {
         super("Symbol Call Body", 0);
-    }    
+    }
+    
+    public int getNumParams() {
+        return this.num_params;
+    }
+
+    public String getFunId(){
+        return this.fun_id;
+    }
+
+    public int getFunBackId(){
+        return this.fun_back_id;
+    }
 }

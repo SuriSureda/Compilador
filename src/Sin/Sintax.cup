@@ -2,6 +2,7 @@ package compilador;
 
 // TODO : rbracket -> BLOCK_IN, lbracket -> BLOCK_OUT
 // TODO : pila per a expression condicionals parcials
+// TODO : revisar nextinstr
 
 import java_cup.runtime.Symbol;
 import Symbols.*;
@@ -143,6 +144,10 @@ INSTRUCTION                 ::=  DECLARATIONS
                               RESULT = new SymbolInstruction();
                             :}
                             | INSTRUCTION_OUT 
+                            {:
+                              RESULT = new SymbolInstruction();
+                            :}
+                            | CALL_FUNCTION
                             {:
                               RESULT = new SymbolInstruction();
                             :}
@@ -1074,15 +1079,113 @@ CASE_DEFAULT                 ::= inst_default INSTRUCTIONS inst_break nextinstr
                              :}
 
 
-CALL_FUNCTION               ::= inst_call lparen CALL_BODY rparen nextinstr;
+CALL_FUNCTION               ::= inst_call id:fun_id lparen rparen
                             {:
-                            RESULT = new SymbolCallFunction();
+                              // Check if function and has params 
+                              int num_params = symbolsTable.getNumParams(fun_id);
+                              if(num_params > 0 ){
+                                throw new Error("Missing parameters. Function " + fun_id + " has " + num_params + " parameters.");
+                              }
+
+                              Type fun_type = symbolsTable.getType(fun_id);
+                              int id = fun_type.getBackendId();
+                              c3a_g.generateC3aInstr(
+                                Code.call,
+                                null,
+                                null,
+                                id
+                              );
+
+                              RESULT = new SymbolCallFunction();
+                            :}
+                            | inst_call CALL_BODY:body rparen;
+                            {:
+                              int body_params = body.getNumParams();
+                              int fun_id = body.getFunId();
+                              int fun_params = symbolsTable.getNumParams(fun_id);
+
+                              if(fun_params != body_params){
+                                throw new Error("Incorrect number of parameters :"+ body_params + ".Function " + fun_id + " has " + fun_params + "params");
+                              }
+
+                              int fun_backId = body.getFunBackId();
+                              c3a_g.generateC3aInstr(
+                                Code.call,
+                                null,
+                                null,
+                                id
+                              );
+
+                              RESULT = new SymbolCallFunction();
                             :}
 
-CALL_BODY                   ::= CALL_BODY separator VALUE
-                            | id;
+CALL_BODY                   ::= CALL_BODY:body separator VALUE:value
                             {:
-                            RESULT = new SymbolCallBody();
+                              int num_params = body.getNumParams();
+                              SUBJACENTTYPE subType;
+
+                              if(value.getType() == TYPE.dnull){
+                                subType = value.getSubType();
+                              }
+                              else{
+                                if(value.getType() != TYPE.dvar && value.getType() != TYPE.dconst && value.getType() != TYPE.darg){
+                                  throw new Error(fun_id + ". Incorrect type for param "+ num_params);
+                                }
+                                Type value_type = symbolsTable.get(value.getTypeName());
+                                subType = value_type.getSubType();
+                              }
+
+                              int fun_id = body.getFunId();
+                              //Check param type with function param type
+                              SUBJACENTTYPE paramSubType = symbol.getParam(fun_id, num_params).getSubType();
+
+                              if(paramSubType != subType){
+                                throw new Error(fun_id + ". Incorrect type for param " + num_params + ". Expected " + subType + " but got " + paramSubType);
+                              }
+
+                              int fun_back_id = body.getFunBackId();
+                              c3a_g.generateC3aInstr(
+                                Code.param,
+                                value.getVarId(),
+                                null,
+                                fun_backId
+                              );
+
+                              RESULT = new SymbolCallBody(fun_id, fun_back_id, num_params+1);
+                            :}
+                            | id:fun_id lparen VALUE:value
+                            {:
+                              SUBJACENTTYPE subType;
+
+                              if(value.getType() == TYPE.dnull){
+                                subType = value.getSubType();
+                              }
+                              else{
+                                if(value.getType() != TYPE.dvar && value.getType() != TYPE.dconst && value.getType() != TYPE.darg){
+                                  throw new Error(fun_id + ". Incorrect type for param 0");
+                                }
+                                Type value_type = symbolsTable.get(value.getTypeName());
+                                subType = value_type.getSubType();
+                              }
+
+                              //Check param type with function param type
+                              SUBJACENTTYPE paramSubType = symbol.getParam(fun_id, 0).getSubType();
+
+                              if(paramSubType != subType){
+                                throw new Error(fun_id + ". Incorrect type for param 0. Expected " + subType + " but got " + paramSubType);
+                              }
+
+                              Type fun_type = symbolsTable.get(fun_id);
+                              int fun_back_id = fun_type.getBackendId();
+
+                              c3a_g.generateC3aInstr(
+                                Code.param,
+                                value.getVarId(),
+                                null,
+                                fun_back_id
+                              );
+
+                              RESULT = new SymbolCallBody(fun_id, fun_back_id, 0+1);
                             :}
 
 
