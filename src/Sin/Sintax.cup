@@ -1086,9 +1086,18 @@ CALL_BODY                   ::= CALL_BODY separator VALUE
                             :}
 
 
-INSTRUCTION_OUT             ::= instr_out lparen VALUE rparen nextinstr;
+INSTRUCTION_OUT             ::= instr_out lparen VALUE:value rparen nextinstr;
                             {:
-                            RESULT = new SymbolInstructionOut();
+                              int var_id = value.getVarId();
+
+                              c3a_g.generateC3aInstr(
+                                Code.output,
+                                null,
+                                null,
+                                var_id
+                              );
+
+                              RESULT = new SymbolInstructionOut();
                             :}
 
 
