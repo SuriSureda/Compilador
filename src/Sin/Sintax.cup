@@ -191,7 +191,7 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
                                 throw new Error("Value and type must have same subjacent type")
                               }
                               
-                              if(value.getType() != TYPE.dnull && value.getNameType() != type_id){
+                              if(value.getType() != TYPE.dnull && value.getTypeName() != type_id){
                                 throw new Error("Value must have the same type")
                               }
 
@@ -249,7 +249,7 @@ OPERATOR_ASSIG              ::= id:var_id op_assig VALUE:value nextinstr
                                 throw new Error("Value and type must have same subjacent type")
                               }
                               
-                              if(value.getType() != TYPE.dnull && value.getNameType() != type_id){
+                              if(value.getType() != TYPE.dnull && value.getTypeName() != type_id){
                                 throw new Error("Value must have the same type")
                               }
 
@@ -805,7 +805,7 @@ VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rp
                                 if(type1 != TYPE.dvar && type1 != TYPE.dconst && type1 != TYPE.darg && type1 != TYPE.dfun) {
                                   throw Error("Value 1 of comparison wrong type");
                                 }
-                                Type dtype_type = symbolsTable.get(val1.getNameType());
+                                Type dtype_type = symbolsTable.get(val1.getTypeName());
                                 subType1 = dtype_type.getSubType();
                               }
                               // SAME FOR VALUE2
@@ -818,7 +818,7 @@ VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rp
                                 if(type2 != TYPE.dvar && type2 != TYPE.dconst && type2 != TYPE.darg && type2 != TYPE.dfun) {
                                   throw Error("Value 2 of comparison wrong type");
                                 }
-                                Type dtype_type = symbolsTable.get(val2.getNameType());
+                                Type dtype_type = symbolsTable.get(val2.getTypeName());
                                 subType2 = dtype_type.getSubType();
                               }
 

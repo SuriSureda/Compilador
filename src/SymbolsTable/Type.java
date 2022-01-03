@@ -59,23 +59,23 @@ public class Type {
     }
 
     // dvar, dfun, darg
-    private String nameType;
+    private String typeName;
 
-    public Type(TYPE type, String nameType){
+    public Type(TYPE type, String typeName){
         this.type = type;
-        this.nameType = nameType;
+        this.typeName = typeName;
     }
 
     public String getTypeName(){
-        return this.nameType;
+        return this.typeName;
     }
 
     // dconst
     private Object value;
 
-    public Type(TYPE type, String nameType, Object value) {
+    public Type(TYPE type, String typeName, Object value) {
         this.type = type;
-        this.nameType = nameType;
+        this.typeName = typeName;
         this.value = value;
     }
 

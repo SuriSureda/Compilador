@@ -8,7 +8,7 @@ public class SymbolValue extends SymbolBase {
 	private TYPE type;
 	private SUBJACENTTYPE subType;
 
-	private String nameType;
+	private String typeName;
 	public boolean isConstant;
 	private Object value;
 
@@ -43,19 +43,19 @@ public class SymbolValue extends SymbolBase {
 		this.value = value;
 	}
 
-	public SymbolValue(String var_id, TYPE type, String nameType) {
+	public SymbolValue(String var_id, TYPE type, String typeName) {
 		super("value", 0);
 		this.var_id = var_id;
 		this.type = type;
-		this.nameType = nameType;
+		this.typeName = typeName;
 		this.isConstant = false;
 	}
 
-	public SymbolValue(String var_id, TYPE type, String nameType, Object value) {
+	public SymbolValue(String var_id, TYPE type, String typeName, Object value) {
 		super("value", 0);
 		this.var_id = var_id;
 		this.type = type;
-		this.nameType = nameType;
+		this.typeName = typeName;
 		this.isConstant = true;
 		this.value = value;
 	}
@@ -72,8 +72,8 @@ public class SymbolValue extends SymbolBase {
 		return this.subType;
 	}
 
-	public String getNameType() {
-		return this.nameType;
+	public String getTypeName() {
+		return this.typeName;
 	}
 
 
