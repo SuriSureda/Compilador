@@ -87,6 +87,64 @@ public class SymbolsTable {
         return descriptionTable.get(id).getType();
     }
 
+    public int getNumParams(String idFun){
+        Description funDes = descriptionTable.get(idFun);
+        int count = 0;
+        // CHECK TYPE
+        try {
+            if(funDes == null){
+                throw new Exception(idFun + "function not found");
+                
+            }
+            if(funDes.getType().getType() != Type.TYPE.dfun){
+                throw new Exception(idFun + "is not a function");
+            }
+
+            int idxe = funDes.getFirst();
+
+            while(idxe != -1){
+                count++;
+                idxe = ((ParamExpansion)expansionTable.get(idxe)).getNext();
+            }
+
+            return count;
+        }catch(Exception e){
+            // 
+        }
+        return -1;
+    }
+
+    public Type getParam(String idFun, int index){
+        Description funDes = descriptionTable.get(idFun);
+        // CHECK TYPE
+        try {
+            if(funDes == null){
+                throw new Exception(idFun + "function not found");
+                
+            }
+            if(funDes.getType().getType() != Type.TYPE.dfun){
+                throw new Exception(idFun + "is not a function");
+            }
+
+            int idxe = funDes.getFirst();
+            int pos = index;
+
+            while(idxe != -1 && pos > 0){
+                idxe = ((ParamExpansion)expansionTable.get(idxe)).getNext();
+                pos--;
+            }
+
+            if(idxe == -1){
+                throw new Exception(idFun + "has" + " param at index" + index + " does not exist");
+            }
+
+            return expansionTable.get(idxe).getType();
+        }catch(Exception e){
+            // 
+        }
+        return null;
+    }
+
     public ArrayList<Expansion> getParams(String idFun) {
         Description funDes = descriptionTable.get(idFun);
         // CHECK TYPE
@@ -105,10 +163,6 @@ public class SymbolsTable {
             while(idxe != -1){
                 params.add(expansionTable.get(idxe));
                 idxe = ((ParamExpansion)expansionTable.get(idxe)).getNext();
-            }
-            
-            if(idxe == - 1){
-                // llançar excepcio
             }
 
             return params;
