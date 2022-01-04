@@ -32,7 +32,7 @@ public class AssemblerGenerator {
     // Symbol Table
     private SymbolsTable symbolsTable;
     // TS + TV
-    private Table table;
+    private Backend backend;
     // List of instructions
     private ArrayList<String> assemblyInstructions;
 
@@ -43,10 +43,10 @@ public class AssemblerGenerator {
 
     private ArrayList<String> variablesFromKeyboard;
 
-    public AssemblerGenerator(SymbolsTable symbolTable, Table table) {
+    public AssemblerGenerator(SymbolsTable symbolTable, Backend backend) {
         //this.writer = writer;
         this.symbolsTable = symbolTable;
-        this.table = table;
+        this.backend = backend;
         previousInstr = new Instruction(null, null, null, null);
         variablesFromKeyboard = new ArrayList<>();
 
@@ -351,11 +351,11 @@ public class AssemblerGenerator {
         }
     }
 
-    // Auxiliar method to check temporal String in the variable table (copyInstruction)
+    // Auxiliar method to check temporal String in the variable backend (copyInstruction)
     // REVISAR STRING PORQUE NO SÉ MUY BIEN DE DÓNDE SALE
     private boolean isCadenaTemporalVariable(String name) {
-        for (int i = 0; i < table.getVarTable().size(); i++) {
-            if (table.getVarTable().get(i).equals(name) && table.getVarTable().get(i).equals("String")) {
+        for (int i = 0; i < backend.getVarTable().size(); i++) {
+            if (backend.getVarTable().get(i).equals(name) && backend.getVarTable().get(i).equals("String")) {
                 return true;
             }
         }
@@ -401,8 +401,8 @@ public class AssemblerGenerator {
 // Auxiliar method for checking if destination is the last instruction of the
 // program
     private boolean lastProcedure(String dest) {
-        int x = table.getVarTable().size() - 1;
-        return table.getProcTable().get(x).toString().equals(dest);
+        int x = backend.getVarTable().size() - 1;
+        return backend.getProcTable().get(x).toString().equals(dest);
     }
 
     private String checkType(Instruction operand, int type) {

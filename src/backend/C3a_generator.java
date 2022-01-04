@@ -7,13 +7,9 @@ package backend;
 
 import backend.Instruction.Code;
 import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -38,7 +34,7 @@ public class C3a_generator {
     private ArrayList<Instruction> instructions;
 
 //    private boolean operandsBool = true;
-    private Backend table;
+    private Backend backend;
 
 //    private String currentSubprogram;
 //    private String currentType = "";
@@ -48,10 +44,10 @@ public class C3a_generator {
     // Writer to save information
     private BufferedWriter writer;
 
-    public C3a_generator(Backend input) {
+    public C3a_generator(Backend backend) {
         variableNumber = 0;
         this.instructions = new ArrayList<Instruction>();
-        this.table = input;
+        this.backend = backend;
     }
 
     // Add a new instruction
@@ -97,12 +93,12 @@ public class C3a_generator {
         this.instructions = instructions;
     }
 
-    public Backend getTable() {
-        return table;
+    public Backend getbackend() {
+        return backend;
     }
 
-    public void setTable(Backend table) {
-        this.table = table;
+    public void setbackend(Backend backend) {
+        this.backend = backend;
     }
 
     public BufferedWriter getWriter() {
