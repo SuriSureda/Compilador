@@ -7,12 +7,14 @@ package compilador;
 import java_cup.runtime.Symbol;
 import Symbols.*;
 import SymbolsTable.*;
+import Lex.*;
 import backend.Instruction; //For op Code
 
 class Parser;
 
 parser code
 {:
+  private LexerCup scanner;
   private SymbolsTable symbolsTable;
   private Backend backend;
   private LexerCup scanner;
@@ -21,7 +23,7 @@ parser code
   private Stack<Integer> labelTrueStack;
   private Stack<Integer> labelFalseStack;
 
-  public Parser(LexerCup scanner){
+  public Parser(LexerCup scanner,SymbolFactory sf){
     super(scanner)
     this.symbolsTable = new SymbolsTable();
     this.backend = new Backend();
@@ -40,10 +42,11 @@ parser code
 :};
 
 /******Declaració de simbols terminals*********/
-terminal        character, id, number, string, bool, Void, op_relational, op_logical, op_arithmetical, op_assig, inst_if, inst_elif, inst_else,
+terminal         id, number, string, bool,  op_relational, op_logical, op_arithmetical, op_assig, inst_if, inst_elif, inst_else,
                 inst_switch, inst_case, inst_break, inst_default, inst_while, inst_for, inst_function, inst_return, dconst, inst_call, 
-                instr_in, instr_out,  lparen, rparen, lbracket, rbracket, nextinstr, separator, two_points, inst_main,id_main,
-                spc_asgmul, spc_asgdec, spc_dec,spc_asgdiv,spc_asginc,spc_inc ;
+                instr_in, instr_out,  lparen, rparen, lbracket, rbracket, nextinstr, separator, two_points, inst_main;
+                
+//character,spc_asgmul,Void, spc_asgdec, spc_dec,spc_asgdiv,spc_asginc,spc_inc,id_main ;
 
 
 /******Declaració de simbols no terminals*********/
@@ -69,8 +72,8 @@ non terminal  SymbolBoolValue             BOOLEAN_VALUE;
 non terminal  SymbolValueComparison       VALUE_COMPARISON;
 non terminal  SymbolMEnd                  M_END;
 non terminal  SymbolCondition             COND;
-non terminal  SymbolConditionFalse        COND_FALSE;
-non terminal  SymbolConditionTrue         COND_TRUE; 
+non terminal  SymbolConditionFalse        COND_F;
+non terminal  SymbolConditionTrue         COND_T; 
 non terminal  SymbolInstructionIf         INSTRUCTION_IF;
 non terminal  SymbolElif                  ELIF;
 non terminal  SymbolElse                  ELSE;
@@ -88,7 +91,7 @@ non terminal  SymbolFunctionBeg           FUNCTION_BEG;
 non terminal  SymbolParameters            PARAMETERS;
 non terminal  SymbolHasParameters         HAS_PARAMETERS;
 non terminal  SymbolHasMoreParameters     HAS_MORE_PARAMETERS;
-non terminal  SymbolFunctionBody          FNCTION_BODY;
+non terminal  SymbolFunctionBody          FUNCTION_BODY;
 non terminal  SymbolReturnType            RETURN_TYPE;
 
 start with STARTS;
@@ -100,7 +103,7 @@ INIT                        ::= {:
                               RESULT = new SymbolInit();
                             :};
 
-CALL_MAIN                   ::= inst_main lparen id:id_main rparen nextinstr {:
+CALL_MAIN                   ::= inst_main lbracket INSTRUCTIONS rbracket {:
                               Type type = symbolsTable.get(id_main);
                               
                               RESULT = new SymbolCallMain();
@@ -109,7 +112,7 @@ CALL_MAIN                   ::= inst_main lparen id:id_main rparen nextinstr {:
 INSTRUCTIONS                ::=   INSTRUCTIONS INSTRUCTION 
                             {:
                               RESULT = new SymbolInstructions();
-                            :};
+                            :}
                             | INSTRUCTION 
                             {:
                               RESULT = new SymbolInstructions();
@@ -151,7 +154,7 @@ INSTRUCTION                 ::=  DECLARATIONS
                             {:
                               RESULT = new SymbolInstruction();
                             :}
-                            | DEFINE_FUNCTION;
+                            | DEFINE_FUNCTION
                             {:
                               RESULT = new SymbolInstruction();
                             :};
@@ -171,7 +174,7 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
                                 declarations.getVarId(),
                                 null,
                                 backId
-                              )
+                              );
 
                               RESULT = declarations;
                             :}
@@ -182,22 +185,22 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
                               Type type = symbolsTable.get(type_id);
 
                               if(type.getType() != TYPE.dtype){
-                                throw new Error("Type not valid")
+                                throw new Error("Type not valid");
                               }
 
                               if(type.getSubType() != SUBJACENTTYPE.st_boolean
                                 && type.getSubType() != SUBJACENTTYPE.st_boolean
                                 && type.getSubType() != SUBJACENTTYPE.st_boolean ){
-                                  throw new Error("Invalid subjacent type")
+                                  throw new Error("Invalid subjacent type");
                               }
 
                               //IF LITERALL (type = null) CHECK SUBJACENT TYPE
                               if(value.getType() == TYPE.dnull && type.getSubType() == value.getSubType()){
-                                throw new Error("Value and type must have same subjacent type")
+                                throw new Error("Value and type must have same subjacent type");
                               }
                               
                               if(value.getType() != TYPE.dnull && value.getTypeName() != type_id){
-                                throw new Error("Value must have the same type")
+                                throw new Error("Value must have the same type");
                               }
 
                               Type var_type;
@@ -246,16 +249,16 @@ OPERATOR_ASSIG              ::= id:var_id op_assig VALUE:value nextinstr
                             {:
                               Type varType = symbolsTable.get(id_var);
                               if(varType.getType() == TYPE.dconst){
-                                throw new Error("Cant assign value to constant")
+                                throw new Error("Cant assign value to constant");
                               }
 
                               //IF LITERALL (type = null) CHECK SUBJACENT TYPE
                               if(value.getType() == TYPE.dnull && typeDes.getSubType() == value.getSubType()){
-                                throw new Error("Value and type must have same subjacent type")
+                                throw new Error("Value and type must have same subjacent type");
                               }
                               
                               if(value.getType() != TYPE.dnull && value.getTypeName() != type_id){
-                                throw new Error("Value must have the same type")
+                                throw new Error("Value must have the same type");
                               }
 
                               c3a_g.generateC3aInstr(
@@ -356,8 +359,9 @@ ARITHMETICAL_OP             ::= ARITHMETICAL_OP:arith_op op_arithmetical:op ARIT
 
                               RESULT = sym;
 
-                            :};
+                            :}
                             | ARITHMETICAL_VALUE:arith_val1 op_arithmetical:op ARITHMETICAL_VALUE:arith_val2
+                              {:
                               SymbolArithmeticalOperator sym;
                               boolean allConst = arith_val1.getIsConst() && arith_val2.getIsConst();
 
@@ -428,7 +432,7 @@ ARITHMETICAL_OP             ::= ARITHMETICAL_OP:arith_op op_arithmetical:op ARIT
                               }
                               
                               RESULT = sym;
-                            {:
+                            
 
                             :};
 
@@ -477,13 +481,13 @@ ARITHMETICAL_VALUE          ::= lparen ARITHMETICAL_OP:arith_op rparen
                               TYPE main_var_type = var_type.getType();
 
                               if(main_var_type != TYPE.darg && main_var_type != TYPE.dconst && main_var_type != TYPE.dvar){
-                                throw new Error("Invalid arithmetic value type")
+                                throw new Error("Invalid arithmetic value type");
                               }
 
                               Type var_dtype = symbolsTable.get(var_type.getTypeName());
 
                               if(var_dtype.getSubType() != SUBJACENTTYPE.st_integer){
-                                throw new Error("Invalid subjacent type")
+                                throw new Error("Invalid subjacent type");
                               }
 
                               SymbolArithValue sym;
@@ -505,7 +509,7 @@ POS_NEG                     ::= op_arithmetical:op
                             {:
 
                               if(!op.equals("+") && !op.equals("-")){
-                                throw new Error("Sign operator not valid")
+                                throw new Error("Sign operator not valid");
                               }
 
                               boolean isNegative = true;
@@ -527,7 +531,7 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
                               SymbolValue sym;
                               String var_id = new String(arith_op.getVarId());
                               if(arith_op.getIsConst()){
-                                sym = new SymbolValue(var_id, SUBJACENTTYPE.st_integer, arith_op.getValue())
+                                sym = new SymbolValue(var_id, SUBJACENTTYPE.st_integer, arith_op.getValue());
                               }else{
                                 sym = new SymbolValue(var_id, SUBJACENTTYPE.st_integer);
                               }
@@ -623,7 +627,7 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
                               SymbolValue sym;
                               String var_id = new String(bool_op.getVarId());
                               if(bool_op.getIsConst()){
-                                sym = new SymbolValue(var_id, SUBJACENTTYPE.st_boolean, bool_op.getValue())
+                                sym = new SymbolValue(var_id, SUBJACENTTYPE.st_boolean, bool_op.getValue());
                               }else{
                                 sym = new SymbolValue(var_id, SUBJACENTTYPE.st_boolean);
                               }
@@ -646,7 +650,9 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
 
                               RESULT = new SymbolValue(var_id, TYPE.dfun, fn_type.getTypeName());
                             :}
-                            | instr_in lparen id rparen;
+                            | instr_in lparen id rparen
+                             {:
+                              RESULT = new Symbol:}; // TODO
 
 INITIALIZE_BOOLEAN_OP       ::= lparen BOOLEAN_OP:bool_op rparen 
                             {:
@@ -701,7 +707,7 @@ BOOLEAN_OP                  ::= BOOLEAN_OP:bool_op op_logical:op BOOLEAN_VALUE:b
                                 val1_id,
                                 val2_id,
                                 var_id
-                              )                         
+                              );                         
                               
                               if(allConst){
                                 sym = new SymbolBoolOp(var_id, value);
@@ -796,7 +802,7 @@ BOOLEAN_VALUE               ::= bool:bool_val
                               RESULT = sym;
                             :};
 
-VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rparen ;
+VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rparen 
                             {:
 
                               SymbolValueComparison sym;
@@ -912,7 +918,7 @@ VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rp
                               }
 
                               RESULT = sym;
-                            :}
+                            :};
 
 COND                         ::=  INITIALIZE_BOOLEAN_OP:bool_op
                               {:
@@ -939,7 +945,7 @@ COND                         ::=  INITIALIZE_BOOLEAN_OP:bool_op
                                 );
 
                                 RESULT = new SymbolCondition();
-                              :}
+                              :};
 
 COND_T                        ::= 
                               {:
@@ -953,7 +959,7 @@ COND_T                        ::=
                                 );
 
                                 RESULT = new SymbolConditionTrue();   
-                              :}
+                              :};
                               
 COND_F                        ::= 
                               {:
@@ -967,7 +973,7 @@ COND_F                        ::=
                                 );
 
                                 RESULT = new SymbolConditionFalse();   
-                              :}
+                              :};
 
 INSTRUCTION_IF               ::= inst_if COND COND_T lbracket INSTRUCTIONS rbracket ELIF ELSE
                             {:
@@ -1027,10 +1033,10 @@ ELSE                        ::= M_END:mend inst_else COND_F lbracket INSTRUCTION
 M_WHILE                     ::= {:
                               int label = backend.addLabel();
                               RESULT = new SymbolMWhile(label);
-                            :}
+                            :};
                   
  
-INSTRUCTION_WHILE            ::= inst_while M_WHILE:mwhile COND COND_T lbracket  INSTRUCTIONS rbracket;         
+INSTRUCTION_WHILE            ::= inst_while M_WHILE:mwhile COND COND_T lbracket  INSTRUCTIONS rbracket         
                             {:
                               int loop_label = mwhile.getLabel();
                               c3a_g.generateC3aInstr(
@@ -1051,32 +1057,34 @@ INSTRUCTION_WHILE            ::= inst_while M_WHILE:mwhile COND COND_T lbracket 
                               RESULT = new SymbolInstructionWhile();
                             :};
 
-INSTRUCTION_FOR              ::= inst_for lparen INTERNAL_FOR rparen lbracket INSTRUCTIONS rbracket;
+INSTRUCTION_FOR              ::= inst_for lparen INTERNAL_FOR rparen lbracket INSTRUCTIONS rbracket
                             {:
                             RESULT = new SymbolInstructionFor();
-                            :}
+                            :};
+
 INTERNAL_FOR                 ::= OPERATOR_ASSIG nextinstr INITIALIZE_BOOLEAN_OP nextinstr ARITHMETICAL_OP 
-                             | ;
+                             | 
                             {:
                             RESULT = new SymbolInternalFor();
-                            :}
+                            :};
 
 
-INSTRUCTION_SWITCH           ::= inst_switch lparen VALUE rparen lbracket CASES rbracket ;
+INSTRUCTION_SWITCH           ::= inst_switch lparen VALUE rparen lbracket CASES rbracket 
                              {:
                              RESULT = new SymbolInstructionSwitch();
-                             :}
+                             :};
+
 CASES                        ::= inst_case VALUE two_points INSTRUCTIONS inst_break nextinstr CASES
-                             | CASE_DEFAULT;
+                             | CASE_DEFAULT
                              {:
                              RESULT = new SymbolCases();
-                             :}
+                             :};
 
 CASE_DEFAULT                 ::= inst_default INSTRUCTIONS inst_break nextinstr
-                             | ;
+                             | 
                              {:
                              RESULT = new SymbolCaseDefault();
-                             :}
+                             :};
 
 
 CALL_FUNCTION               ::= inst_call id:fun_id lparen rparen
@@ -1098,7 +1106,7 @@ CALL_FUNCTION               ::= inst_call id:fun_id lparen rparen
 
                               RESULT = new SymbolCallFunction();
                             :}
-                            | inst_call CALL_BODY:body rparen;
+                            | inst_call CALL_BODY:body rparen
                             {:
                               int body_params = body.getNumParams();
                               int fun_id = body.getFunId();
@@ -1117,7 +1125,7 @@ CALL_FUNCTION               ::= inst_call id:fun_id lparen rparen
                               );
 
                               RESULT = new SymbolCallFunction();
-                            :}
+                            :};
 
 CALL_BODY                   ::= CALL_BODY:body separator VALUE:value
                             {:
@@ -1186,10 +1194,10 @@ CALL_BODY                   ::= CALL_BODY:body separator VALUE:value
                               );
 
                               RESULT = new SymbolCallBody(fun_id, fun_back_id, 0+1);
-                            :}
+                            :};
 
 
-INSTRUCTION_OUT             ::= instr_out lparen VALUE:value rparen nextinstr;
+INSTRUCTION_OUT             ::= instr_out lparen VALUE:value rparen nextinstr
                             {:
                               int var_id = value.getVarId();
 
@@ -1201,44 +1209,44 @@ INSTRUCTION_OUT             ::= instr_out lparen VALUE:value rparen nextinstr;
                               );
 
                               RESULT = new SymbolInstructionOut();
-                            :}
+                            :};
 
 
-DEFINE_FUNCTION             ::= FUNCTION_BEG id  rparen lbracket FUNCTION_BODY RETURN_TYPE  rbracket;
+DEFINE_FUNCTION             ::= FUNCTION_BEG id  rparen lbracket FUNCTION_BODY RETURN_TYPE  rbracket
                             {:
                             RESULT = new SymbolDefFunction();
-                            :}
+                            :};
 
-FUNCTION_BEG                ::= inst_function id id lparen PARAMETERS rparen;
+FUNCTION_BEG                ::= inst_function id id lparen PARAMETERS rparen
                             {:
                             RESULT = new SymbolFunctionBeg();
-                            :}
+                            :};
 
 PARAMETERS                  ::= HAS_PARAMETERS
-                            | ;
+                            | 
                             {:
                             RESULT = new SymbolParameters();
-                            :}
+                            :};
 
-HAS_PARAMETERS              ::=  id id HAS_MORE_PARAMETERS ;
+HAS_PARAMETERS              ::=  id id HAS_MORE_PARAMETERS 
                             {:
                             RESULT = new SymbolHasParameters();
-                            :}
+                            :};
 
 HAS_MORE_PARAMETERS         ::= separator id id HAS_MORE_PARAMETERS
-                            | ;
+                            | 
                             {:
                             RESULT = new SymbolHasParameters();
-                            :}
+                            :};
 
 FUNCTION_BODY               ::= INSTRUCTIONS
-                            | ;
+                            | 
                             {:
                             RESULT = new SymbolFunctionBody();
-                            :}
+                            :};
 
 RETURN_TYPE                 ::= inst_return VALUE nextinstr
-                            | ;
+                            | 
                             {:
                             RESULT = new SymbolReturnType();
-                            :}
+                            :};
