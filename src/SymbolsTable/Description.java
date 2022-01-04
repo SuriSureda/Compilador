@@ -5,9 +5,6 @@
  */
 package SymbolsTable;
 
-import SymbolsTable.Type.*;
-import java.util.ArrayList;
-
 /**
  *
  * @author soyjo

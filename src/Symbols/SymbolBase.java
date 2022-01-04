@@ -18,7 +18,6 @@ import java_cup.runtime.Symbol;
  * @author Jose
  */
 public class SymbolBase extends Symbol {
-    private static int idAutoIncrement = 0;
     
     public SymbolBase(String variable, Integer valor) {
         super(valor, variable);

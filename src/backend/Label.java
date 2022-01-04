@@ -5,8 +5,6 @@
  */
 package backend;
 
-import SymbolsTable.Type;
-
 /**
  * @author Antoni Payeras Munar
  */
