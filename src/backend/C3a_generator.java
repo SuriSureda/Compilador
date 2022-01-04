@@ -47,14 +47,9 @@ public class C3a_generator {
 
     // Writer to save information
     private BufferedWriter writer;
-    // 2 stack method
-    private Stack<String> trueStack;
-    private Stack<String> falseStack;
 
     public C3a_generator(Backend input) {
         variableNumber = 0;
-        trueStack = new Stack<>();
-        falseStack = new Stack<>();
         this.instructions = new ArrayList<Instruction>();
         this.table = input;
     }
@@ -116,22 +111,6 @@ public class C3a_generator {
 
     public void setWriter(BufferedWriter writer) {
         this.writer = writer;
-    }
-
-    public Stack<String> getTrueStack() {
-        return trueStack;
-    }
-
-    public void setTrueStack(Stack<String> trueStack) {
-        this.trueStack = trueStack;
-    }
-
-    public Stack<String> getFalseStack() {
-        return falseStack;
-    }
-
-    public void setFalseStack(Stack<String> falseStack) {
-        this.falseStack = falseStack;
     }
     
     
