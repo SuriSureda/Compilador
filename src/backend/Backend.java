@@ -47,22 +47,22 @@ public class Backend {
 //    private int offset;     // offset
 //    private int size;       // space occupation
 //    private Type type;      // type
-    public int addVar(String name, int code, int idParent, int offset, int size, SUBJACENTTYPE type) {
+    public String addVar(String name, int code, int idParent, int offset, int size, SUBJACENTTYPE type) {
         // We add '@' for easier data manipulation
         name = "@" + name;
         // We add the variable into the table
         varTable.add(new Variable(name, code, idParent, offset, size, type));
 
-        return varTable.size() - 1;
+        return name;
     }
 
-    public int addTempVar(int code, int idParent, int offset, int size, SUBJACENTTYPE type) {
+    public String addTempVar(int code, int idParent, int offset, int size, SUBJACENTTYPE type) {
         // We add '@' for easier data manipulation
         String name = "@TEMPORAL_VARIABLE";
         // We add the variable into the table
         varTable.add(new Variable(name, code, idParent, offset, size, type));
 
-        return varTable.size() - 1;
+        return "@TEMPORAL_VARIABLE";
     }
 
     // Adding a new PROCEDURE into the table
@@ -72,19 +72,19 @@ public class Backend {
 //    private int size;       // memory used
 //    private int offset;     // offset
 //    private Type type;      // type
-    public int addProc(String name, int nv, int depth, int size, int offset, Type type) {
+    public String addProc(String name, int nv, int depth, int size, int offset, Type type) {
         // We add the new procedure  
-        procTable.add(new Procedure("PROCEDURE:" + name, nv, depth, size, offset, type));
+        procTable.add(new Procedure("PROC_" + name, nv, depth, size, offset, type));
         
-        return procTable.size() - 1;
+        return name;
     }
     
-    public int addLabel(){
-        String label = "LABEL:" + labelTable.size();
+    public String addLabel(){
+        String label = "LABEL_" + labelTable.size();
         
         labelTable.add(new Label(label));
         
-        return labelTable.size() - 1;
+        return "" + (labelTable.size() - 1);
     }
 
     public void storeTables(String name) {

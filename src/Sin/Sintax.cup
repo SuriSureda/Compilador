@@ -160,7 +160,7 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
                             {:
                               Type type = declarations.getType();
 
-                              int backId = backend.addVar(var_id,  0, backend.getLastProcedureId(), 0,type.getSize(), type.getSubType());
+                              String backId = backend.addVar(var_id,  0, backend.getLastProcedureId(), 0,type.getSize(), type.getSubType());
 
                               type.setBackendId(backId);
 
@@ -214,7 +214,7 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
                                 size = value.getStringSize();
                               }
 
-                              int var_id = backend.addVar(id_var, 0, backend.getActualProcedure(), 0, type.getSize(), type.getSubType());
+                              String var_id = backend.addVar(id_var, 0, backend.getActualProcedure(), 0, type.getSize(), type.getSubType());
                               var_type.setBackendId() = var_id;
 
                               String val_id = value.getVarId();
@@ -338,7 +338,7 @@ ARITHMETICAL_OP             ::= ARITHMETICAL_OP:arith_op op_arithmetical:op ARIT
 
                               Type type_int = symbolsTable.get("int);
                               
-                              int var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_int.getSize(), type_int.getSubType());
+                              String var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_int.getSize(), type_int.getSubType());
 
                               c3a_g.generateC3aInstr(
                                 Code.add,
@@ -411,7 +411,7 @@ ARITHMETICAL_OP             ::= ARITHMETICAL_OP:arith_op op_arithmetical:op ARIT
 
                               Type type_int = symbolsTable.get("int");
                               
-                              int var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_int.getSize(), type_int.getSubType());
+                              String var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_int.getSize(), type_int.getSubType());
 
                               c3a_g.generateC3aInstr(
                                 Code.add,
@@ -459,7 +459,7 @@ ARITHMETICAL_VALUE          ::= lparen ARITHMETICAL_OP:arith_op rparen
 
                               Type type_int = symbolsTable.get("int");
                               
-                              int var_id = backend.addTempVar(0, backend.getActualProcedure(),  0, type_int.getSize(),  type_int.getSubType());
+                              String var_id = backend.addTempVar(0, backend.getActualProcedure(),  0, type_int.getSize(),  type_int.getSubType());
 
                               c3a_g.generateC3aInstr(
                                 Code.copy,
@@ -547,7 +547,7 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
 
                               Type type_int = symbolsTable.get("int");
                               
-                              int var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_int.getSize(), type_int.getSubType());
+                              String var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_int.getSize(), type_int.getSubType());
 
                               c3a_g.generateC3aInstr(
                                 Code.copy,
@@ -571,7 +571,7 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
                                 throw new Error("String must be shorter than 1000 characters.");
                               }
 
-                              int var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, stringSize, type_string.getSubType());
+                              String var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, stringSize, type_string.getSubType());
 
                               c3a_g.generateC3aInstr(
                                 Code.copy,
@@ -591,7 +591,7 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
                               Type type_bool = symbolsTable.get("boolean");
                               
 
-                              int var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_bool.size(), type_bool.getSubType());
+                              String var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_bool.size(), type_bool.getSubType());
 
                               c3a_g.generateC3aInstr(
                                 Code.copy,
@@ -635,7 +635,7 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
                               Type fn_type = symbolsTable.get(call_fn.getFunctionId());
                               Type dfn_type = symbolsTable.get(fn_type.getTypeName());
                               
-                              int var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, fn_type.size(), dfn_type.getSubType());
+                              String var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, fn_type.size(), dfn_type.getSubType());
 
                               c3a_g.generateC3aInstr(
                                 Code.copy,
@@ -692,7 +692,7 @@ BOOLEAN_OP                  ::= BOOLEAN_OP:bool_op op_logical:op BOOLEAN_VALUE:b
                               }
 
                               Type type_bool = symbolsTable.get("boolean"); 
-                              int var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_bool.getSize(), type_bool.getSubType());
+                              String var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_bool.getSize(), type_bool.getSubType());
                               
                               int val1_id = bool_val.getVarId();
                               int val2_id = bool_op.getVarId();
@@ -733,7 +733,7 @@ BOOLEAN_VALUE               ::= bool:bool_val
                               Boolean value = new Boolean(bool_val);
                               
                               Type type_bool = symbolsTable.get("boolean");
-                              int var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_bool.getSize(), type_bool.getSubType());
+                              String var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_bool.getSize(), type_bool.getSubType());
 
                               c3a_g.generateC3aInstr(
                                 Code.copy,
@@ -903,7 +903,7 @@ VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rp
                               }
 
                               Type type_bool = symbolsTable.get("boolean");
-                              int var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_bool.getSize(), type_bool.getSubType());
+                              String var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_bool.getSize(), type_bool.getSubType());
                               
                               if(allConst){
                                 sym = new SymbolValueComparison(var_id, value);
