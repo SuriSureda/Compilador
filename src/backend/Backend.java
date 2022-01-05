@@ -87,7 +87,7 @@ public class Backend {
         return "" + (labelTable.size() - 1);
     }
 
-    public void storeTables(String name) {
+    public void storeTables() {
         String result = "---------------------------------------------\n"
                 + "---------------- TABLES INFO ----------------\n"
                 + "---------------------------------------------\n";
