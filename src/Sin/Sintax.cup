@@ -1,20 +1,24 @@
-package compilador;
+package Sin;
 
 // TODO : rbracket -> BLOCK_IN, lbracket -> BLOCK_OUT
 // TODO : pila per a expression condicionals parcials
 // TODO : revisar nextinstr
 
 import java_cup.runtime.Symbol;
+import java_cup.runtime.SymbolFactory;
 import Symbols.*;
 import SymbolsTable.*;
+import SymbolsTable.Type.TYPE;
+import SymbolsTable.Type.SUBJACENTTYPE;
 import Lex.*;
-import backend.Instruction; //For op Code
+import backend.*;
+import java.util.Stack;
+import backend.Instruction.Code;
 
 class Parser;
 
 parser code
 {:
-  private LexerCup scanner;
   private SymbolsTable symbolsTable;
   private Backend backend;
   private LexerCup scanner;
@@ -23,8 +27,8 @@ parser code
   private Stack<Integer> labelTrueStack;
   private Stack<Integer> labelFalseStack;
 
-  public Parser(LexerCup scanner,SymbolFactory sf){
-    super(scanner)
+  public Parser(LexerCup scanner, SymbolFactory sf){
+    super(scanner, sf);
     this.symbolsTable = new SymbolsTable();
     this.backend = new Backend();
     this.c3a_g = new C3a_generator(backend);
@@ -39,14 +43,20 @@ parser code
       );
   }
 
+  private void initTypes() {
+
+  }
+
 :};
 
 /******Declaració de simbols terminals*********/
-terminal         id, number, string, bool,  op_relational, op_logical, op_arithmetical, op_assig, inst_if, inst_elif, inst_else,
+
+terminal String id, number, string, bool,  op_relational, op_logical, op_arithmetical,
+                op_assig, inst_if, inst_elif, inst_else,
                 inst_switch, inst_case, inst_break, inst_default, inst_while, inst_for, inst_function, inst_return, dconst, inst_call, 
-                instr_in, instr_out,  lparen, rparen, lbracket, rbracket, nextinstr, separator, two_points, inst_main;
+                instr_in, instr_out, lparen, rparen, lbracket, rbracket, nextinstr, separator, two_points, inst_main;
                 
-//character,spc_asgmul,Void, spc_asgdec, spc_dec,spc_asgdiv,spc_asginc,spc_inc,id_main ;
+// character,spc_asgmul,Void, spc_asgdec, spc_dec,spc_asgdiv,spc_asginc,spc_inc,id_main ;
 
 
 /******Declaració de simbols no terminals*********/
@@ -63,7 +73,7 @@ non terminal  SymbolInstructionOut        INSTRUCTION_OUT;
 non terminal  SymbolConstant              CONSTANT;
 non terminal  SymbolValue                 VALUE;
 non terminal  SymbolInitArithOp           INITIALIZE_ARITHMETICAL_OP;
-non terminal  SymbolArithmeticalOperator  ARITHMETICAL_OP;
+non terminal  SymbolArithOp               ARITHMETICAL_OP;
 non terminal  SymbolArithValue            ARITHMETICAL_VALUE;
 non terminal  SymbolPosNeg                POS_NEG;
 non terminal  SymbolBoolOp                BOOLEAN_OP;
@@ -104,8 +114,6 @@ INIT                        ::= {:
                             :};
 
 CALL_MAIN                   ::= inst_main lbracket INSTRUCTIONS rbracket {:
-                              Type type = symbolsTable.get(id_main);
-                              
                               RESULT = new SymbolCallMain();
                             :};
 
@@ -178,9 +186,9 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
 
                               RESULT = declarations;
                             :}
-                            | id:id_var CONSTANT:const two_points id:type_id op_assig VALUE:value nextinstr  
+                            | id:id_var CONSTANT:constant two_points id:type_id op_assig VALUE:value nextinstr  
                             {:
-                              boolean isConst = const.getIsConst();
+                              boolean isConst = constant.getIsConst();
 
                               Type type = symbolsTable.get(type_id);
 
@@ -199,7 +207,7 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
                                 throw new Error("Value and type must have same subjacent type");
                               }
                               
-                              if(value.getType() != TYPE.dnull && value.getTypeName() != type_id){
+                              if(value.getType() != TYPE.dnull && value.getTypeName() != (String) type_id){
                                 throw new Error("Value must have the same type");
                               }
 
@@ -218,10 +226,10 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
                               }
 
                               String var_id = backend.addVar(id_var, 0, backend.getActualProcedure(), 0, type.getSize(), type.getSubType());
-                              var_type.setBackendId() = var_id;
+                              var_type.setBackendId(var_id);
 
                               String val_id = value.getVarId();
-                              symbolsTable.put(id_var, var_type);
+                              symbolsTable.add(id_var, var_type);
                               SymbolDeclarations symDcls = new SymbolDeclarations(val_id, var_type);
 
                               c3a_g.generateC3aInstr(
@@ -247,13 +255,15 @@ CONSTANT                    ::=  dconst
 
 OPERATOR_ASSIG              ::= id:var_id op_assig VALUE:value nextinstr 
                             {:
-                              Type varType = symbolsTable.get(id_var);
+                              Type varType = symbolsTable.get(var_id);
+                              String type_id = varType.getTypeName();
+
                               if(varType.getType() == TYPE.dconst){
                                 throw new Error("Cant assign value to constant");
                               }
 
                               //IF LITERALL (type = null) CHECK SUBJACENT TYPE
-                              if(value.getType() == TYPE.dnull && typeDes.getSubType() == value.getSubType()){
+                              if(value.getType() == TYPE.dnull && varType.getSubType() == value.getSubType()){
                                 throw new Error("Value and type must have same subjacent type");
                               }
                               
@@ -288,7 +298,7 @@ INITIALIZE_ARITHMETICAL_OP  ::= lparen ARITHMETICAL_OP:arith_op rparen
 ARITHMETICAL_OP             ::= ARITHMETICAL_OP:arith_op op_arithmetical:op ARITHMETICAL_VALUE:arith_val
                             {:
                               
-                              SymbolArithmeticalOperator sym;
+                              SymbolArithOp sym;
                               boolean allConst = arith_op.getIsConst() && arith_val.getIsConst();
 
                               Code op_code;
@@ -314,7 +324,7 @@ ARITHMETICAL_OP             ::= ARITHMETICAL_OP:arith_op op_arithmetical:op ARIT
 
                               Integer value;
                               if(allConst) {
-                                Integer val1 = (Integer) aright_op.getValue();
+                                Integer val1 = (Integer) arith_op.getValue();
                                 Integer val2 = (Integer) arith_val.getValue();
 
                                 switch(op){
@@ -339,22 +349,22 @@ ARITHMETICAL_OP             ::= ARITHMETICAL_OP:arith_op op_arithmetical:op ARIT
                                 }
                               }
 
-                              Type type_int = symbolsTable.get("int);
+                              Type type_int = symbolsTable.get("int");
                               
                               String var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_int.getSize(), type_int.getSubType());
 
                               c3a_g.generateC3aInstr(
                                 Code.add,
-                                val1.getVarId(),
-                                val2.getVarId(),
+                                arith_op.getVarId(),
+                                arith_val.getVarId(),
                                 var_id
                               );
 
                               if(allConst){
-                                sym = new SymbolArithmeticalOperator(var_id, value)
+                                sym = new SymbolArithOp(var_id, value);
                               }
                               else{
-                                sym = new SymbolArithmeticalOperator(var_id)
+                                sym = new SymbolArithOp(var_id);
                               }
 
                               RESULT = sym;
@@ -362,10 +372,11 @@ ARITHMETICAL_OP             ::= ARITHMETICAL_OP:arith_op op_arithmetical:op ARIT
                             :}
                             | ARITHMETICAL_VALUE:arith_val1 op_arithmetical:op ARITHMETICAL_VALUE:arith_val2
                               {:
-                              SymbolArithmeticalOperator sym;
+                              SymbolArithOp sym;
                               boolean allConst = arith_val1.getIsConst() && arith_val2.getIsConst();
 
                               Code op_code;
+                              
                               switch(op){
                                 case "+" : 
                                   op_code = Code.add;
@@ -419,23 +430,22 @@ ARITHMETICAL_OP             ::= ARITHMETICAL_OP:arith_op op_arithmetical:op ARIT
 
                               c3a_g.generateC3aInstr(
                                 Code.add,
-                                val1.getVarId(),
-                                val2.getVarId(),
+                                arith_val1.getVarId(),
+                                arith_val2.getVarId(),
                                 var_id
                               );
 
                               if(allConst){
-                                sym = new SymbolArithmeticalOperator(var_id, value);
+                                sym = new SymbolArithOp(var_id, value);
                               }
                               else{
-                                sym = new SymbolArithmeticalOperator(var_id);
+                                sym = new SymbolArithOp(var_id);
                               }
                               
                               RESULT = sym;
                             
 
                             :};
-
  
 ARITHMETICAL_VALUE          ::= lparen ARITHMETICAL_OP:arith_op rparen
                             {:
@@ -443,9 +453,9 @@ ARITHMETICAL_VALUE          ::= lparen ARITHMETICAL_OP:arith_op rparen
                               String var_id = new String(arith_op.getVarId());
 
                               if(arith_op.getIsConst()){
-                                sym = new SymbolArithmeticalValue(var_id, arith_op.getValue());
+                                sym = new SymbolArithValue(var_id, arith_op.getValue());
                               }else{
-                                sym = new SymbolArithmeticalValue(var_id);
+                                sym = new SymbolArithValue(var_id);
                               }
 
                               RESULT = sym;
@@ -472,7 +482,7 @@ ARITHMETICAL_VALUE          ::= lparen ARITHMETICAL_OP:arith_op rparen
                                 var_id
                               );
 
-                              RESULT = new SymbolArithmeticalValue(var_id, value);
+                              RESULT = new SymbolArithValue(var_id, value);
                             :}
                             | id:id_val
                             {:
@@ -494,10 +504,10 @@ ARITHMETICAL_VALUE          ::= lparen ARITHMETICAL_OP:arith_op rparen
                               String var_id = new String(var_type.getBackendId());
 
                               if(main_var_type == TYPE.dconst){
-                                Integer value = (Integer) var_type.getValue();¡
-                                sym = new SymbolArithmeticalValue(var_id, value);
+                                Integer value = (Integer) var_type.getValue();
+                                sym = new SymbolArithValue(var_id, value);
                               }else{
-                                sym = new SymbolArithmeticalValue(var_id);
+                                sym = new SymbolArithValue(var_id);
                               }
 
                               RESULT = sym;
@@ -768,7 +778,7 @@ BOOLEAN_VALUE               ::= bool:bool_val
                               SymbolBoolValue sym;
                               String backId = new String(var_type.getBackendId());
 
-                              if(id_var.getIsConst()){
+                              if(TYPE.dconst == main_var_type){
                                 sym = new SymbolBoolValue(backId, value);
                               }else{
                                 sym = new SymbolBoolValue(backId);
