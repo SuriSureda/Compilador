@@ -29,6 +29,7 @@ public class AssemblerGenerator {
     // Write the resulting code
     private BufferedWriter writer;
     private final String PATH = "src/Output/AssemblerCode_NOT_Optimized.txt";
+    private final String PATH_2 = "src/Output/AssemblerCode_Optimized.txt";
     // Symbol Table
     private SymbolsTable symbolsTable;
     // TS + TV

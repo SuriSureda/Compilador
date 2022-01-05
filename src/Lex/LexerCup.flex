@@ -5,7 +5,7 @@
 
 package Lex;                         // PAQUETE AL QUE PERTENECE
 import java_cup.runtime.Symbol;      // CLASE SYMBOL PARA LOS TOKENS DE CUP
-import compilador.sym;
+import Sin.ParserSym;
 import Lex.Tokens.*;
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
@@ -140,165 +140,165 @@ TWO_POINT       = (":")     //ok
 {INST_IF}            {
                         Tokens token = new Tokens(Tokens.Token.INST_IF,yyline,yycolumn);
                         tokensArray.add(token);
-                        return new Symbol(sym.inst_if);
+                        return new Symbol(ParserSym.inst_if);
                      }
 {INST_ELSE}          {
                         Tokens token = new Tokens(Tokens.Token.INST_ELSE,yyline,yycolumn);
                         tokensArray.add(token);
-                        return new Symbol(sym.inst_else);
+                        return new Symbol(ParserSym.inst_else);
                      }
 {INST_ELIF}          {
                         Tokens token = new Tokens(Tokens.Token.INST_ELSE,yyline,yycolumn);
                         tokensArray.add(token);
-                        return new Symbol(sym.inst_elif);
+                        return new Symbol(ParserSym.inst_elif);
                     }   
 
 {INST_WHILE}         {
                         Tokens token = new Tokens(Tokens.Token.INST_WHILE,yyline,yycolumn);
                         tokensArray.add(token);
-                        return new Symbol(sym.inst_while);
+                        return new Symbol(ParserSym.inst_while);
                      }
 {INST_FOR}           {
                         Tokens token = new Tokens(Tokens.Token.INST_FOR,yyline,yycolumn);
                         tokensArray.add(token);
-                        return new Symbol(sym.inst_for);
+                        return new Symbol(ParserSym.inst_for);
                     }
 
 {INST_SWITCH}        {
                       Tokens token = new Tokens(Tokens.Token.INST_SWITCH,yyline,yycolumn);
                       tokensArray.add(token);
-                      return new Symbol(sym.inst_switch);
+                      return new Symbol(ParserSym.inst_switch);
                       }
 {INST_CASE}          {
                       Tokens token = new Tokens(Tokens.Token.INST_CASE,yyline,yycolumn);
                       tokensArray.add(token);
-                      return new Symbol(sym.inst_case);
+                      return new Symbol(ParserSym.inst_case);
                       }
 {INST_BREAK}         {
                       Tokens token = new Tokens(Tokens.Token.INST_BREAK,yyline,yycolumn);
                       tokensArray.add(token);
-                      return new Symbol(sym.inst_break);
+                      return new Symbol(ParserSym.inst_break);
                       }
 {INST_DEFAULT}       {
                       Tokens token = new Tokens(Tokens.Token.INST_DEFAULT,yyline,yycolumn);
                       tokensArray.add(token);
-                      return new Symbol(sym.inst_default);
+                      return new Symbol(ParserSym.inst_default);
                       }
 
 {INST_FUNCTION}      {
                      Tokens token = new Tokens(Tokens.Token.INST_FUNCTION,yyline,yycolumn);
                      tokensArray.add(token);
-                     return new Symbol(sym.inst_function);
+                     return new Symbol(ParserSym.inst_function);
                      }
 {INST_RETURN}        {
                      Tokens token = new Tokens(Tokens.Token.INST_RETURN,yyline,yycolumn);
                      tokensArray.add(token);
-                     return new Symbol(sym.inst_return);
+                     return new Symbol(ParserSym.inst_return);
                      }
 {INST_CALL}          {
                      Tokens token = new Tokens(Tokens.Token.INST_CALL,yyline,yycolumn);
                      tokensArray.add(token);
-                     return new Symbol(sym.inst_call);
+                     return new Symbol(ParserSym.inst_call);
                      }
 {INST_MAIN}          {
                      Tokens token = new Tokens(Tokens.Token.INST_MAIN,yyline,yycolumn);
                      tokensArray.add(token);
-                     return new Symbol(sym.inst_main);
+                     return new Symbol(ParserSym.inst_main);
                      }     
 //==============================================================================
 {INSTR_IN}           {
                      Tokens token = new Tokens(Tokens.Token.INSTR_IN,yyline,yycolumn);
                      tokensArray.add(token);
-                     return new Symbol(sym.instr_in);
+                     return new Symbol(ParserSym.instr_in);
                      }
 {INSTR_OUT}          {
                      Tokens token = new Tokens(Tokens.Token.INSTR_OUT,yyline,yycolumn);
                      tokensArray.add(token);
-                     return new Symbol(sym.instr_out);
+                     return new Symbol(ParserSym.instr_out);
                      }
 //==============================================================================
 {LPAREN}             {
                      Tokens token = new Tokens(Tokens.Token.LPAREN,yyline,yycolumn);
                      tokensArray.add(token);
-                     return new Symbol(sym.lparen);
+                     return new Symbol(ParserSym.lparen);
                      }
 {RPAREN}             {
                      Tokens token = new Tokens(Tokens.Token.RPAREN,yyline,yycolumn);
                      tokensArray.add(token);
-                     return new Symbol(sym.rparen);
+                     return new Symbol(ParserSym.rparen);
                      }    
 {LBRACKET}           {
                      Tokens token = new Tokens(Tokens.Token.LBRACKET,yyline,yycolumn);
                      tokensArray.add(token);
-                     return new Symbol(sym.lbracket);
+                     return new Symbol(ParserSym.lbracket);
                      }
 {RBRACKET}           {
                      Tokens token = new Tokens(Tokens.Token.RBRACKET,yyline,yycolumn);
                      tokensArray.add(token);
-                     return new Symbol(sym.rbracket);
+                     return new Symbol(ParserSym.rbracket);
                      }
 {NEXTINTR}           {
                      Tokens token = new Tokens(Tokens.Token.NEXTINSTR,yyline,yycolumn);
                      tokensArray.add(token);
-                     return new Symbol(sym.nextinstr);
+                     return new Symbol(ParserSym.nextinstr);
                      }
 {SEPARATOR}          {
                      Tokens token = new Tokens(Tokens.Token.SEPARATOR,yyline,yycolumn);
                      tokensArray.add(token);
-                     return new Symbol(sym.separator);
+                     return new Symbol(ParserSym.separator);
                      }
 {TWO_POINT}          {
                      Tokens token = new Tokens(Tokens.Token.TWO_POINT,yyline,yycolumn);
                      tokensArray.add(token);
-                     return new Symbol(sym.two_points);
+                     return new Symbol(ParserSym.two_points);
                      }
 //==============================================================================
 {OP_ARITHMETICAL}    {
                      Tokens token = new Tokens(Tokens.Token.OP_ARITHMETICAL,yyline,yycolumn);
                      tokensArray.add(token);
-                     return new Symbol(sym.op_arithmetical);
+                     return new Symbol(ParserSym.op_arithmetical);
                      }
 {OP_RELATIONAL}      {
                      Tokens token = new Tokens(Tokens.Token.OP_RELATIONAL,yyline,yycolumn);
                      tokensArray.add(token);
-                     return new Symbol(sym.op_relational);
+                     return new Symbol(ParserSym.op_relational);
                      }
 {OP_LOGICAL}         {
                      Tokens token = new Tokens(Tokens.Token.OP_LOGICAL,yyline,yycolumn);
                      tokensArray.add(token);
-                     return new Symbol(sym.op_logical);
+                     return new Symbol(ParserSym.op_logical);
                      }
 {OP_ASSIG}           {
                      Tokens token = new Tokens(Tokens.Token.OP_ASSIG,yyline,yycolumn);
                      tokensArray.add(token);
-                     return new Symbol(sym.op_assig);
+                     return new Symbol(ParserSym.op_assig);
                      }
 //==============================================================================
 {BOOL}               {
                      Tokens token = new Tokens(Tokens.Token.BOOL,yyline,yycolumn);
-                     tokensArray.add(token);return new Symbol(sym.bool, yychar, yyline, yytext());
-                     return new Symbol(sym.bool);
+                     tokensArray.add(token);
+                     return new Symbol(ParserSym.bool);
                      }
 {DCONST}             {
                      Tokens token = new Tokens(Tokens.Token.DCONST,yyline,yycolumn);
                      tokensArray.add(token);
-                     return new Symbol(sym.dconst);
+                     return new Symbol(ParserSym.dconst);
                      }
 //==============================================================================
 {ID}                 {
                      Tokens token = new Tokens(Tokens.Token.ID,yyline,yycolumn);
                      tokensArray.add(token);
-                     return new Symbol(sym.id);
+                     return new Symbol(ParserSym.id);
                      }
 {NUMBER}             {
                      Tokens token = new Tokens(Tokens.Token.NUMBER,yyline,yycolumn);
                      tokensArray.add(token);
-                     return new Symbol(sym.number);
+                     return new Symbol(ParserSym.number);
                      }
 {STRING}             {
                      Tokens token = new Tokens(Tokens.Token.STRING,yyline,yycolumn);
                      tokensArray.add(token);
-                     return new Symbol(sym.string);
+                     return new Symbol(ParserSym.string);
                      }
 //==============================================================================
 //==============================================================================
@@ -306,34 +306,34 @@ TWO_POINT       = (":")     //ok
 {SPC_INC}            {
                      Tokens token = new Tokens(Tokens.Token.SPC_INC,yyline,yycolumn);
                      tokensArray.add(token);
-                     return new Symbol(sym.spc_inc);
+                     return new Symbol(ParserSym.spc_inc);
                      }
 {SPC_DEC}            {
                      Tokens token = new Tokens(Tokens.Token.SPC_DEC,yyline,yycolumn);
                      tokensArray.add(token);
-                     return new Symbol(sym.spc_dec);
+                     return new Symbol(ParserSym.spc_dec);
                      }
                      
                      
 {SPC_ASGINC}         {
                      Tokens token = new Tokens(Tokens.Token.SPC_ASGINC,yyline,yycolumn);
                      tokensArray.add(token);
-                     return new Symbol(sym.spc_asginc);
+                     return new Symbol(ParserSym.spc_asginc);
                      }
 {SPC_ASGDEC}         {
                      Tokens token = new Tokens(Tokens.Token.SPC_ASGDEC,yyline,yycolumn);
                      tokensArray.add(token);
-                     return new Symbol(sym.spc_asgdec);
+                     return new Symbol(ParserSym.spc_asgdec);
                      }
 {SPC_ASGDIV}         {
                      Tokens token = new Tokens(Tokens.Token.SPC_ASGDIV,yyline,yycolumn);
                      tokensArray.add(token);
-                     return new Symbol(sym.spc_asgdiv);
+                     return new Symbol(ParserSym.spc_asgdiv);
                      }
 {SPC_ASGMUL}         {
                      Tokens token = new Tokens(Tokens.Token.SPC_ASGMUL,yyline,yycolumn);
                      tokensArray.add(token);
-                     return new Symbol(sym.spc_asgmul);
+                     return new Symbol(ParserSym.spc_asgmul);
                      }
 //==============================================================================
 [^]                  {
@@ -344,7 +344,7 @@ TWO_POINT       = (":")     //ok
                      w.write("[Lexical error]:" + "[" + getLine() + ":" + getColumn() + "]" + " Unkown symbol: "+"'"+this.yytext()+"'"+".\n");
                      w.close();
 
-                     return new Symbol(sym.error);
+                     return new Symbol(ParserSym.error);
                      }
 //==============================================================================
 
