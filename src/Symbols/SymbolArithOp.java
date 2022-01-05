@@ -9,19 +9,19 @@ package Symbols;
  *
  * @author soyjo
  */
-public class SymbolArithmeticalOperator extends SymbolBase{
+public class SymbolArithOp extends SymbolBase{
 
     private String var_id;
     private Object value;
     private boolean isConst;
 
-    public SymbolArithmeticalOperator(String var_id) {
+    public SymbolArithOp(String var_id) {
         super("Symbol Arithmetical Operator", 0);
         this.var_id = var_id;
         this.isConst = false;
     }
 
-    public SymbolArithmeticalOperator(String var_id, Object value) {
+    public SymbolArithOp(String var_id, Object value) {
         super("Symbol Arithmetical Operator", 0);
         this.var_id = var_id;
         this.value = value;
