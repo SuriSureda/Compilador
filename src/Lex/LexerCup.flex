@@ -110,12 +110,14 @@ INSTR_OUT       = ("output") //ok
 
 // Operadores especiales
 
+/*
 SPC_INC         = ("++")     //ok   //SPC = special INC= increase
 SPC_DEC         = ("--")     //ok
 SPC_ASGINC      = ("+=")    //ok
 SPC_ASGDEC      = ("-=")    //ok
 SPC_ASGDIV      = ("/=")    //ok
 SPC_ASGMUL      = ("*=")    //ok
+*/
 
 // Caracteres especiales
 
@@ -303,10 +305,11 @@ TWO_POINT       = (":")     //ok
 //==============================================================================
 //==============================================================================
 
+/*
 {SPC_INC}            {
-                     Tokens token = new Tokens(Tokens.Token.SPC_INC,yyline,yycolumn);
-                     tokensArray.add(token);
-                     return new Symbol(ParserSym.spc_inc);
+                        Tokens token = new Tokens(Tokens.Token.SPC_INC,yyline,yycolumn);
+                        tokensArray.add(token);
+                        return new Symbol(ParserSym.spc_inc);
                      }
 {SPC_DEC}            {
                      Tokens token = new Tokens(Tokens.Token.SPC_DEC,yyline,yycolumn);
@@ -335,6 +338,7 @@ TWO_POINT       = (":")     //ok
                      tokensArray.add(token);
                      return new Symbol(ParserSym.spc_asgmul);
                      }
+*/
 //==============================================================================
 [^]                  {
                      Tokens token = new Tokens(Tokens.Token.ERROR,yyline,yycolumn);
