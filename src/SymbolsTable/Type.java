@@ -14,7 +14,7 @@ public class Type {
     private TYPE type;
     private SUBJACENTTYPE subType;
 
-    private int backendId = -1;
+    private String backendId = "";
     
     // dtype
     private int size;
@@ -30,11 +30,11 @@ public class Type {
         this.highLimit = highLimit; 
     }
 
-    public void setBackendId(int backId) {
+    public void setBackendId(String backId) {
         this.backendId = backId;
     }
 
-    public int getBackendId() {
+    public String getBackendId() {
         return this.backendId;
     }
 
