@@ -2,14 +2,14 @@ package Symbols;
 
 public class SymbolMEnd extends SymbolBase{
 
-	private int label;
+	private String label;
 
-	public SymbolMEnd(int label) {
+	public SymbolMEnd(String label) {
 		super("Symbol M_End", 0);
 		this.label = label;
 	}
 	
-	public int getLabel() {
+	public String getLabel() {
 		return this.label;
 	}
 }

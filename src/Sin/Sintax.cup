@@ -24,16 +24,17 @@ parser code
   private LexerCup scanner;
   private C3a_generator c3a_g;
 
-  private Stack<Integer> labelTrueStack;
-  private Stack<Integer> labelFalseStack;
+  private Stack<String> labelTrueStack;
+  private Stack<String> labelFalseStack;
 
   public Parser(LexerCup scanner, SymbolFactory sf){
     super(scanner, sf);
+    this.scanner = scanner;
     this.symbolsTable = new SymbolsTable();
     this.backend = new Backend();
     this.c3a_g = new C3a_generator(backend);
-    this.labelTrueStack = new Stack<Integer>();
-    this.labelFalseStack = new Stack<Integer>();
+    this.labelTrueStack = new Stack<String>();
+    this.labelFalseStack = new Stack<String>();
   }
 
   public void syntax_error(Symbol current_token) {
@@ -106,7 +107,10 @@ non terminal  SymbolReturnType            RETURN_TYPE;
 
 start with STARTS;
 
-STARTS                      ::=  INIT CALL_MAIN;
+STARTS                      ::=  INIT CALL_MAIN
+                            {:
+                              backend.storeTables();
+                            :};
 
 INIT                        ::= {:
                               initTypes();
@@ -322,7 +326,7 @@ ARITHMETICAL_OP             ::= ARITHMETICAL_OP:arith_op op_arithmetical:op ARIT
                                   throw new Error("Invalid arithmetical operator");
                               }
 
-                              Integer value;
+                              Integer value = null;
                               if(allConst) {
                                 Integer val1 = (Integer) arith_op.getValue();
                                 Integer val2 = (Integer) arith_val.getValue();
@@ -397,7 +401,7 @@ ARITHMETICAL_OP             ::= ARITHMETICAL_OP:arith_op op_arithmetical:op ARIT
                                   throw new Error("Invalid arithmetical operator");
                               }
 
-                              Integer value;
+                              Integer value = null;
                               if(allConst) {
                                 Integer val1 = (Integer) arith_val1.getValue();
                                 Integer val2 = (Integer) arith_val2.getValue();
@@ -465,10 +469,10 @@ ARITHMETICAL_VALUE          ::= lparen ARITHMETICAL_OP:arith_op rparen
                             {:
                               Integer value;
                               if(neg.isNegative()){
-                                value = new Integer("-" + n_val);
+                                value = Integer.valueOf("-" + n_val);
                               }
                               else{
-                                value = new Integer(n_val);
+                                value = Integer.valueOf(n_val);
                               }
 
                               Type type_int = symbolsTable.get("int");
@@ -477,7 +481,7 @@ ARITHMETICAL_VALUE          ::= lparen ARITHMETICAL_OP:arith_op rparen
 
                               c3a_g.generateC3aInstr(
                                 Code.copy,
-                                value,
+                                Integer.toString(value),
                                 null,
                                 var_id
                               );
@@ -553,10 +557,10 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
                               Integer value;
 
                               if(neg.isNegative()){
-                                value = new Integer("-" + n_val);
+                                value = Integer.valueOf("-" + n_val);
                               }
                               else{
-                                value = new Integer(n_val);
+                                value = Integer.valueOf(n_val);
                               }
 
                               Type type_int = symbolsTable.get("int");
@@ -565,23 +569,22 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
 
                               c3a_g.generateC3aInstr(
                                 Code.copy,
-                                value,
+                                Integer.toString(value),
                                 null,
                                 var_id
                               );
 
                               RESULT = new SymbolValue(var_id, SUBJACENTTYPE.st_integer, value);
                             :}
-                            | string:str_val 
+                            | string:value 
                             {:
                              //delete quotes
-                              String value = new String(str_val.replace("\"", ""));
                               Type type_string = symbolsTable.get("string");
                               
                               // string size in bytes
-                              int stringSize = value.length() * type_string.getSize();
+                              int stringSize = (value.length() - 2) * type_string.getSize();
 
-                              if (value.lenght() > 999){
+                              if (value.length() - 2 > 999){
                                 throw new Error("String must be shorter than 1000 characters.");
                               }
 
@@ -589,7 +592,7 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
 
                               c3a_g.generateC3aInstr(
                                 Code.copy,
-                                str_val,
+                                value,
                                 null,
                                 var_id
                               );                          
@@ -601,11 +604,10 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
                             :}
                             | bool:bool_val
                             {:
-                              Boolean value = new Boolean(bool_val);
+                              Boolean value = Boolean.valueOf(bool_val);
                               Type type_bool = symbolsTable.get("boolean");
-                              
 
-                              String var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_bool.size(), type_bool.getSubType());
+                              String var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_bool.getSize(), type_bool.getSubType());
 
                               c3a_g.generateC3aInstr(
                                 Code.copy,
@@ -649,7 +651,7 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
                               Type fn_type = symbolsTable.get(call_fn.getFunctionId());
                               Type dfn_type = symbolsTable.get(fn_type.getTypeName());
                               
-                              String var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, fn_type.size(), dfn_type.getSubType());
+                              String var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, fn_type.getSize(), dfn_type.getSubType());
 
                               c3a_g.generateC3aInstr(
                                 Code.copy,
@@ -661,8 +663,10 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
                               RESULT = new SymbolValue(var_id, TYPE.dfun, fn_type.getTypeName());
                             :}
                             | instr_in lparen id rparen
-                             {:
-                              RESULT = new Symbol:}; // TODO
+                            {:
+                              // TODOF
+                              RESULT = new SymbolValue();
+                            :}; 
 
 INITIALIZE_BOOLEAN_OP       ::= lparen BOOLEAN_OP:bool_op rparen 
                             {:
@@ -693,7 +697,7 @@ BOOLEAN_OP                  ::= BOOLEAN_OP:bool_op op_logical:op BOOLEAN_VALUE:b
                               }
 
                               boolean allConst = bool_op.getIsConst() && bool_val.getIsConst();
-                              Boolean value;
+                              Boolean value = null;
 
                               if(allConst){
                                 Boolean val1 = (Boolean) bool_op.getValue();
@@ -705,13 +709,14 @@ BOOLEAN_OP                  ::= BOOLEAN_OP:bool_op op_logical:op BOOLEAN_VALUE:b
                                 case "||":
                                   value = val1 || val2; 
                                   break;
+                                }
                               }
 
                               Type type_bool = symbolsTable.get("boolean"); 
                               String var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_bool.getSize(), type_bool.getSubType());
                               
-                              int val1_id = bool_val.getVarId();
-                              int val2_id = bool_op.getVarId();
+                              String val1_id = bool_val.getVarId();
+                              String val2_id = bool_op.getVarId();
                               c3a_g.generateC3aInstr(
                                 op_code,
                                 val1_id,
@@ -746,7 +751,7 @@ BOOLEAN_OP                  ::= BOOLEAN_OP:bool_op op_logical:op BOOLEAN_VALUE:b
 
 BOOLEAN_VALUE               ::= bool:bool_val  
                             {:
-                              Boolean value = new Boolean(bool_val);
+                              Boolean value = Boolean.valueOf(bool_val);
                               
                               Type type_bool = symbolsTable.get("boolean");
                               String var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_bool.getSize(), type_bool.getSubType());
@@ -770,7 +775,7 @@ BOOLEAN_VALUE               ::= bool:bool_val
                                 throw new Error("");
                               }
                               
-                              Type dtype_type = symbolsTable.get(var_type.nameType);
+                              Type dtype_type = symbolsTable.get(var_type.getTypeName());
                               if(dtype_type.getSubType() != SUBJACENTTYPE.st_boolean){
                                 throw new Error("Must be boolean variable or constant");
                               }
@@ -779,6 +784,7 @@ BOOLEAN_VALUE               ::= bool:bool_val
                               String backId = new String(var_type.getBackendId());
 
                               if(TYPE.dconst == main_var_type){
+                                Boolean value = (Boolean) var_type.getValue();
                                 sym = new SymbolBoolValue(backId, value);
                               }else{
                                 sym = new SymbolBoolValue(backId);
@@ -791,6 +797,7 @@ BOOLEAN_VALUE               ::= bool:bool_val
                               SymbolBoolValue sym;
                               String id = new String(bool_op.getVarId()); 
                               if(bool_op.getIsConst()){
+                                Boolean value = (Boolean) bool_op.getValue();
                                 sym = new SymbolBoolValue(id, value);
                               }else{
                                 sym = new SymbolBoolValue(id); 
@@ -824,7 +831,7 @@ VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rp
                                 subType1 = val1.getSubType();
                               }else{
                                 if(type1 != TYPE.dvar && type1 != TYPE.dconst && type1 != TYPE.darg && type1 != TYPE.dfun) {
-                                  throw Error("Value 1 of comparison wrong type");
+                                  throw new Error("Value 1 of comparison wrong type");
                                 }
                                 Type dtype_type = symbolsTable.get(val1.getTypeName());
                                 subType1 = dtype_type.getSubType();
@@ -837,7 +844,7 @@ VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rp
                                 subType2 = val2.getSubType();
                               }else{
                                 if(type2 != TYPE.dvar && type2 != TYPE.dconst && type2 != TYPE.darg && type2 != TYPE.dfun) {
-                                  throw Error("Value 2 of comparison wrong type");
+                                  throw new Error("Value 2 of comparison wrong type");
                                 }
                                 Type dtype_type = symbolsTable.get(val2.getTypeName());
                                 subType2 = dtype_type.getSubType();
@@ -845,7 +852,7 @@ VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rp
 
                               //Check same subtype
                               if(subType1 != subType2) {
-                                throw Error("Value 1 subtype is different from value 2");
+                                throw new Error("Value 1 subtype is different from value 2");
                               }
 
                               Code op_code;
@@ -857,47 +864,47 @@ VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rp
                                   op_code = Code.if_NE;
                                   break;
                                 case "<": 
-                                  if(subtype1 != SUBJACENTTYPE.st_integer) throw new Error("This operator ("+op+") only works with integer subtypes");
+                                  if(subType1 != SUBJACENTTYPE.st_integer) throw new Error("This operator ("+op+") only works with integer subtypes");
                                   op_code = Code.if_LT;
                                   break;
                                 case "<=":
-                                  if(subtype1 != SUBJACENTTYPE.st_integer) throw new Error("This operator ("+op+") only works with integer subtypes");
+                                  if(subType1 != SUBJACENTTYPE.st_integer) throw new Error("This operator ("+op+") only works with integer subtypes");
                                   op_code = Code.if_LE;
                                   break;
                                 case ">": 
-                                  if(subtype1 != SUBJACENTTYPE.st_integer) throw new Error("This operator ("+op+") only works with integer subtypes");
+                                  if(subType1 != SUBJACENTTYPE.st_integer) throw new Error("This operator ("+op+") only works with integer subtypes");
                                   op_code = Code.if_GT;
                                   break;
                                 case ">=":
-                                  if(subtype1 != SUBJACENTTYPE.st_integer) throw new Error("This operator ("+op+") only works with integer subtypes");
+                                  if(subType1 != SUBJACENTTYPE.st_integer) throw new Error("This operator ("+op+") only works with integer subtypes");
                                   op_code = Code.if_GE;
                                   break;
                               }
 
                               boolean allConst = val1.getIsConst() && val2.getIsConst();
                               
-                              Boolean value;
+                              Boolean val = null;
                               if(allConst){
                                 switch(op){
                                   case "=":
-                                    if(subtype1 == SUBJACENTTYPE.st_integer){
+                                    if(subType1 == SUBJACENTTYPE.st_integer){
                                        val = (Integer) val1.getValue() == (Integer) val2.getValue();
                                     }
-                                    if(subtype1 == SUBJACENTTYPE.st_string){
-                                      val = (String) val1.getValue().equals((String) val2.getValue());
+                                    if(subType1 == SUBJACENTTYPE.st_string){
+                                      val = ((String)val1.getValue()).equals((String) val2.getValue());
                                     }
-                                    if(subtype1 == SUBJACENTTYPE.st_boolean){
+                                    if(subType1 == SUBJACENTTYPE.st_boolean){
                                       val = (Boolean) val1.getValue() == (Boolean) val2.getValue();
                                     }
                                     break;
                                   case "!=":
-                                    if(subtype1 == SUBJACENTTYPE.st_integer){
+                                    if(subType1 == SUBJACENTTYPE.st_integer){
                                       val = (Integer) val1.getValue() != (Integer) val2.getValue();
                                     }
-                                    if(subtype1 == SUBJACENTTYPE.st_string){
-                                      val = !(String) val1.getValue().equals((String) val2.getValue());
+                                    if(subType1 == SUBJACENTTYPE.st_string){
+                                      val = !((String)val1.getValue()).equals((String) val2.getValue());
                                     }
-                                    if(subtype1 == SUBJACENTTYPE.st_boolean){
+                                    if(subType1 == SUBJACENTTYPE.st_boolean){
                                       val = (Boolean) val1.getValue() != (Boolean) val2.getValue();
                                     }
                                     break;
@@ -922,7 +929,7 @@ VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rp
                               String var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_bool.getSize(), type_bool.getSubType());
                               
                               if(allConst){
-                                sym = new SymbolValueComparison(var_id, value);
+                                sym = new SymbolValueComparison(var_id, val);
                               }else{
                                 sym = new SymbolValueComparison(var_id);
                               }
@@ -932,10 +939,10 @@ VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rp
 
 COND                         ::=  INITIALIZE_BOOLEAN_OP:bool_op
                               {:
-                                int var_id = bool_op.getVarId();
+                                String var_id = bool_op.getVarId();
 
-                                int true_label = backend.addLabel();
-                                int false_label = backend.addLabel();
+                                String true_label = backend.addLabel();
+                                String false_label = backend.addLabel();
 
                                 labelTrueStack.push(true_label);
                                 labelFalseStack.push(false_label);
@@ -948,7 +955,7 @@ COND                         ::=  INITIALIZE_BOOLEAN_OP:bool_op
                                 );
 
                                 c3a_g.generateC3aInstr(
-                                  Code.jmp,
+                                  Code.go_to,
                                   null,
                                   null,
                                   false_label
@@ -959,7 +966,7 @@ COND                         ::=  INITIALIZE_BOOLEAN_OP:bool_op
 
 COND_T                        ::= 
                               {:
-                                int label = labelTrueStack.pop();
+                                String label = labelTrueStack.pop();
 
                                 c3a_g.generateC3aInstr(
                                   Code.skip,
@@ -973,7 +980,7 @@ COND_T                        ::=
                               
 COND_F                        ::= 
                               {:
-                                int label = labelFalseStack.pop();
+                                String label = labelFalseStack.pop();
 
                                 c3a_g.generateC3aInstr(
                                   Code.skip,
@@ -992,10 +999,10 @@ INSTRUCTION_IF               ::= inst_if COND COND_T lbracket INSTRUCTIONS rbrac
 
 M_END                       ::=
                             {:
-                              int label = backend.addLabel();
+                              String label = backend.addLabel();
 
                               c3a_g.generateC3aInstr(
-                                Code.jmp,
+                                Code.go_to,
                                 null,
                                 null,
                                 label
@@ -1006,7 +1013,7 @@ M_END                       ::=
 
 ELIF                        ::= M_END:mend inst_elif COND_F COND COND_T lbracket INSTRUCTIONS rbracket ELIF
                             {:
-                              int label = mend.getLabel();
+                              String label = mend.getLabel();
 
                               c3a_g.generateC3aInstr(
                                 Code.skip,
@@ -1024,7 +1031,7 @@ ELIF                        ::= M_END:mend inst_elif COND_F COND COND_T lbracket
 
 ELSE                        ::= M_END:mend inst_else COND_F lbracket INSTRUCTIONS rbracket
                             {:
-                              int label = mend.getLabel();
+                              String label = mend.getLabel();
 
                               c3a_g.generateC3aInstr(
                                 Code.skip,
@@ -1041,24 +1048,24 @@ ELSE                        ::= M_END:mend inst_else COND_F lbracket INSTRUCTION
                             :};
 
 M_WHILE                     ::= {:
-                              int label = backend.addLabel();
+                              String label = backend.addLabel();
                               RESULT = new SymbolMWhile(label);
                             :};
                   
  
 INSTRUCTION_WHILE            ::= inst_while M_WHILE:mwhile COND COND_T lbracket  INSTRUCTIONS rbracket         
                             {:
-                              int loop_label = mwhile.getLabel();
+                              String loop_label = mwhile.getLabel();
                               c3a_g.generateC3aInstr(
-                                Code.jmp,
+                                Code.go_to,
                                 null,
                                 null,
                                 loop_label
                               );
 
-                              int end_label = labelFalseStack.pop();
+                              String end_label = labelFalseStack.pop();
                               c3a_g.generateC3aInstr(
-                                Code.jmp,
+                                Code.go_to,
                                 null,
                                 null,
                                 end_label
@@ -1105,8 +1112,8 @@ CALL_FUNCTION               ::= inst_call id:fun_id lparen rparen
                                 throw new Error("Missing parameters. Function " + fun_id + " has " + num_params + " parameters.");
                               }
 
-                              Type fun_type = symbolsTable.getType(fun_id);
-                              int id = fun_type.getBackendId();
+                              Type fun_type = symbolsTable.get(fun_id);
+                              String id = fun_type.getBackendId();
                               c3a_g.generateC3aInstr(
                                 Code.call,
                                 null,
@@ -1119,19 +1126,19 @@ CALL_FUNCTION               ::= inst_call id:fun_id lparen rparen
                             | inst_call CALL_BODY:body rparen
                             {:
                               int body_params = body.getNumParams();
-                              int fun_id = body.getFunId();
+                              String fun_id = body.getFunId();
                               int fun_params = symbolsTable.getNumParams(fun_id);
 
                               if(fun_params != body_params){
                                 throw new Error("Incorrect number of parameters :"+ body_params + ".Function " + fun_id + " has " + fun_params + "params");
                               }
 
-                              int fun_backId = body.getFunBackId();
+                              String fun_backId = body.getFunBackId();
                               c3a_g.generateC3aInstr(
                                 Code.call,
                                 null,
                                 null,
-                                id
+                                fun_backId
                               );
 
                               RESULT = new SymbolCallFunction();
@@ -1139,6 +1146,7 @@ CALL_FUNCTION               ::= inst_call id:fun_id lparen rparen
 
 CALL_BODY                   ::= CALL_BODY:body separator VALUE:value
                             {:
+                              String fun_id = body.getFunId();
                               int num_params = body.getNumParams();
                               SUBJACENTTYPE subType;
 
@@ -1153,20 +1161,19 @@ CALL_BODY                   ::= CALL_BODY:body separator VALUE:value
                                 subType = value_type.getSubType();
                               }
 
-                              int fun_id = body.getFunId();
                               //Check param type with function param type
-                              SUBJACENTTYPE paramSubType = symbol.getParam(fun_id, num_params).getSubType();
+                              SUBJACENTTYPE paramSubType = symbolsTable.getParam(fun_id, num_params).getSubType();
 
                               if(paramSubType != subType){
                                 throw new Error(fun_id + ". Incorrect type for param " + num_params + ". Expected " + subType + " but got " + paramSubType);
                               }
 
-                              int fun_back_id = body.getFunBackId();
+                              String fun_back_id = body.getFunBackId();
                               c3a_g.generateC3aInstr(
                                 Code.param,
                                 value.getVarId(),
                                 null,
-                                fun_backId
+                                fun_back_id
                               );
 
                               RESULT = new SymbolCallBody(fun_id, fun_back_id, num_params+1);
@@ -1187,14 +1194,14 @@ CALL_BODY                   ::= CALL_BODY:body separator VALUE:value
                               }
 
                               //Check param type with function param type
-                              SUBJACENTTYPE paramSubType = symbol.getParam(fun_id, 0).getSubType();
+                              SUBJACENTTYPE paramSubType = symbolsTable.getParam(fun_id, 0).getSubType();
 
                               if(paramSubType != subType){
                                 throw new Error(fun_id + ". Incorrect type for param 0. Expected " + subType + " but got " + paramSubType);
                               }
 
                               Type fun_type = symbolsTable.get(fun_id);
-                              int fun_back_id = fun_type.getBackendId();
+                              String fun_back_id = fun_type.getBackendId();
 
                               c3a_g.generateC3aInstr(
                                 Code.param,
@@ -1209,7 +1216,7 @@ CALL_BODY                   ::= CALL_BODY:body separator VALUE:value
 
 INSTRUCTION_OUT             ::= instr_out lparen VALUE:value rparen nextinstr
                             {:
-                              int var_id = value.getVarId();
+                              String var_id = value.getVarId();
 
                               c3a_g.generateC3aInstr(
                                 Code.output,
@@ -1238,15 +1245,15 @@ PARAMETERS                  ::= HAS_PARAMETERS
                             RESULT = new SymbolParameters();
                             :};
 
-HAS_PARAMETERS              ::=  id id HAS_MORE_PARAMETERS 
+HAS_PARAMETERS              ::=  id two_points id HAS_MORE_PARAMETERS 
                             {:
                             RESULT = new SymbolHasParameters();
                             :};
 
-HAS_MORE_PARAMETERS         ::= separator id id HAS_MORE_PARAMETERS
+HAS_MORE_PARAMETERS         ::= separator id two_points id HAS_MORE_PARAMETERS
                             | 
                             {:
-                            RESULT = new SymbolHasParameters();
+                            RESULT = new SymbolHasMoreParameters();
                             :};
 
 FUNCTION_BODY               ::= INSTRUCTIONS

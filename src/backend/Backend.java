@@ -41,12 +41,12 @@ public class Backend {
     }
 
     // Adding a new VARIABLE into the table
-//    private String name;    // variable name
-//    private int code;       // variable code id
-//    private int idParent;   // parent id
-//    private int offset;     // offset
-//    private int size;       // space occupation
-//    private Type type;      // type
+    //    private String name;    // variable name
+    //    private int code;       // variable code id
+    //    private int idParent;   // parent id
+    //    private int offset;     // offset
+    //    private int size;       // space occupation
+    //    private Type type;      // type
     public String addVar(String name, int code, int idParent, int offset, int size, SUBJACENTTYPE type) {
         // We add '@' for easier data manipulation
         name = "@" + name;

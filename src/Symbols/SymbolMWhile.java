@@ -2,14 +2,14 @@ package Symbols;
 
 public class SymbolMWhile extends SymbolBase {
 
-	private int label;
+	private String label;
 
-	public SymbolMWhile(int label) {
+	public SymbolMWhile(String label) {
 		super("Symbol M_While", 0);
 		this.label = label;
 	}
 	
-	public int getLabel() {
+	public String getLabel() {
 		return this.label;
 	}
 

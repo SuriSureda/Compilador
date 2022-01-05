@@ -1,9 +1,0 @@
-a
-11
-abc
-input
-true
-++
-;
-¿
-while

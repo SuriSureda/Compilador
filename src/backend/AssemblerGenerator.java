@@ -205,7 +205,6 @@ public class AssemblerGenerator {
         writeLine("mov " + checkType(instruction, 2) + instruction.getOp2() + ", " + "%rdi");
         writeLine(type + " %rax" + ", %rdi");
         writeLine("mov %rdi, " + instruction.getDest());
-
     }
 
     // Auxiliar method which will help with the / and % operations

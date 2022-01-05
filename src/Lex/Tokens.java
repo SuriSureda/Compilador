@@ -55,7 +55,8 @@ public class  Tokens{
         NEXTINSTR,
         SEPARATOR,
         TWO_POINTS,
-        ERROR   
+        ERROR   ,
+        EOF
     }
 
     private Token id;

@@ -59,6 +59,15 @@ import java.io.IOException;
     }
 %}
 
+%eof{
+    tokensArray.add(new Tokens(Tokens.Token.EOF,yyline,yycolumn));
+    writeTokens();
+%eof}
+
+%eofval{
+  return symbol(ParserSym.EOF);
+%eofval}
+
 // A CONTINUACIÓN DEFINIMOS LAS EXPRESIONES REGULARES DEL LENGUAJE
 
 DIGIT           = [0-9]     //ok
@@ -127,7 +136,7 @@ LBRACKET        = ("{")     //ok
 RBRACKET        = ("}")     //ok
 NEXTINTR        = (";")     //ok
 SEPARATOR       = (",")     //ok
-TWO_POINT       = (":")     //ok
+TWO_POINTS       = (":")     //ok
 
 %%                              //FINAL DE OPCIONES 
 
@@ -249,8 +258,8 @@ TWO_POINT       = (":")     //ok
                      tokensArray.add(token);
                      return new Symbol(ParserSym.separator);
                      }
-{TWO_POINT}          {
-                     Tokens token = new Tokens(Tokens.Token.TWO_POINT,yyline,yycolumn);
+{TWO_POINTS}          {
+                     Tokens token = new Tokens(Tokens.Token.TWO_POINTS,yyline,yycolumn);
                      tokensArray.add(token);
                      return new Symbol(ParserSym.two_points);
                      }

@@ -12,7 +12,7 @@ package Symbols;
 public class SymbolInitBoolOp extends SymbolBase{
     
     private String var_id;
-    private boolean value;
+    private Object value;
     private boolean isConst;
 
     public SymbolInitBoolOp(String var_id) {
@@ -21,7 +21,7 @@ public class SymbolInitBoolOp extends SymbolBase{
         this.isConst = false;
     }
 
-    public SymbolInitBoolOp(String var_id, boolean value) {
+    public SymbolInitBoolOp(String var_id, Object value) {
         super("Symbol Init Boolean Operation", 0);
         this.var_id = var_id;
         this.value = value;

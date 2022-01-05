@@ -1,12 +1,20 @@
 package compilador;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import Lex.LexerCup;
+import Sin.Parser;
+
 import java.io.IOException;
 
 import java_cup.internal_error;
+import java_cup.runtime.ComplexSymbolFactory;
+import java_cup.runtime.SymbolFactory;
 
 public class Main {
 	private static final String WORK_DIR = System.getProperty("user.dir") + "\\src\\";
@@ -20,13 +28,34 @@ public class Main {
 	private static final String CUP_JAVA = "Parser.java";
 
 	// All file data
-	private static final String FILE1 = "";
+	// ok cases
+	private static final String FILE1 = "input.txt";
 	private static final String FILE2 = "";
 	private static final String FILE3 = "";
-
+	// wrong cases
+	private static final String FILE4 = "";
+	private static final String FILE5 = "";
+	private static final String FILE6 = "";
 
 	public static void main(String[] args) {
 		generateJavaFiles();
+		
+		try {
+			// We read the input.txt
+			FileReader reader = new FileReader(FILE1);
+			// generate intermediate code
+			SymbolFactory sf = new ComplexSymbolFactory();
+			LexerCup scanner = new LexerCup(reader);
+			Parser parser = new Parser(scanner, sf);
+			// rezamos 3 ave marias para que todo funcione
+			parser.parse();
+
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		};
+		
 	}
 
 	private static void generateJavaFiles() {
@@ -62,7 +91,6 @@ public class Main {
 		// move parser symbols
 		Files.deleteIfExists(sym_d);
 		Files.move(sym_o, sym_d);
-		
 	}
 
 	private static void executeCompiler(){
