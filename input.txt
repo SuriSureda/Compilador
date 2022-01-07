@@ -1,2 +1,3 @@
 main {
+	varx : int = 5;
 }
