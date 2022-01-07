@@ -50,6 +50,18 @@ public class Instruction {
         this.dest = dest;
     }
 
+    @Override
+    public String toString() {
+        String result = this.dest+" = ";
+        if(this.op1 != null){
+            result += this.op1 + " ";
+        }
+        if(this.op2 != null){
+            result += this.op2;
+        }
+        return result;
+    }
+
     public Code getOpCode() {
         return opCode;
     }

@@ -31,4 +31,8 @@ public class Variable {
         this.type = type;
     }
 
+    @Override
+    public String toString() {
+        return this.name+ "\ttam : "+this.size+"\ttipus_subjacent :"+this.type;
+    }
 }
