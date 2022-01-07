@@ -3,6 +3,7 @@ package compilador;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.BufferedReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -11,6 +12,7 @@ import Lex.LexerCup;
 import Sin.Parser;
 
 import java.io.IOException;
+import java.io.Reader;
 
 import java_cup.internal_error;
 import java_cup.runtime.ComplexSymbolFactory;
@@ -38,24 +40,15 @@ public class Main {
 	private static final String FILE6 = "";
 
 	public static void main(String[] args) {
-		generateJavaFiles();
+		// generateJavaFiles();
 		
 		try {
-			// We read the input.txt
-			FileReader reader = new FileReader(FILE1);
-			// generate intermediate code
-			SymbolFactory sf = new ComplexSymbolFactory();
-			LexerCup scanner = new LexerCup(reader);
-			Parser parser = new Parser(scanner, sf);
-			// rezamos 3 ave marias para que todo funcione
-			parser.parse();
-
+			executeCompiler();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (Exception e) {
 			e.printStackTrace();
 		};
-		
 	}
 
 	private static void generateJavaFiles() {
@@ -93,8 +86,15 @@ public class Main {
 		Files.move(sym_o, sym_d);
 	}
 
-	private static void executeCompiler(){
+	private static void executeCompiler() throws FileNotFoundException, Exception{
 		// Here we are executing the files specified 
-		
+		// We read the input.txt
+		Reader reader = new BufferedReader(new FileReader(FILE1));
+		// generate intermediate code
+		LexerCup scanner = new LexerCup(reader);
+		SymbolFactory sf = new ComplexSymbolFactory();
+		Parser parser = new Parser(scanner, sf);
+		// rezamos 3 ave marias, 5 padre nuestros y le hacemos una estatua a Andreu  para que todo funcione 
+		parser.parse();
 	}
 }
