@@ -7,6 +7,7 @@ package backend;
 
 import backend.Instruction.Code;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,7 +23,7 @@ import java.util.logging.Logger;
 public class C3a_generator {
 
     // txt folder where we'll find the data
-    private static final String PATH = "src/Output/c3@code.txt";
+    private static final String PATH = "output\\c3_code.txt";
 
     // other variables used
     private int variableNumber;
@@ -32,9 +33,6 @@ public class C3a_generator {
 //
 //    private ArrayList<String> operands = new ArrayList<>();
     private ArrayList<Instruction> instructions;
-
-//    private boolean operandsBool = true;
-    private Backend backend;
 
 //    private String currentSubprogram;
 //    private String currentType = "";
@@ -47,7 +45,6 @@ public class C3a_generator {
     public C3a_generator(Backend backend) {
         variableNumber = 0;
         this.instructions = new ArrayList<Instruction>();
-        this.backend = backend;
     }
 
     // Add a new instruction
@@ -68,12 +65,16 @@ public class C3a_generator {
         }
         try {
             // File Writter
-            BufferedWriter writer = new BufferedWriter(new FileWriter(PATH));
+            File file = new File(PATH);
+            if(!file.exists()){
+                file.createNewFile();
+            }
+            BufferedWriter writer = new BufferedWriter(new FileWriter(file));
             writer.write(result);
             writer.close();
         } catch (IOException ex) {
-            System.out.println(" ERROR WRITING PROCES");
-            Logger.getLogger(Backend.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("ERROR WRITING C3@");
+            Logger.getLogger(C3a_generator.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -91,14 +92,6 @@ public class C3a_generator {
 
     public void setInstructions(ArrayList<Instruction> instructions) {
         this.instructions = instructions;
-    }
-
-    public Backend getbackend() {
-        return backend;
-    }
-
-    public void setbackend(Backend backend) {
-        this.backend = backend;
     }
 
     public BufferedWriter getWriter() {
