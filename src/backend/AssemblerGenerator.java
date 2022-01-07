@@ -8,8 +8,10 @@ package backend;
 import SymbolsTable.*;
 import backend.Instruction.Code;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -28,12 +30,14 @@ public class AssemblerGenerator {
 
     // Write the resulting code
     private BufferedWriter writer;
-    private final String PATH = "src/Output/AssemblerCode_NOT_Optimized.txt";
-    private final String PATH_2 = "src/Output/AssemblerCode_Optimized.txt";
+    private final String PATH = "output\\AssemblerCode_NOT_Optimized.txt";
+    private final String PATH_2 = "output\\AssemblerCode_Optimized.txt";
     // Symbol Table
     private SymbolsTable symbolsTable;
     // TS + TV
     private Backend backend;
+
+    private C3a_generator c3a_g;
     // List of instructions
     private ArrayList<String> assemblyInstructions;
 
@@ -44,22 +48,46 @@ public class AssemblerGenerator {
 
     private ArrayList<String> variablesFromKeyboard;
 
-    public AssemblerGenerator(SymbolsTable symbolTable, Backend backend) {
+    public AssemblerGenerator(SymbolsTable symbolTable, Backend backend, C3a_generator c3a_g) {
         //this.writer = writer;
         this.symbolsTable = symbolTable;
         this.backend = backend;
+        this.c3a_g = c3a_g;
         previousInstr = new Instruction(null, null, null, null);
         variablesFromKeyboard = new ArrayList<>();
+        assemblyInstructions = new ArrayList<String>();
+    }
 
-        try {
-            writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(PATH, true), StandardCharsets.UTF_8));
-            assemblyInstructions = new ArrayList<>();
+    public void generateAssembler() {
+        try{
+            File file = new File(PATH);
+            if(!file.exists()){
+                file.createNewFile();
+            }
+            writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8));
             writeHead();
+            ArrayList<Instruction> instructions = c3a_g.getInstructions();
+            for(int i = 0; i<instructions.size();i++){
+                Instruction ins = instructions.get(i);
+                if(i<instructions.size()-1){
+                    Instruction next = instructions.get(i+1);
+                    toAssembly(ins, next);
+                }else{
+                    toAssembly(ins, null);
+                }
+            }
+            writeBottom();
+            for(String inst : assemblyInstructions){
+                writer.write(inst);
+            }
+            writer.close();
+
         } catch (FileNotFoundException ex) {
             Logger.getLogger(AssemblerGenerator.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println("ERROR: CANNOT WRITE IN FILE");
+        } catch (IOException e) {
+            System.out.println("ERROR: CANNOT CREATE ASSEMBLY FILE");
         }
-
     }
 
     private void writeLine(String input) {
