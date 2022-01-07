@@ -23,16 +23,18 @@ parser code
   private Backend backend;
   private LexerCup scanner;
   private C3a_generator c3a_g;
+  private AssemblerGenerator assembler;
 
   private Stack<String> labelTrueStack;
   private Stack<String> labelFalseStack;
 
   public Parser(LexerCup scanner, SymbolFactory sf){
-    super(scanner, sf);
+    super(scanner);
     this.scanner = scanner;
     this.symbolsTable = new SymbolsTable();
     this.backend = new Backend();
     this.c3a_g = new C3a_generator(backend);
+    this.assembler = new AssemblerGenerator(symbolsTable, backend, c3a_g);
     this.labelTrueStack = new Stack<String>();
     this.labelFalseStack = new Stack<String>();
   }
@@ -45,7 +47,17 @@ parser code
   }
 
   private void initTypes() {
-
+    //init INT type
+    Type int_type = new Type(TYPE.dtype, SUBJACENTTYPE.st_integer, 4, Integer.MIN_VALUE, Integer.MIN_VALUE);
+    symbolsTable.add("int", int_type);
+    
+    // init String type
+    Type str_type = new Type(TYPE.dtype, SUBJACENTTYPE.st_string, 2, 0, 0);
+    symbolsTable.add("string", str_type);
+    
+    //init BOOLEAN type
+    Type bool_type = new Type(TYPE.dtype,SUBJACENTTYPE.st_boolean,2,0,1);
+    symbolsTable.add("boolean",bool_type);
   }
 
 :};
@@ -110,6 +122,8 @@ start with STARTS;
 STARTS                      ::=  INIT CALL_MAIN
                             {:
                               backend.storeTables();
+                              c3a_g.savec3aInFile();
+                              assembler.generateAssembler();
                             :};
 
 INIT                        ::= {:
@@ -192,7 +206,7 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
                             :}
                             | id:id_var CONSTANT:constant two_points id:type_id op_assig VALUE:value nextinstr  
                             {:
-                              boolean isConst = constant.getIsConst();
+                              boolean isConst = constant != null ? constant.getIsConst() : false;
 
                               Type type = symbolsTable.get(type_id);
 
@@ -201,13 +215,13 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
                               }
 
                               if(type.getSubType() != SUBJACENTTYPE.st_boolean
-                                && type.getSubType() != SUBJACENTTYPE.st_boolean
-                                && type.getSubType() != SUBJACENTTYPE.st_boolean ){
+                                && type.getSubType() != SUBJACENTTYPE.st_integer
+                                && type.getSubType() != SUBJACENTTYPE.st_string ){
                                   throw new Error("Invalid subjacent type");
                               }
 
                               //IF LITERALL (type = null) CHECK SUBJACENT TYPE
-                              if(value.getType() == TYPE.dnull && type.getSubType() == value.getSubType()){
+                              if(value.getType() == TYPE.dnull && type.getSubType() != value.getSubType()){
                                 throw new Error("Value and type must have same subjacent type");
                               }
                               
@@ -556,7 +570,7 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
                             {:
                               Integer value;
 
-                              if(neg.isNegative()){
+                              if(neg != null && neg.isNegative()){
                                 value = Integer.valueOf("-" + n_val);
                               }
                               else{
