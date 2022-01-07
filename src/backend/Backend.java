@@ -8,6 +8,7 @@ package backend;
 import SymbolsTable.Type;
 import SymbolsTable.Type.SUBJACENTTYPE;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ import java.util.logging.Logger;
  * @author 34630
  */
 public class Backend {
-    private static final String PATH = "src/Output/Tables.txt";
+    private static final String PATH = "output\\Backend_Tables.txt";
     // TV
     private ArrayList<Variable> varTable;
     // TP
@@ -91,28 +92,33 @@ public class Backend {
         String result = "---------------------------------------------\n"
                 + "---------------- TABLES INFO ----------------\n"
                 + "---------------------------------------------\n";
-
+        
+        result += "Variables:\n";
         for (int i = 0; i < varTable.size(); i++) {
-            result += "ID: " + i + " => " + varTable.get(i) + "\n";
+            result += varTable.get(i) + "\n";
         }
 
         result += "\nProcedures:\n";
         for (int i = 0; i < procTable.size(); i++) {
-            result += "ID: " + i + " => " + procTable.get(i) + "\n";
+            result += procTable.get(i) + "\n";
         }
 
         result += "\nLabels:\n";
         for (int i = 0; i < labelTable.size(); i++) {
-            result += "ID: " + i + " => " + labelTable.get(i) + "\n";
+            result += labelTable.get(i) + "\n";
         }
 
         try {
             // File Writter
-            BufferedWriter writer = new BufferedWriter(new FileWriter(PATH));
+            File file = new File(PATH);
+            if(!file.exists()){
+                file.createNewFile();
+            }
+            BufferedWriter writer = new BufferedWriter(new FileWriter(file));
             writer.write(result);
             writer.close();
         } catch (IOException ex) {
-            System.out.println(" ERROR WRITING PROCES");
+            System.out.println(" ERROR WRITING BACKEND TABLES");
             Logger.getLogger(Backend.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
