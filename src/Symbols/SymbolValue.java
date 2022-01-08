@@ -28,6 +28,7 @@ public class SymbolValue extends SymbolBase {
 
 	public SymbolValue(String var_id, SUBJACENTTYPE subType) {
 		super("value", 0);
+		this.var_id = var_id;
 		this.type = TYPE.dnull;
 		this.subType = subType;
 		this.isConstant = false;

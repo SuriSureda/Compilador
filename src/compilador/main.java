@@ -29,6 +29,8 @@ public class Main {
 	private static final String CUP_FILE = CUP_DIR + "Sintax.cup";
 	private static final String CUP_JAVA = "Parser.java";
 
+	private static final String OUTPUT_DIR = WORK_DIR + "output\\";
+
 	// All file data
 	// ok cases
 	private static final String FILE1 = "input.txt";
@@ -40,6 +42,7 @@ public class Main {
 	private static final String FILE6 = "";
 
 	public static void main(String[] args) {
+
 		// generateJavaFiles();
 		
 		try {
@@ -87,6 +90,9 @@ public class Main {
 	}
 
 	private static void executeCompiler() throws FileNotFoundException, Exception{
+		//Clean all output files
+		cleanOutputFiles();
+
 		// Here we are executing the files specified 
 		// We read the input.txt
 		Reader reader = new BufferedReader(new FileReader(FILE1));
@@ -97,4 +103,15 @@ public class Main {
 		// rezamos 3 ave marias, 5 padre nuestros y le hacemos una estatua a Andreu  para que todo funcione 
 		parser.parse();
 	}
+
+	private static void cleanOutputFiles() {
+		File output_dir = new File(OUTPUT_DIR);
+		if(output_dir.isDirectory()){
+			for(File file : output_dir.listFiles()){
+				file.delete();
+			}
+		}
+	}
 }
+
+

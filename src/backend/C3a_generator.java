@@ -49,7 +49,9 @@ public class C3a_generator {
 
     // Add a new instruction
     public void generateC3aInstr(Code opCode, String op1, String op2, String dest) {
-        instructions.add(new Instruction(opCode, op1, op2, dest));
+
+        Instruction inst = new Instruction(opCode, op1, op2, dest);
+        instructions.add(inst);
     }
 
     public void generateC3aInstr(int index, Code opCode, String op1, String op2, String dest) {

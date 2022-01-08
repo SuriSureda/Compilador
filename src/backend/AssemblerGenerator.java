@@ -94,6 +94,10 @@ public class AssemblerGenerator {
         assemblyInstructions.add(input + "\n");
     }
 
+    public void writeC3A_Comment(Instruction instruction){
+        assemblyInstructions.add("#" + instruction + "\n");
+    }
+
     // Generates the header of program
     private void writeHead() {
         writeLine(".global _start");
@@ -126,13 +130,11 @@ public class AssemblerGenerator {
     }
 
     private void writeBottom() {
-
-        //Write end of program. (Exit)
-        /*Opción 1: Llamar función exit.*/
         writeLine("call exit");
     }
 
     public void toAssembly(Instruction instruction, Instruction nextInstruction) {
+        writeC3A_Comment(instruction);
         switch (instruction.getOpCode()) {
             // .global main
             // 
@@ -184,6 +186,7 @@ public class AssemblerGenerator {
             case copy:
                 copyInstruction(instruction);
                 break;
+
             // In order to obtain which branch is we are using an auxiliar method
             // called substract Jump
 
@@ -210,6 +213,21 @@ public class AssemblerGenerator {
             // Greater
             case if_GT:
                 substractJump(instruction, "jg ");
+                break;
+            case and:
+                break;
+            case neg:
+                break;
+            case not:
+                break;
+            case or:
+                break;
+            // NOT NECESSARY 
+            case input:
+                break;
+            case output:
+                break;
+            default:
                 break;
         }
         writeLine("");
@@ -240,7 +258,7 @@ public class AssemblerGenerator {
     // Auxiliar method for return Instruction
     private void returnInstruction(Instruction instruction) {
         if (isFunction) {
-            writeLine("# Moure resultat de la funció a la pila");
+            writeLine("# Moving function results into stack");
             writeLine("mov " + instruction.getDest() + ", %rdi");
             writeLine("mov %rdi, " + (16 + (nparams * 8)) + "(%rbp)\n");
         }
@@ -352,7 +370,7 @@ public class AssemblerGenerator {
     private String readLine(int lineNumber) {
         return assemblyInstructions.get(lineNumber);
     }
-
+    
     private void newIntegerGlobalVariable(String name, String value) {
         for (int i = 0; i < assemblyInstructions.size(); i++) {
             if (readLine(i).contains(".data") && !declarationExists(name)) {
@@ -377,8 +395,8 @@ public class AssemblerGenerator {
 
     // Auxiliar method which indicates what kind of jump are we analyzing
     private void substractJump(Instruction instruction, String type) {
-        writeLine("mov " + checkLiteral(instruction, 1) + instruction.getOp1() + ", %edx");
-        writeLine("mov " + checkLiteral(instruction, 2) + instruction.getOp2() + ", %ecx");
+        writeLine("mov " + checkLiteral(instruction, 1) + ", %edx");
+        writeLine("mov " + checkLiteral(instruction, 2) +  ", %ecx");
         writeLine("cmp %ecx, %edx");
         writeLine(type + instruction.getDest());
     }
@@ -386,22 +404,25 @@ public class AssemblerGenerator {
     // Auxiliar method that generates the copy Instruction
     private void copyInstruction(Instruction instruction) {
         if (instruction.isLiteralOp1()) {
-            writeLine("mov $" + instruction.getOp1() + ", %rdi");
-            writeLine("mov " + "%rdi, " + instruction.getDest());
-        } else if (instruction.isBoolOp1()) {
-            if (instruction.getOp1().equals("cert")) { //cert
-                writeLine("movl $1, " + instruction.getDest());
-            } else { //false
-                writeLine("movl $0, " + instruction.getDest());
+            if(instruction.isBoolOp1()){
+                if (instruction.getOp1().equals("true")) { //cert
+                    writeLine("movl $1, " + instruction.getDest());
+                } else { //false
+                    writeLine("movl $0, " + instruction.getDest());
+                }
+            }else{
+                writeLine("mov $" + instruction.getOp1() + ", %rdi");
+                writeLine("mov " + "%rdi, " + instruction.getDest());
             }
-        } else if (instruction.isStringOp1() && !isCadenaTemporalVariable(instruction.toString())) {
-            writeLine("# Asignació feta a l'apartat .data");
+        /* } else if (instruction.isStringOp1() && !isCadenaTemporalVariable(instruction.toString())) {
+            writeLine("# Asignació feta a l'apartat .data"); */
         } else {
             writeLine("mov " + instruction.getOp1() + ", " + "%rdi");
             writeLine("mov " + "%rdi, " + instruction.getDest());
         }
     }
 
+    // TODO!!
     // Auxiliar method to check temporal String in the variable backend (copyInstruction)
     // REVISAR STRING PORQUE NO SÉ MUY BIEN DE DÓNDE SALE
     private boolean isCadenaTemporalVariable(String name) {
@@ -452,7 +473,7 @@ public class AssemblerGenerator {
 // Auxiliar method for checking if destination is the last instruction of the
 // program
     private boolean lastProcedure(String dest) {
-        int x = backend.getVarTable().size() - 1;
+        int x = backend.getProcTable().size() - 1;
         return backend.getProcTable().get(x).toString().equals(dest);
     }
 
@@ -475,10 +496,29 @@ public class AssemblerGenerator {
         if (type == 1) {
             if (operand.isLiteralOp1()) {
                 back = "$";
+                if(operand.isBoolOp1() && operand.getOp1().equals("true")){
+                    back += "1";
+                }
+                if(operand.isBoolOp1() && operand.getOp1().equals("false")){
+                    back += "0";
+                }
+                
+            }
+            else{
+                back = operand.getOp1();
             }
         } else {
             if (operand.isLiteralOp2()) {
                 back = "$";
+                if(operand.isBoolOp2() && operand.getOp2().equals("true")){
+                    back += "1";
+                }
+                if(operand.isBoolOp2() && operand.getOp2().equals("false")){
+                    back += "0";
+                }
+                
+            }else{
+                back = operand.getOp2();
             }
         }
 

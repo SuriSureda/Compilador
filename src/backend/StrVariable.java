@@ -1,3 +1,5 @@
+package backend;
+
 import SymbolsTable.Type.SUBJACENTTYPE;
 
 public class StrVariable extends Variable {

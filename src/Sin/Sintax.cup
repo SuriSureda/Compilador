@@ -116,6 +116,7 @@ non terminal  SymbolHasParameters         HAS_PARAMETERS;
 non terminal  SymbolHasMoreParameters     HAS_MORE_PARAMETERS;
 non terminal  SymbolFunctionBody          FUNCTION_BODY;
 non terminal  SymbolReturnType            RETURN_TYPE;
+non terminal  SymbolEmpty                 EMPTY;
 
 start with STARTS;
 
@@ -384,7 +385,7 @@ ARITHMETICAL_OP             ::= ARITHMETICAL_OP:arith_op op_arithmetical:op ARIT
                               String var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_int.getSize(), type_int.getSubType());
 
                               c3a_g.generateC3aInstr(
-                                Code.add,
+                                op_code,
                                 arith_op.getVarId(),
                                 arith_val.getVarId(),
                                 var_id
@@ -459,7 +460,7 @@ ARITHMETICAL_OP             ::= ARITHMETICAL_OP:arith_op op_arithmetical:op ARIT
                               String var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, type_int.getSize(), type_int.getSubType());
 
                               c3a_g.generateC3aInstr(
-                                Code.add,
+                                op_code,
                                 arith_val1.getVarId(),
                                 arith_val2.getVarId(),
                                 var_id
@@ -494,7 +495,7 @@ ARITHMETICAL_VALUE          ::= lparen ARITHMETICAL_OP:arith_op rparen
                             | POS_NEG:neg number:n_val
                             {:
                               Integer value;
-                              if(neg.isNegative()){
+                              if(neg != null && neg.isNegative()){
                                 value = Integer.valueOf("-" + n_val);
                               }
                               else{
@@ -560,7 +561,7 @@ POS_NEG                     ::= op_arithmetical:op
 
                               RESULT = new SymbolPosNeg(isNegative);
                             :}
-                            | 
+                            | EMPTY
                             {:
                               RESULT = new SymbolPosNeg(false);
                             :};
@@ -569,7 +570,7 @@ POS_NEG                     ::= op_arithmetical:op
 VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
                             {:
                               SymbolValue sym;
-                              String var_id = new String(arith_op.getVarId());
+                              String var_id = arith_op.getVarId();
                               if(arith_op.getIsConst()){
                                 sym = new SymbolValue(var_id, SUBJACENTTYPE.st_integer, arith_op.getValue());
                               }else{
@@ -1022,7 +1023,7 @@ INSTRUCTION_IF               ::= inst_if COND COND_T lbracket INSTRUCTIONS rbrac
                               RESULT = new SymbolInstructionIf();
                             :};
 
-M_END                       ::=
+M_END                       ::= EMPTY
                             {:
                               String label = backend.addLabel();
 
@@ -1072,7 +1073,8 @@ ELSE                        ::= M_END:mend inst_else COND_F lbracket INSTRUCTION
                               RESULT = new SymbolElse();
                             :};
 
-M_WHILE                     ::= {:
+M_WHILE                     ::= EMPTY
+                            {: 
                               String label = backend.addLabel();
                               RESULT = new SymbolMWhile(label);
                             :};
@@ -1290,5 +1292,7 @@ FUNCTION_BODY               ::= INSTRUCTIONS
 RETURN_TYPE                 ::= inst_return VALUE nextinstr
                             | 
                             {:
-                            RESULT = new SymbolReturnType();
+                              RESULT = new SymbolReturnType();
                             :};
+
+EMPTY                       ::= {: RESULT = new SymbolEmpty(); :};

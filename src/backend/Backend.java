@@ -33,11 +33,12 @@ public class Backend {
     public static final int BYTES_CHAR = 2;
     public static final int BYTES_BOOL = 2;
     
-
+    private static int tmp_n = 0;
 
     public Backend() {
         this.varTable = new ArrayList<>();
         this.procTable = new ArrayList<>();
+        this.procTable.add(new Procedure("main", 0, -1, 0, 0, null));
         this.labelTable = new ArrayList<>();
     }
 
@@ -69,11 +70,12 @@ public class Backend {
 
     public String addTempVar(int code, int idParent, int offset, int size, SUBJACENTTYPE type) {
         // We add '@' for easier data manipulation
-        String name = "@TEMPORAL_VARIABLE";
-        // We add the variable into the table
+        String name = "@T_"+tmp_n;
+        tmp_n++;
+;        // We add the variable into the table
         varTable.add(new Variable(name, code, idParent, offset, size, type));
 
-        return "@TEMPORAL_VARIABLE";
+        return name;
     }
 
     // Adding a new PROCEDURE into the table
@@ -95,7 +97,7 @@ public class Backend {
         
         labelTable.add(new Label(label));
         
-        return "" + (labelTable.size() - 1);
+        return label;
     }
 
     public void storeTables() {

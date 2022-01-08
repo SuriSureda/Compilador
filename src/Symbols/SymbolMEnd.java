@@ -1,6 +1,6 @@
 package Symbols;
 
-public class SymbolMEnd extends SymbolBase{
+public class SymbolMEnd extends SymbolBase {
 
 	private String label;
 

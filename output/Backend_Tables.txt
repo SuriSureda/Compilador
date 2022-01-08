@@ -1,0 +1,25 @@
+---------------------------------------------
+---------------- TABLES INFO ----------------
+---------------------------------------------
+Variables:
+@T_0	tam : 4	tipus_subjacent :st_integer
+@vx_0	tam : 4	tipus_subjacent :st_integer
+@T_1	tam : 4	tipus_subjacent :st_integer
+@vy_0	tam : 4	tipus_subjacent :st_integer
+@T_2	tam : 4	tipus_subjacent :st_integer
+@vz_0	tam : 4	tipus_subjacent :st_integer
+@T_3	tam : 4	tipus_subjacent :st_integer
+@T_4	tam : 4	tipus_subjacent :st_integer
+@T_5	tam : 2	tipus_subjacent :st_boolean
+@T_6	tam : 4	tipus_subjacent :st_integer
+@T_7	tam : 4	tipus_subjacent :st_integer
+@T_8	tam : 4	tipus_subjacent :st_integer
+@T_9	tam : 4	tipus_subjacent :st_integer
+
+Procedures:
+backend.Procedure@45ee12a7
+
+Labels:
+backend.Label@330bedb4
+backend.Label@2503dbd3
+backend.Label@4b67cf4d

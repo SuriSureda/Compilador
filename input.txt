@@ -1,3 +1,13 @@
 main {
-	varx : int = 5;
+	vx : int = 5;
+	vy : int = 10;
+	vz : int = 0;
+	vz = (vx + vy);
+	vz = (vz * vz);
+
+	if(true){
+		vx = (vx + 1);
+	}else{
+		vx = (vx - 1);
+	}
 }

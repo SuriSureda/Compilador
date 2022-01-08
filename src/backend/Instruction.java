@@ -52,13 +52,57 @@ public class Instruction {
 
     @Override
     public String toString() {
-        String result = this.dest+" = ";
-        if(this.op1 != null){
-            result += this.op1 + " ";
+        String result = "";
+        switch (opCode) {
+            /* ARITHMETICAL OP*/
+            case add:
+            case sub:
+            case div:
+            case prod:
+            case mod:
+            /* BOOLEAN OP */
+            case and:
+            case or:
+            case not:
+                result += this.dest + " = " + this.op1 + " " + this.opCode + " " + this.op2;
+                break;
+            case call:
+                break;
+            case copy:
+                result += this.dest + " = " + this.op1;
+                break;
+            /* JUMPS */    
+            case go_to:
+                result += this.opCode + " "+ this.dest;
+                break;
+            case if_EQ:
+            case if_GE:
+            case if_GT:
+            case if_LE:
+            case if_LT:
+            case if_NE: 
+                result += this.opCode + ": " + this.op1 + "," + this.op2 + " goto " + this.dest; 
+                break;
+            /* OTHER OPERATIONS*/    
+            case input:
+                break;
+            case neg:
+                break;
+            case output:
+                break;
+            case param:
+                break;
+            case pmb:
+                break;
+            case rtn:
+                break;
+            case skip:
+                result += this.dest + ":"+ this.opCode;
+                break;
+            default:
+                break;
         }
-        if(this.op2 != null){
-            result += this.op2;
-        }
+
         return result;
     }
 
@@ -127,11 +171,13 @@ public class Instruction {
     }
     
     public boolean isLiteralOp1() {
-        return op1.charAt(0) == '"' || op1.matches("[0-9]+");
+        if(op1 == null) return false;
+        return op1.charAt(0) == '"' || op1.matches("[0-9]+") || isBoolean(op1);
     }
     
     public boolean isLiteralOp2() {
-        return op2.charAt(0) == '"' || op2.matches("[0-9]+");
+        if(op2 == null) return false;
+        return op2.charAt(0) == '"' || op2.matches("[0-9]+") || isBoolean(op2);
     }
 
     public boolean isInt(String n) {
@@ -139,10 +185,12 @@ public class Instruction {
     }
     
     public boolean isIntOp1(){
+        if(op1 == null) return false;
         return op1.matches("[0-9]+");
     }
     
     public boolean isIntOp2(){
+        if(op2 == null) return false;
         return op2.matches("[0-9]+");        
     }
 
@@ -151,7 +199,13 @@ public class Instruction {
     }
     
     public boolean isBoolOp1(){
+        if(op1 == null) return false;
         return op1.matches("true") || op1.matches("false");
+    }
+
+    public boolean isBoolOp2(){
+        if(op2 == null) return false;
+        return op2.matches("true") || op2.matches("false");
     }
     
     public boolean isString(String n) {
