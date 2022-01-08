@@ -188,9 +188,15 @@ INSTRUCTION                 ::=  DECLARATIONS
 DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
                             {:
                               Type type = declarations.getType();
+                              String backId;
 
-                              String backId = backend.addVar(var_id,  0, backend.getLastProcedureId(), 0,type.getSize(), type.getSubType());
-
+                              if(type.getSubType() == SUBJACENTTYPE.st_string){
+                                String value = declarations.getValue();
+                                backId = backend.addStrVar(var_id,  0, backend.getLastProcedureId(), 0,type.getSize(), value);
+                              }else{
+                                backId = backend.addVar(var_id,  0, backend.getLastProcedureId(), 0,type.getSize(), type.getSubType());
+                              }
+                              
                               type.setBackendId(backId);
 
                               symbolsTable.add(var_id, type);
@@ -248,7 +254,13 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
 
                               String val_id = value.getVarId();
                               symbolsTable.add(id_var, var_type);
-                              SymbolDeclarations symDcls = new SymbolDeclarations(val_id, var_type);
+
+                              SymbolDeclarations symDcls;
+                              if(value.getIsString()){
+                                symDcls = new SymbolDeclarations(val_id, var_type, (String) value.getValue());
+                              }else{
+                                symDcls = new SymbolDeclarations(val_id, var_type);
+                              }
 
                               c3a_g.generateC3aInstr(
                                 Code.copy,
@@ -611,8 +623,7 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
                                 var_id
                               );                          
                               
-                              SymbolValue sym = new SymbolValue(var_id, SUBJACENTTYPE.st_string, value);
-                              sym.setStringSize(stringSize);
+                              SymbolValue sym = new SymbolValue(var_id, value, stringSize);
 
                               RESULT = sym;
                             :}

@@ -43,6 +43,18 @@ public class SymbolValue extends SymbolBase {
 		this.value = value;
 	}
 
+	// Literall string
+	public SymbolValue(String var_id, String value, int stringSize){
+		super("value", 0);
+		this.var_id = var_id;
+		this.type = TYPE.dnull;
+		this.subType = SUBJACENTTYPE.st_string;
+		this.isConstant = true;
+		this.value = value;
+		this.isString = true;
+		this.stringSize = stringSize;
+	}
+
 	public SymbolValue(String var_id, TYPE type, String typeName) {
 		super("value", 0);
 		this.var_id = var_id;
@@ -92,11 +104,4 @@ public class SymbolValue extends SymbolBase {
 	public int getStringSize(){
 		return this.stringSize;
 	}
-
-	// on set string size, we set isString to true
-	public void setStringSize(int size) {
-		this.stringSize = size;
-		this.isString = true;
-	}
-
 }

@@ -99,7 +99,30 @@ public class AssemblerGenerator {
         writeLine(".global _start");
         writeLine(".text");
         writeLine(".data");
-        // declareVariables();
+        declareVariables();
+    }
+    
+    private void declareVariables() {
+        for (int i = 0; i < backend.getVarTable().size(); i++) {
+
+            Variable var = backend.getVarTable().get(i);
+
+            switch (var.getType()) {
+                case st_integer:
+                case st_boolean:
+                    writeLine(var.getName() + ": .quad 0");
+                    break;
+                case st_string:
+                    writeLine(var.getName() + ": .asciz " + ((StrVariable) var).getValue());
+                case st_null:
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        //Formato para scanf y printf.
+        writeLine("format: .asciz \"%d\"");
     }
 
     private void writeBottom() {

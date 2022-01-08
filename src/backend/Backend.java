@@ -50,9 +50,19 @@ public class Backend {
     //    private Type type;      // type
     public String addVar(String name, int code, int idParent, int offset, int size, SUBJACENTTYPE type) {
         // We add '@' for easier data manipulation
-        name = "@" + name;
+        name = "@" + name + "_" + idParent;
         // We add the variable into the table
         varTable.add(new Variable(name, code, idParent, offset, size, type));
+
+        return name;
+    }
+
+    // STRING VARIABLE
+    public String addStrVar(String name, int code, int idParent, int offset, int size, String value) {
+        // We add '@' for easier data manipulation
+        name = "@" + name + "_" + idParent;
+        // We add the variable into the table
+        varTable.add(new StrVariable(name, code, idParent, offset, size, value));
 
         return name;
     }
