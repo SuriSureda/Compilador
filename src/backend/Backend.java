@@ -38,7 +38,7 @@ public class Backend {
     public Backend() {
         this.varTable = new ArrayList<>();
         this.procTable = new ArrayList<>();
-        this.procTable.add(new Procedure("main", 0, -1, 0, 0, null));
+        this.procTable.add(new Procedure("main", 0, 0, 0, 0, null));
         this.labelTable = new ArrayList<>();
     }
 
@@ -72,7 +72,7 @@ public class Backend {
         // We add '@' for easier data manipulation
         String name = "@T_"+tmp_n;
         tmp_n++;
-;        // We add the variable into the table
+        // We add the variable into the table
         varTable.add(new Variable(name, code, idParent, offset, size, type));
 
         return name;
