@@ -1,8 +1,6 @@
 package Sin;
 
-// TODO : rbracket -> BLOCK_IN, lbracket -> BLOCK_OUT
 // TODO : pila per a expression condicionals parcials
-// TODO : revisar nextinstr
 
 import java_cup.runtime.Symbol;
 import java_cup.runtime.SymbolFactory;
@@ -79,6 +77,8 @@ non terminal  SymbolInit                  INIT;
 non terminal  SymbolCallMain              CALL_MAIN;
 non terminal  SymbolInstructions          INSTRUCTIONS;
 non terminal  SymbolInstruction           INSTRUCTION;
+non terminal  SymbolBlockIn               BLOCK_IN;
+non terminal  SymbolBlockOut              BLOCK_OUT;
 non terminal  SymbolDeclarations          DECLARATIONS;
 non terminal  SymbolOperatorAssignation   OPERATOR_ASSIG;
 non terminal  SymbolInstructionIn         INSTRUCTION_IN;
@@ -180,11 +180,19 @@ INSTRUCTION                 ::=  DECLARATIONS
                             | CALL_FUNCTION
                             {:
                               RESULT = new SymbolInstruction();
-                            :}
-                            | DEFINE_FUNCTION
-                            {:
-                              RESULT = new SymbolInstruction();
                             :};
+
+BLOCK_IN                    ::=
+                            {:
+                              symbolsTable.enterBlock();
+                              RESULT = new SymbolBlockIn();
+                            :};
+
+BLOCK_OUT                   ::=
+                            {:
+                              symbolsTable.leaveBlock();
+                              RESULT = new SymbolBlockOut();
+                            :};                            
 
 DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
                             {:
@@ -1018,7 +1026,7 @@ COND_F                        ::=
                                 RESULT = new SymbolConditionFalse();   
                               :};
 
-INSTRUCTION_IF               ::= inst_if COND COND_T lbracket INSTRUCTIONS rbracket ELIF ELSE
+INSTRUCTION_IF               ::= inst_if COND COND_T lbracket BLOCK_IN INSTRUCTIONS BLOCK_OUT rbracket ELIF ELSE
                             {:
                               RESULT = new SymbolInstructionIf();
                             :};
@@ -1037,7 +1045,7 @@ M_END                       ::= EMPTY
                               RESULT = new SymbolMEnd(label);
                             :};
 
-ELIF                        ::= M_END:mend inst_elif COND_F COND COND_T lbracket INSTRUCTIONS rbracket ELIF
+ELIF                        ::= M_END:mend inst_elif COND_F COND COND_T lbracket BLOCK_IN INSTRUCTIONS BLOCK_OUT rbracket ELIF
                             {:
                               String label = mend.getLabel();
 
@@ -1055,7 +1063,7 @@ ELIF                        ::= M_END:mend inst_elif COND_F COND COND_T lbracket
                               RESULT = new SymbolElif();
                             :};
 
-ELSE                        ::= M_END:mend inst_else COND_F lbracket INSTRUCTIONS rbracket
+ELSE                        ::= M_END:mend inst_else COND_F lbracket BLOCK_IN INSTRUCTIONS BLOCK_OUT rbracket
                             {:
                               String label = mend.getLabel();
 
@@ -1080,7 +1088,7 @@ M_WHILE                     ::= EMPTY
                             :};
                   
  
-INSTRUCTION_WHILE            ::= inst_while M_WHILE:mwhile COND COND_T lbracket  INSTRUCTIONS rbracket         
+INSTRUCTION_WHILE            ::= inst_while M_WHILE:mwhile COND COND_T lbracket BLOCK_IN INSTRUCTIONS BLOCK_OUT rbracket         
                             {:
                               String loop_label = mwhile.getLabel();
                               c3a_g.generateC3aInstr(
@@ -1101,6 +1109,7 @@ INSTRUCTION_WHILE            ::= inst_while M_WHILE:mwhile COND COND_T lbracket 
                               RESULT = new SymbolInstructionWhile();
                             :};
 
+/*
 INSTRUCTION_FOR              ::= inst_for lparen INTERNAL_FOR rparen lbracket INSTRUCTIONS rbracket
                             {:
                             RESULT = new SymbolInstructionFor();
@@ -1129,7 +1138,7 @@ CASE_DEFAULT                 ::= inst_default INSTRUCTIONS inst_break nextinstr
                              {:
                              RESULT = new SymbolCaseDefault();
                              :};
-
+*/
 
 CALL_FUNCTION               ::= inst_call id:fun_id lparen rparen
                             {:
@@ -1256,9 +1265,9 @@ INSTRUCTION_OUT             ::= instr_out lparen VALUE:value rparen nextinstr
                             :};
 
 
-DEFINE_FUNCTION             ::= FUNCTION_BEG id  rparen lbracket FUNCTION_BODY RETURN_TYPE  rbracket
+DEFINE_FUNCTION             ::= FUNCTION_BEG id  rparen lbracket BLOCK_IN FUNCTION_BODY RETURN_TYPE BLOCK_OUT rbracket
                             {:
-                            RESULT = new SymbolDefFunction();
+                              RESULT = new SymbolDefFunction();
                             :};
 
 FUNCTION_BEG                ::= inst_function id id lparen PARAMETERS rparen
@@ -1296,3 +1305,13 @@ RETURN_TYPE                 ::= inst_return VALUE nextinstr
                             :};
 
 EMPTY                       ::= {: RESULT = new SymbolEmpty(); :};
+
+BLOCK_IN                    ::= {:
+                            symbolsTable.getinBlock();
+                            RESULT = new SymbolCodeBlockIn();
+                            :};
+
+BLOCK_OUT                   ::= {:
+                              symbolsTable.getoutBlock();
+                              RESULT = new SymbolCodeBlockOut();
+                            :};
