@@ -1283,43 +1283,6 @@ INSTRUCTION_OUT             ::= instr_out lparen VALUE:value rparen nextinstr
                             :};
 
 
-DEFINE_FUNCTION             ::= FUNCTION_BEG id  rparen lbracket BLOCK_IN FUNCTION_BODY RETURN_TYPE BLOCK_OUT rbracket
-                            {:
-                              RESULT = new SymbolDefFunction();
-                            :};
-
-FUNCTION_BEG                ::= inst_function id id lparen PARAMETERS rparen
-                            {:
-                            RESULT = new SymbolFunctionBeg();
-                            :};
-
-PARAMETERS                  ::= HAS_PARAMETERS
-                            | 
-                            {:
-                            RESULT = new SymbolParameters();
-                            :};
-
-HAS_PARAMETERS              ::=  id two_points id HAS_MORE_PARAMETERS 
-                            {:
-                            RESULT = new SymbolHasParameters();
-                            :};
-
-HAS_MORE_PARAMETERS         ::= separator id two_points id HAS_MORE_PARAMETERS
-                            | 
-                            {:
-                            RESULT = new SymbolHasMoreParameters();
-                            :};
-
-FUNCTION_BODY               ::= INSTRUCTIONS
-                            | 
-                            {:
-                            RESULT = new SymbolFunctionBody();
-                            :};
-
-RETURN_TYPE                 ::= inst_return VALUE nextinstr
-                            | 
-                            {:
-                              RESULT = new SymbolReturnType();
-                            :};
+DEFINE_FUNCTION             ::= {: RESULT = new SymbolDefFunction(); :};
 
 EMPTY                       ::= {: RESULT = new SymbolEmpty(); :};
