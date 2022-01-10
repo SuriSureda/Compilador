@@ -62,12 +62,16 @@ parser code
 
 /******Declaració de simbols terminals*********/
 
-terminal String id, number, string, bool,  op_relational, op_logical, op_arithmetical,
-                op_assig, inst_if, inst_elif, inst_else,
-                inst_switch, inst_case, inst_break, inst_default, inst_while, inst_for, inst_function, inst_return, dconst, inst_call, 
-                instr_in, instr_out, lparen, rparen, lbracket, rbracket, nextinstr, separator, two_points, inst_main;
-                
-// character,spc_asgmul,Void, spc_asgdec, spc_dec,spc_asgdiv,spc_asginc,spc_inc,id_main ;
+terminal String id, number, string, bool,  op_relational, op_logical, op_arithmetical;
+terminal        op_assig, inst_if, inst_elif, inst_else,
+                inst_while, inst_function, inst_return, dconst, inst_call, 
+                instr_in, instr_out, lparen, rparen, lbracket, rbracket, nextinstr, 
+                separator, two_points, inst_main;
+
+/*
+  inst_switch, inst_case, inst_break, inst_default, inst_for, 
+  character,spc_asgmul,Void, spc_asgdec, spc_dec,spc_asgdiv,spc_asginc,spc_inc,id_main 
+*/
 
 
 /******Declaració de simbols no terminals*********/
@@ -102,11 +106,13 @@ non terminal  SymbolElif                  ELIF;
 non terminal  SymbolElse                  ELSE;
 non terminal  SymbolMWhile                M_WHILE;
 non terminal  SymbolInstructionWhile      INSTRUCTION_WHILE;
+/*
 non terminal  SymbolInstructionFor        INSTRUCTION_FOR;
 non terminal  SymbolInternalFor           INTERNAL_FOR;
 non terminal  SymbolInstructionSwitch     INSTRUCTION_SWITCH;
 non terminal  SymbolCases                 CASES;
 non terminal  SymbolCaseDefault           CASE_DEFAULT;
+*/
 non terminal  SymbolDefFunction           DEFINE_FUNCTION;
 non terminal  SymbolCallFunction          CALL_FUNCTION;
 non terminal  SymbolCallBody              CALL_BODY;
@@ -117,6 +123,7 @@ non terminal  SymbolHasMoreParameters     HAS_MORE_PARAMETERS;
 non terminal  SymbolFunctionBody          FUNCTION_BODY;
 non terminal  SymbolReturnType            RETURN_TYPE;
 non terminal  SymbolEmpty                 EMPTY;
+non terminal  SymbolDeclareFunctions      DECLARE_FUNCTIONS;
 
 start with STARTS;
 
@@ -132,8 +139,17 @@ INIT                        ::= {:
                               RESULT = new SymbolInit();
                             :};
 
-CALL_MAIN                   ::= inst_main lbracket INSTRUCTIONS rbracket {:
+CALL_MAIN                   ::= inst_main lbracket DECLARE_FUNCTIONS INSTRUCTIONS rbracket {:
                               RESULT = new SymbolCallMain();
+                            :};
+
+DECLARE_FUNCTIONS           ::= DEFINE_FUNCTION DECLARE_FUNCTIONS
+                            {:
+                              RESULT = new SymbolDeclareFunctions();
+                            :}
+                            |
+                            {:
+                              RESULT = new SymbolDeclareFunctions();
                             :};
 
 INSTRUCTIONS                ::=   INSTRUCTIONS INSTRUCTION 
@@ -157,14 +173,6 @@ INSTRUCTION                 ::=  DECLARATIONS
                             {:
                               RESULT = new SymbolInstruction();
                             :}
-                            | INSTRUCTION_SWITCH
-                            {:
-                              RESULT = new SymbolInstruction();
-                            :}
-                            | INSTRUCTION_FOR
-                            {:
-                              RESULT = new SymbolInstruction();
-                            :}
                             | OPERATOR_ASSIG
                             {:
                               RESULT = new SymbolInstruction();
@@ -180,7 +188,17 @@ INSTRUCTION                 ::=  DECLARATIONS
                             | CALL_FUNCTION
                             {:
                               RESULT = new SymbolInstruction();
-                            :};
+                            :}
+                            /*
+                            | INSTRUCTION_SWITCH
+                            {:
+                              RESULT = new SymbolInstruction();
+                            :}
+                            | INSTRUCTION_FOR
+                            {:
+                              RESULT = new SymbolInstruction();
+                            :}*/
+                            ;
 
 BLOCK_IN                    ::=
                             {:
@@ -1026,7 +1044,7 @@ COND_F                        ::=
                                 RESULT = new SymbolConditionFalse();   
                               :};
 
-INSTRUCTION_IF               ::= inst_if COND COND_T lbracket BLOCK_IN INSTRUCTIONS BLOCK_OUT rbracket ELIF ELSE
+INSTRUCTION_IF               ::= inst_if COND lbracket BLOCK_IN COND_T INSTRUCTIONS BLOCK_OUT rbracket ELIF ELSE
                             {:
                               RESULT = new SymbolInstructionIf();
                             :};
@@ -1045,7 +1063,7 @@ M_END                       ::= EMPTY
                               RESULT = new SymbolMEnd(label);
                             :};
 
-ELIF                        ::= M_END:mend inst_elif COND_F COND COND_T lbracket BLOCK_IN INSTRUCTIONS BLOCK_OUT rbracket ELIF
+ELIF                        ::= M_END:mend inst_elif COND_F COND lbracket BLOCK_IN COND_T INSTRUCTIONS BLOCK_OUT rbracket ELIF
                             {:
                               String label = mend.getLabel();
 
@@ -1063,7 +1081,7 @@ ELIF                        ::= M_END:mend inst_elif COND_F COND COND_T lbracket
                               RESULT = new SymbolElif();
                             :};
 
-ELSE                        ::= M_END:mend inst_else COND_F lbracket BLOCK_IN INSTRUCTIONS BLOCK_OUT rbracket
+ELSE                        ::= M_END:mend inst_else lbracket BLOCK_IN COND_F INSTRUCTIONS BLOCK_OUT rbracket
                             {:
                               String label = mend.getLabel();
 
@@ -1088,7 +1106,7 @@ M_WHILE                     ::= EMPTY
                             :};
                   
  
-INSTRUCTION_WHILE            ::= inst_while M_WHILE:mwhile COND COND_T lbracket BLOCK_IN INSTRUCTIONS BLOCK_OUT rbracket         
+INSTRUCTION_WHILE            ::= inst_while M_WHILE:mwhile COND lbracket BLOCK_IN COND_T INSTRUCTIONS BLOCK_OUT rbracket         
                             {:
                               String loop_label = mwhile.getLabel();
                               c3a_g.generateC3aInstr(
@@ -1305,13 +1323,3 @@ RETURN_TYPE                 ::= inst_return VALUE nextinstr
                             :};
 
 EMPTY                       ::= {: RESULT = new SymbolEmpty(); :};
-
-BLOCK_IN                    ::= {:
-                            symbolsTable.getinBlock();
-                            RESULT = new SymbolCodeBlockIn();
-                            :};
-
-BLOCK_OUT                   ::= {:
-                              symbolsTable.getoutBlock();
-                              RESULT = new SymbolCodeBlockOut();
-                            :};

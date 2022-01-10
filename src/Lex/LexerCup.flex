@@ -104,12 +104,14 @@ INST_ELSE       = ("else")  //ok
 INST_ELIF       = ("elif")  //ok
     
 INST_WHILE      = ("while") //ok
+/*
 INST_FOR        = ("for")   //ok
 
 INST_SWITCH     = ("switch") //ok
 INST_CASE       = ("case")  //ok
 INST_BREAK      = ("break") //ok
 INST_DEFAULT    = ("default") //ok
+*/
 
 INST_FUNCTION   = ("function") //ok
 INST_RETURN     = ("return")    //ok
@@ -173,6 +175,7 @@ TWO_POINTS       = (":")     //ok
                         tokensArray.add(token);
                         return symbol(ParserSym.inst_while);
                      }
+/*                     
 {INST_FOR}           {
                         Tokens token = new Tokens(Tokens.Token.INST_FOR,yyline,yycolumn);
                         tokensArray.add(token);
@@ -199,6 +202,7 @@ TWO_POINTS       = (":")     //ok
                       tokensArray.add(token);
                       return symbol(ParserSym.inst_default);
                       }
+*/
 
 {INST_FUNCTION}      {
                      Tokens token = new Tokens(Tokens.Token.INST_FUNCTION,yyline,yycolumn);
