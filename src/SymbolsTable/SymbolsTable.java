@@ -28,8 +28,8 @@ public class SymbolsTable {
                 }
             }
             // move oldDescription to expansionTable
-            int expIndex = scopeTable.get(scope) + 1;
-            scopeTable.add(scope, expIndex);
+            int expIndex = scopeTable.get(scope);
+            scopeTable.add(scope, expIndex  + 1);
             Expansion exp = new Expansion(oldDescription);
             expansionTable.add(expIndex, exp);
         }
