@@ -114,6 +114,13 @@ non terminal  SymbolCases                 CASES;
 non terminal  SymbolCaseDefault           CASE_DEFAULT;
 */
 non terminal  SymbolDefFunction           DEFINE_FUNCTION;
+
+non terminal  SymbolFunHead               FUNCTION_HEAD;
+non terminal  SymbolFunParams             FUNCTION_PARAMS;
+non terminal  SymbolFunWParams            FUNCTION_W_PARAMS;
+non terminal  SymbolFunBody               FUNCTION_BODY;
+non terminal  SymbolFunReturn             FUNCTION_RETURN;
+
 non terminal  SymbolCallFunction          CALL_FUNCTION;
 non terminal  SymbolCallBody              CALL_BODY;
 non terminal  SymbolEmpty                 EMPTY;
@@ -1002,7 +1009,7 @@ COND                         ::=  INITIALIZE_BOOLEAN_OP:bool_op
                                 c3a_g.generateC3aInstr(
                                   Code.if_EQ,
                                   var_id,
-                                  "true", //TODO : revisar quin valor asignar aqui
+                                  "true",
                                   true_label
                                 );
 
@@ -1283,6 +1290,20 @@ INSTRUCTION_OUT             ::= instr_out lparen VALUE:value rparen nextinstr
                             :};
 
 
-DEFINE_FUNCTION             ::= {: RESULT = new SymbolDefFunction(); :};
+DEFINE_FUNCTION             ::= FUNCTION_HEAD lbracket BLOCK_IN FUNCTION_BODY FUNCTION_RETURN BLOCK_OUT rbracket;
+
+FUNCTION_HEAD               ::= inst_function id:fun_id FUNCTION_PARAMS rparen two_points id:type_id
+
+FUNCTION_PARAMS             ::= FUNCTION_W_PARAMS
+                            | lparen;
+
+FUNCTION_W_PARAMS           ::= FUNCTION_W_PARAMS separator id:id two_points id:type_id
+                            | lparen id:id two_points id:type_id ;
+
+FUNCTION_BODY               ::= INSTRUCTIONS
+                            | ;
+
+FUNCTION_RETURN             ::= inst_return VALUE nextinstr
+                            | ; 
 
 EMPTY                       ::= {: RESULT = new SymbolEmpty(); :};
