@@ -116,12 +116,6 @@ non terminal  SymbolCaseDefault           CASE_DEFAULT;
 non terminal  SymbolDefFunction           DEFINE_FUNCTION;
 non terminal  SymbolCallFunction          CALL_FUNCTION;
 non terminal  SymbolCallBody              CALL_BODY;
-non terminal  SymbolFunctionBeg           FUNCTION_BEG;
-non terminal  SymbolParameters            PARAMETERS;
-non terminal  SymbolHasParameters         HAS_PARAMETERS;
-non terminal  SymbolHasMoreParameters     HAS_MORE_PARAMETERS;
-non terminal  SymbolFunctionBody          FUNCTION_BODY;
-non terminal  SymbolReturnType            RETURN_TYPE;
 non terminal  SymbolEmpty                 EMPTY;
 non terminal  SymbolDeclareFunctions      DECLARE_FUNCTIONS;
 
@@ -174,10 +168,6 @@ INSTRUCTION                 ::=  DECLARATIONS
                               RESULT = new SymbolInstruction();
                             :}
                             | OPERATOR_ASSIG
-                            {:
-                              RESULT = new SymbolInstruction();
-                            :}
-                            | INSTRUCTION_IN
                             {:
                               RESULT = new SymbolInstruction();
                             :}
@@ -716,8 +706,18 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
                             :}
                             | instr_in lparen id rparen
                             {:
-                              // TODOF
-                              RESULT = new SymbolValue();
+                              Type int_type = symbolsTable.get("int");
+                              String var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, int_type.getSize(), int_type.getSubType());
+
+                              c3a_g.generateC3aInstr(
+                                Code.input,
+                                null,
+                                null,
+                                var_id
+                              );
+
+
+                              RESULT = new SymbolValue(var_id, int_type.getSubType());
                             :}; 
 
 INITIALIZE_BOOLEAN_OP       ::= lparen BOOLEAN_OP:bool_op rparen 
