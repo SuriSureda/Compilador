@@ -89,6 +89,7 @@ public class Instruction {
             case neg:
                 break;
             case output:
+                result += this.opCode +" "+ this.dest;
                 break;
             case param:
                 break;
