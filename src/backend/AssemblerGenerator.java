@@ -30,8 +30,8 @@ public class AssemblerGenerator {
 
     // Write the resulting code
     private BufferedWriter writer;
-    private final String PATH = "output\\AssemblerCode_NOT_Optimized.txt";
-    private final String PATH_2 = "output\\AssemblerCode_Optimized.txt";
+    private final String PATH = "output\\AssemblerCode_NOT_Optimized.s";
+    private final String PATH_2 = "output\\AssemblerCode_Optimized.s";
     // Symbol Table
     private SymbolsTable symbolsTable;
     // TS + TV
@@ -100,10 +100,11 @@ public class AssemblerGenerator {
 
     // Generates the header of program
     private void writeHead() {
-        writeLine(".global _start");
-        writeLine(".text");
+        writeLine(".global main");
         writeLine(".data");
         declareVariables();
+        writeLine(".text");
+        writeLine("main :");
     }
     
     private void declareVariables() {
@@ -130,7 +131,10 @@ public class AssemblerGenerator {
     }
 
     private void writeBottom() {
-        writeLine("call exit");
+        writeLine("#exit");
+        writeLine("mov $60, %rax");
+        writeLine("xor %rdi,%rdi");
+        writeLine("syscall");
     }
 
     public void toAssembly(Instruction instruction, Instruction nextInstruction) {
@@ -222,16 +226,23 @@ public class AssemblerGenerator {
                 break;
             case or:
                 break;
-            // NOT NECESSARY 
             case input:
                 break;
             case output:
+                outputInstruction(instruction);
                 break;
             default:
                 break;
         }
         writeLine("");
         previousInstr = instruction;
+    }
+
+    private void outputInstruction(Instruction instruction){
+        writeLine("mov format, %rdi");
+        writeLine("mov "+instruction.getDest()+", %rsi");
+        writeLine("xor %rax, %rax");
+        writeLine("call printf");
     }
     
     // Auxiliar method for the skip Instruction
