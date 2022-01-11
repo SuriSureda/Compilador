@@ -85,7 +85,6 @@ non terminal  SymbolBlockIn               BLOCK_IN;
 non terminal  SymbolBlockOut              BLOCK_OUT;
 non terminal  SymbolDeclarations          DECLARATIONS;
 non terminal  SymbolOperatorAssignation   OPERATOR_ASSIG;
-non terminal  SymbolInstructionIn         INSTRUCTION_IN;
 non terminal  SymbolInstructionOut        INSTRUCTION_OUT;
 non terminal  SymbolConstant              CONSTANT;
 non terminal  SymbolValue                 VALUE;
@@ -1292,7 +1291,7 @@ INSTRUCTION_OUT             ::= instr_out lparen VALUE:value rparen nextinstr
 
 DEFINE_FUNCTION             ::= FUNCTION_HEAD lbracket BLOCK_IN FUNCTION_BODY FUNCTION_RETURN BLOCK_OUT rbracket;
 
-FUNCTION_HEAD               ::= inst_function id:fun_id FUNCTION_PARAMS rparen two_points id:type_id
+FUNCTION_HEAD               ::= inst_function id:fun_id FUNCTION_PARAMS rparen two_points id:type_id;
 
 FUNCTION_PARAMS             ::= FUNCTION_W_PARAMS
                             | lparen;
