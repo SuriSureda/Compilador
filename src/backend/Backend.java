@@ -50,8 +50,7 @@ public class Backend {
     //    private int size;       // space occupation
     //    private Type type;      // type
     public String addVar(String name, int code, int idParent, int offset, int size, SUBJACENTTYPE type) {
-        // We add '@' for easier data manipulation
-        name = "@" + name + "_" + idParent;
+        name = name + "_" + idParent;
         // We add the variable into the table
         varTable.add(new Variable(name, code, idParent, offset, size, type));
 
@@ -60,8 +59,7 @@ public class Backend {
 
     // STRING VARIABLE
     public String addStrVar(String name, int code, int idParent, int offset, int size, String value) {
-        // We add '@' for easier data manipulation
-        name = "@" + name + "_" + idParent;
+        name = name + "_" + idParent;
         // We add the variable into the table
         varTable.add(new StrVariable(name, code, idParent, offset, size, value));
 
@@ -69,8 +67,7 @@ public class Backend {
     }
 
     public String addTempVar(int code, int idParent, int offset, int size, SUBJACENTTYPE type) {
-        // We add '@' for easier data manipulation
-        String name = "@T_"+tmp_n;
+        String name = "T"+tmp_n;
         tmp_n++;
         // We add the variable into the table
         varTable.add(new Variable(name, code, idParent, offset, size, type));
