@@ -66,6 +66,16 @@ public class Backend {
         return name;
     }
 
+    // TMP STRING VARIABLE
+    public String addTempStrVar(int idParent, int offset, int size, String value) {
+        String name = "T"+tmp_n;
+        tmp_n++;
+        // We add the variable into the table
+        varTable.add(new StrVariable(name, 0, idParent, offset, size, value));
+
+        return name;
+    }
+
     public String addTempVar(int code, int idParent, int offset, int size, SUBJACENTTYPE type) {
         String name = "T"+tmp_n;
         tmp_n++;

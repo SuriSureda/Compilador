@@ -45,9 +45,8 @@ public class SymbolValue extends SymbolBase {
 	}
 
 	// Literall string
-	public SymbolValue(String var_id, String value, int stringSize){
+	public SymbolValue(String value, int stringSize){
 		super("value", 0);
-		this.var_id = var_id;
 		this.type = TYPE.dnull;
 		this.subType = SUBJACENTTYPE.st_string;
 		this.isConstant = true;

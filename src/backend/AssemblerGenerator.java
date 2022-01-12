@@ -108,6 +108,7 @@ public class AssemblerGenerator {
         writeLine(".data");
         declareVariables();
         writeLine(".text");
+        writePrintBoolFunction();
         writeLine("main :");
     }
     
@@ -122,7 +123,7 @@ public class AssemblerGenerator {
                     writeLine(var.getName() + ": .quad 0");
                     break;
                 case st_string:
-                    writeLine(var.getName() + ": .asciz " + ((StrVariable) var).getValue());
+                    writeLine(var.getName() + ": .asciz " +"\"" + ((StrVariable) var).getValue() +"\"");
                 case st_null:
                     break;
                 default:
@@ -133,7 +134,19 @@ public class AssemblerGenerator {
         //Formato para scanf y printf.
         writeLine("format_int: .asciz \"%d\"");
         writeLine("true_label : .asciz \"true\"");
-        writeLine("false_lable : .asciz \"false\"");
+        writeLine("false_label : .asciz \"false\"");
+    }
+
+    private void writePrintBoolFunction() {
+        writeLine("print_bool :");
+        writeLine("cmp $0,%rdi");
+        writeLine("je print_false");
+        writeLine("mov $true_label, %rdi");
+        writeLine("jmp print_bool_val");
+        writeLine("print_false : mov $false_label, %rdi");
+        writeLine("print_bool_val : xor %rax, %rax");
+        writeLine("call printf");
+        writeLine("ret");
     }
 
     private void writeBottom() {
@@ -245,7 +258,7 @@ public class AssemblerGenerator {
     private void outputInstruction(Instruction instruction){
         /* when we call output, op1 stores type of dest in string format */
         if(instruction.getOp1().equals(SUBJACENTTYPE.st_integer.toString())){
-            writeLine("mov $format, %rdi");
+            writeLine("mov $format_int, %rdi");
             writeLine("mov "+instruction.getDest()+", %rsi");
             writeLine("xor %rax, %rax");
             writeLine("call printf");
@@ -256,14 +269,8 @@ public class AssemblerGenerator {
             writeLine("call printf");
         }
         if(instruction.getOp1().equals(SUBJACENTTYPE.st_boolean.toString())){
-            writeLine("mov "+instruction.getDest()+", %rax");
-            writeLine("cmp $0,%rax");
-            writeLine("je print_false");
-            writeLine("mov $true_label, %rdi");
-            writeLine("jmp print_bool");
-            writeLine("print_false : mov $false, %rdi");
-            writeLine("print_bool : xor %rax, %rax");
-            writeLine("call printf");
+            writeLine("mov "+instruction.getDest()+", %rdi");
+            writeLine("call print_bool");
         }
         
     }
@@ -304,8 +311,8 @@ public class AssemblerGenerator {
 
     // Auxiliar method which will be helping with the arithmetical calculations (sum and rest)
     private void calculateSumRes(Instruction instruction, String type) {
-        writeLine("mov " + checkType(instruction, 1) + instruction.getOp1() + ", " + "%rax");
-        writeLine("mov " + checkType(instruction, 2) + instruction.getOp2() + ", " + "%rdi");
+        writeLine("mov " + checkType(instruction, 1) + instruction.getOp1() + ", " + "%rdi");
+        writeLine("mov " + checkType(instruction, 2) + instruction.getOp2() + ", " + "%rax");
         writeLine(type + " %rax" + ", %rdi");
         writeLine("mov %rdi, " + instruction.getDest());
     }
@@ -448,24 +455,10 @@ public class AssemblerGenerator {
                 writeLine("mov $" + instruction.getOp1() + ", %rdi");
                 writeLine("mov " + "%rdi, " + instruction.getDest());
             }
-        /* } else if (instruction.isStringOp1() && !isCadenaTemporalVariable(instruction.toString())) {
-            writeLine("# Asignació feta a l'apartat .data"); */
         } else {
             writeLine("mov " + instruction.getOp1() + ", " + "%rdi");
             writeLine("mov " + "%rdi, " + instruction.getDest());
         }
-    }
-
-    // TODO!!
-    // Auxiliar method to check temporal String in the variable backend (copyInstruction)
-    // REVISAR STRING PORQUE NO SÉ MUY BIEN DE DÓNDE SALE
-    private boolean isCadenaTemporalVariable(String name) {
-        for (int i = 0; i < backend.getVarTable().size(); i++) {
-            if (backend.getVarTable().get(i).equals(name) && backend.getVarTable().get(i).equals("String")) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private void pmbInstruction(Instruction instruction) {
