@@ -628,25 +628,17 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
                             | string:value 
                             {:
                              //delete quotes
+                              value = value.replace("\"", "");
                               Type type_string = symbolsTable.get("string");
                               
                               // string size in bytes
-                              int stringSize = (value.length() - 2) * type_string.getSize();
+                              int stringSize = value.length() * type_string.getSize();
 
-                              if (value.length() - 2 > 999){
+                              if (value.length() > 999){
                                 throw new Error("String must be shorter than 1000 characters.");
                               }
-
-                              String var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, stringSize, type_string.getSubType());
-
-                              c3a_g.generateC3aInstr(
-                                Code.copy,
-                                value,
-                                null,
-                                var_id
-                              );                          
                               
-                              SymbolValue sym = new SymbolValue(var_id, value, stringSize);
+                              SymbolValue sym = new SymbolValue(value, stringSize);
 
                               RESULT = sym;
                             :}
@@ -1277,7 +1269,18 @@ CALL_BODY                   ::= CALL_BODY:body separator VALUE:value
 INSTRUCTION_OUT             ::= instr_out lparen VALUE:value rparen nextinstr
                             {:
                               String var_id = value.getVarId();
-                              String subtype_name = value.getSubtype().toString();
+                              String subtype_name;
+
+                              if(value.getType() == TYPE.dnull){
+                                subtype_name = value.getSubType().toString();
+                              }else{
+                                Type var_type = symbolsTable.get(value.getTypeName());
+                                subtype_name = var_type.getSubType().toString();
+                              }
+
+                              if(value.getType() == TYPE.dnull && value.getSubType() == SUBJACENTTYPE.st_string){
+                                var_id = backend.addTempStrVar(backend.getLastProcedureId(), 0,value.getStringSize(), (String) value.getValue());
+                              }
 
                               c3a_g.generateC3aInstr(
                                 Code.output,
