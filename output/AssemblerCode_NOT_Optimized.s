@@ -1,5 +1,6 @@
-.global _start
-.text
+.global main
+.extern printf
+.extern exit
 .data
 T0: .quad 0
 vx_0: .quad 0
@@ -14,7 +15,9 @@ T6: .quad 0
 T7: .quad 0
 T8: .quad 0
 T9: .quad 0
-format: .asciz "%d"
+format: .asciz "%d\n"
+.text
+main :
 #T0 = 5
 mov $5, %rdi
 mov %rdi, T0
@@ -111,7 +114,12 @@ mov %rdi, vx_0
 #LABEL_2:skip
 LABEL_2:
 
+#output T10
+mov $format, %rdi
+mov vx_0, %esi
+xor %rax, %rax
+call printf
+
 #exit
-mov $60, %rax
-xor %rdi,%rdi
-syscall
+xor %rdi, %rdi
+call exit
