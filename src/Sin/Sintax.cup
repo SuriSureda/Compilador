@@ -1277,10 +1277,11 @@ CALL_BODY                   ::= CALL_BODY:body separator VALUE:value
 INSTRUCTION_OUT             ::= instr_out lparen VALUE:value rparen nextinstr
                             {:
                               String var_id = value.getVarId();
+                              String subtype_name = value.getSubtype().toString();
 
                               c3a_g.generateC3aInstr(
                                 Code.output,
-                                null,
+                                subtype_name,
                                 null,
                                 var_id
                               );

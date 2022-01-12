@@ -6,6 +6,7 @@
 package backend;
 
 import SymbolsTable.*;
+import SymbolsTable.Type.SUBJACENTTYPE;
 import backend.Instruction.Code;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -101,6 +102,9 @@ public class AssemblerGenerator {
     // Generates the header of program
     private void writeHead() {
         writeLine(".global main");
+        /* C functions declaration */
+        writeLine(".extern printf");
+        writeLine(".extern exit");
         writeLine(".data");
         declareVariables();
         writeLine(".text");
@@ -127,14 +131,14 @@ public class AssemblerGenerator {
         }
 
         //Formato para scanf y printf.
-        writeLine("format: .asciz \"%d\"");
+        writeLine("format_int: .asciz \"%d\"");
+        writeLine("true_label : .asciz \"true\"");
+        writeLine("false_lable : .asciz \"false\"");
     }
 
     private void writeBottom() {
         writeLine("#exit");
-        writeLine("mov $60, %rax");
-        writeLine("xor %rdi,%rdi");
-        writeLine("syscall");
+        writeLine("call exit");
     }
 
     public void toAssembly(Instruction instruction, Instruction nextInstruction) {
@@ -239,10 +243,29 @@ public class AssemblerGenerator {
     }
 
     private void outputInstruction(Instruction instruction){
-        writeLine("mov format, %rdi");
-        writeLine("mov "+instruction.getDest()+", %rsi");
-        writeLine("xor %rax, %rax");
-        writeLine("call printf");
+        /* when we call output, op1 stores type of dest in string format */
+        if(instruction.getOp1().equals(SUBJACENTTYPE.st_integer.toString())){
+            writeLine("mov $format, %rdi");
+            writeLine("mov "+instruction.getDest()+", %rsi");
+            writeLine("xor %rax, %rax");
+            writeLine("call printf");
+        }
+        if(instruction.getOp1().equals(SUBJACENTTYPE.st_string.toString())){
+            writeLine("mov $"+instruction.getDest()+", %rdi");
+            writeLine("xor %rax, %rax");
+            writeLine("call printf");
+        }
+        if(instruction.getOp1().equals(SUBJACENTTYPE.st_boolean.toString())){
+            writeLine("mov "+instruction.getDest()+", %rax");
+            writeLine("cmp $0,%rax");
+            writeLine("je print_false");
+            writeLine("mov $true_label, %rdi");
+            writeLine("jmp print_bool");
+            writeLine("print_false : mov $false, %rdi");
+            writeLine("print_bool : xor %rax, %rax");
+            writeLine("call printf");
+        }
+        
     }
     
     // Auxiliar method for the skip Instruction
