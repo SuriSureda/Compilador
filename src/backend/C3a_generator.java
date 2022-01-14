@@ -24,6 +24,7 @@ public class C3a_generator {
 
     // txt folder where we'll find the data
     private static final String PATH = "output\\c3_code.txt";
+    private static final String PATH_OPTIMIZED = "output\\c3_code_optimized.txt";
 
     // other variables used
     private int variableNumber;
@@ -39,12 +40,19 @@ public class C3a_generator {
 //    private int offset = 0;
 //    private boolean function = false;
 
+    private Optimizer optimizer;
+
     // Writer to save information
     private BufferedWriter writer;
 
     public C3a_generator(Backend backend) {
         variableNumber = 0;
         this.instructions = new ArrayList<Instruction>();
+    }
+
+    public void optimize() {
+        optimizer = new Optimizer(instructions);
+        this.instructions = optimizer.optimize();
     }
 
     // Add a new instruction
@@ -58,16 +66,24 @@ public class C3a_generator {
         instructions.add(index, new Instruction(opCode, op1, op2, dest));
     }
 
-    public void savec3aInFile() {
+    public void savec3aInFile(boolean optimized) {
         String result = "-----------------------------------------------\n"
-                + "---------------- C3@ code list ----------------\n"
+                + "---------------- C3@ code list"
+                + (optimized ? "optimized" : "")
+                +" ----------------\n"
                 + "-----------------------------------------------\n";
         for (int i = 0; i < instructions.size(); i++) {
             result += instructions.get(i) + "\n\n";
         }
         try {
             // File Writter
-            File file = new File(PATH);
+            File file;
+            if(optimized){
+                file = new File(PATH_OPTIMIZED);
+            }else{
+                file = new File(PATH);
+            }
+             
             if(!file.exists()){
                 file.createNewFile();
             }

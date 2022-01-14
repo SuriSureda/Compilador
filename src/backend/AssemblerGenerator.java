@@ -32,7 +32,7 @@ public class AssemblerGenerator {
     // Write the resulting code
     private BufferedWriter writer;
     private final String PATH = "output\\AssemblerCode_NOT_Optimized.s";
-    private final String PATH_2 = "output\\AssemblerCode_Optimized.s";
+    private final String PATH_OPTIMIZED = "output\\AssemblerCode_Optimized.s";
     // Symbol Table
     private SymbolsTable symbolsTable;
     // TS + TV
@@ -59,9 +59,14 @@ public class AssemblerGenerator {
         assemblyInstructions = new ArrayList<String>();
     }
 
-    public void generateAssembler() {
+    public void generateAssembler(boolean optimized) {
         try{
-            File file = new File(PATH);
+            File file;
+            if(optimized){
+                file = new File(PATH_OPTIMIZED);
+            }else{
+                file = new File(PATH);
+            }
             if(!file.exists()){
                 file.createNewFile();
             }

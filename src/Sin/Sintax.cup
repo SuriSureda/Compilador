@@ -140,8 +140,15 @@ start with STARTS;
 STARTS                      ::=  INIT DECLARE_FUNCTIONS
                             {:
                               backend.storeTables();
-                              c3a_g.savec3aInFile();
-                              assembler.generateAssembler();
+
+                              //NOT OPTIMIZED CODE
+                              c3a_g.savec3aInFile(false);
+                              assembler.generateAssembler(false);
+                              
+                              //OPTIMIZED CODE
+                              c3a_g.optimize();
+                              c3a_g.savec3aInFile(true);
+                              assembler.generateAssembler(true);
                             :};
 
 INIT                        ::= {:

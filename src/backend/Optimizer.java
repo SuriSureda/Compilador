@@ -5,6 +5,8 @@
  */
 package backend;
 
+import java.util.ArrayList;
+
 import backend.Instruction;
 import backend.InstructionTable;
 
@@ -16,20 +18,20 @@ import backend.InstructionTable;
 // both quality and speed of our assembler programs.
 public class Optimizer {
 
-    private InstructionTable table;
+    private ArrayList<Instruction> instructionSet;
     private Instruction current, next;
     private boolean someChangeOcurred = true;
 
-    public Optimizer(InstructionTable instructionSet) {
-        this.table = instructionSet;
+    public Optimizer(ArrayList<Instruction> instructionSet) {
+        this.instructionSet = instructionSet;
     }
 
-    public void optimize() {
+    public ArrayList<Instruction> optimize() {
         while (someChangeOcurred) {
             someChangeOcurred = false;
-            for (int i = 0; i < table.getTableSize() - 1; i++) {
-                current = table.getInstruction(i);
-                next = table.getInstruction(i + 1);
+            for (int i = 0; i < instructionSet.size() - 1; i++) {
+                current = instructionSet.get(i);
+                next = instructionSet.get(i + 1);
                 String operator = current.getOpCode().toString();
 
                 switch (operator) {
@@ -43,27 +45,26 @@ public class Optimizer {
                 }
             }
         }
+
+        return this.instructionSet;
     }
 
     private void deferredAssignment(int i) {
         if (current.getDest().equals(next.getOp1()) && next.getOpCode().toString() != "param") {
 
             if (current.getOp2() == null) {
-                                        
                 Instruction novainstruccio = new Instruction(Instruction.Code.copy, current.getOp1(),  next.getDest(), next.getDest() + " = " + current.getOp1());
-                table.addInstruction(Instruction.Code.copy, current.getOp1(),  next.getDest(), next.getDest() + " = " + current.getOp1());
-                
-                table.addInstruction(i, novainstruccio);
-                table.eraseInstruction(i + 1);
-                table.eraseInstruction(i + 1);
+                instructionSet.add(i, novainstruccio);
+                instructionSet.remove(i + 1);
+                instructionSet.remove(i + 1);
                 someChangeOcurred = true;
             } else if (current.getOp2().toString() != null) {
                                         
                 Instruction novainstruccio = new Instruction(current.getOpCode(), current.getOp1(), current.getOp2(), next.getDest() + " = " + current.getOp1() + " " + current.signeOperador() + " " + current.getOp2());
                 
-                table.addInstruction(i, novainstruccio);
-                table.eraseInstruction(i + 1);
-                table.eraseInstruction(i + 1);
+                instructionSet.add(i, novainstruccio);
+                instructionSet.remove(i + 1);
+                instructionSet.remove(i + 1);
                 someChangeOcurred = true;
             }
 
