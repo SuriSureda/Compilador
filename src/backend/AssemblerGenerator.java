@@ -108,6 +108,7 @@ public class AssemblerGenerator {
         writeLine(".data");
         declareVariables();
         writeLine(".text");
+        writeCMPFunctions();
         writePrintBoolFunction();
         writeLine("main :");
     }
@@ -212,28 +213,18 @@ public class AssemblerGenerator {
             // called substract Jump
 
             // Lower than
-            case if_LT:
-                substractJump(instruction, "jl ");
-                break;
+            case LT:
             // Lower/equals
-            case if_LE:
-                substractJump(instruction, "jle ");
-                break;
+            case LE:
             // Equals
-            case if_EQ:
-                substractJump(instruction, "je ");
-                break;
+            case EQ:
             // Negative
-            case if_NE:
-                substractJump(instruction, "jne ");
-                break;
+            case NE:
             // Greater/equals
-            case if_GE:
-                substractJump(instruction, "jge ");
-                break;
+            case GE:
             // Greater
-            case if_GT:
-                substractJump(instruction, "jg ");
+            case GT:
+                substractCMP(instruction, instruction.getOpCode());
                 break;
             case and:
                 break;
@@ -435,11 +426,13 @@ public class AssemblerGenerator {
     }
 
     // Auxiliar method which indicates what kind of jump are we analyzing
-    private void substractJump(Instruction instruction, String type) {
-        writeLine("mov " + checkLiteral(instruction, 1) + ", %edx");
-        writeLine("mov " + checkLiteral(instruction, 2) +  ", %ecx");
-        writeLine("cmp %ecx, %edx");
-        writeLine(type + instruction.getDest());
+    private void substractCMP(Instruction instruction, Code type) {
+        writeLine("mov " + checkLiteral(instruction, 2) + ", %rdi");
+        writeLine("mov " + checkLiteral(instruction, 1) +  ", %rsi");
+        writeLine("xor %rax, %rax #clean return value register");
+        String functionLabel = getCMPFunctionLabel(type);
+        writeLine("call "+functionLabel);
+        writeLine("mov %rax,"+instruction.getDest()+" # get return value");
     }
 
     // Auxiliar method that generates the copy Instruction
@@ -550,5 +543,99 @@ public class AssemblerGenerator {
         }
 
         return back;
+    }
+
+    private String getCMPFunctionLabel(Code code){
+        switch(code){
+            case EQ:
+                return "CMP_EQ";
+            case GE:
+                return "CMP_GE";
+            case GT:
+                return "CMP_GT";
+            case LE:
+                return "CMP_LE";
+            case LT:
+                return "CMP_LT";
+            case NE:
+                return "CMP_NE";
+            default:
+                return "";
+        }
+    }
+
+    private void writeCMPFunctions(){
+        writeEQ();
+        writeNE();
+        writeGT();
+        writeGE();
+        writeLE();
+        writeLT();
+    }
+
+    private void writeLT() {
+        writeLine("CMP_LT :");
+        writeLine("cmp %rdi, %rsi");
+        writeLine("jge CMP_LT_GE");
+        writeLine("mov $1, %rax");
+        writeLine("ret");
+        writeLine("CMP_LT_GE :");
+        writeLine("mov $0, %rax");
+        writeLine("ret");
+    }
+
+    private void writeLE() {
+        writeLine("CMP_LE :");
+        writeLine("cmp %rdi, %rsi");
+        writeLine("jg CMP_LE_G");
+        writeLine("mov $1, %rax");
+        writeLine("ret");
+        writeLine("CMP_LE_G :");
+        writeLine("mov $0, %rax");
+        writeLine("ret");
+    }
+
+    private void writeGE() {
+        writeLine("CMP_GE :");
+        writeLine("cmp %rdi, %rsi");
+        writeLine("jl CMP_GE_L");
+        writeLine("mov $1, %rax");
+        writeLine("ret");
+        writeLine("CMP_GE_L :");
+        writeLine("mov $0, %rax");
+        writeLine("ret");
+    }
+
+    private void writeGT() {
+        writeLine("CMP_GT :");
+        writeLine("cmp %rdi, %rsi");
+        writeLine("jl CMP_GT_LE");
+        writeLine("mov $1, %rax");
+        writeLine("ret");
+        writeLine("CMP_GT_LE :");
+        writeLine("mov $0, %rax");
+        writeLine("ret");
+    }
+
+    private void writeNE() {
+        writeLine("CMP_NE :");
+        writeLine("cmp %rdi, %rsi");
+        writeLine("je CMP_NE_E");
+        writeLine("mov $1, %rax");
+        writeLine("ret");
+        writeLine("CMP_NE_E :");
+        writeLine("mov $0, %rax");
+        writeLine("ret");
+    }
+
+    private void writeEQ() {
+        writeLine("CMP_EQ :");
+        writeLine("cmp %rdi, %rsi");
+        writeLine("jne CMP_EQ_NE");
+        writeLine("mov $1, %rax");
+        writeLine("ret");
+        writeLine("CMP_EQ_NE :");
+        writeLine("mov $0, %rax");
+        writeLine("ret");
     }
 }

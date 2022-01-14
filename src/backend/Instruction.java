@@ -26,12 +26,12 @@ public class Instruction {
         not,
         skip,
         go_to, // UN-conditional jump
-        if_LT, // <    jl
-        if_LE, // <=   jle
-        if_EQ, // =    je
-        if_NE, // !=   jne
-        if_GE, // >=   jge
-        if_GT, // >    jg
+        LT, // <    jl
+        LE, // <=   jle
+        EQ, // =    je
+        NE, // !=   jne
+        GE, // >=   jge
+        GT, // >    jg
         pmb,
         call,
         param,
@@ -75,13 +75,13 @@ public class Instruction {
             case go_to:
                 result += this.opCode + " "+ this.dest;
                 break;
-            case if_EQ:
-            case if_GE:
-            case if_GT:
-            case if_LE:
-            case if_LT:
-            case if_NE: 
-                result += this.opCode + ": " + this.op1 + "," + this.op2 + " goto " + this.dest; 
+            case EQ:
+            case GE:
+            case GT:
+            case LE:
+            case LT:
+            case NE: 
+                result += this.dest + "= " + this.op1 + " "+ this.opCode +" "+ this.op2; 
                 break;
             /* OTHER OPERATIONS*/    
             case input:
@@ -127,17 +127,17 @@ public class Instruction {
                 return "%";
             case prod:
                 return "*";
-            case if_LT:
+            case LT:
                 return "<";
-            case if_LE:
+            case LE:
                 return "<=";
-            case if_EQ:
+            case EQ:
                 return "=";
-            case if_NE:
+            case NE:
                 return "!=";
-            case if_GE:
+            case GE:
                 return ">=";
-            case if_GT:
+            case GT:
                 return ">";
         }
         return null;

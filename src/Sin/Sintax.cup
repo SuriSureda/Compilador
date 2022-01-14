@@ -142,9 +142,6 @@ STARTS                      ::=  INIT DECLARE_FUNCTIONS
                               backend.storeTables();
                               c3a_g.savec3aInFile();
                               assembler.generateAssembler();
-                            :}
-                            |error {:
-                              System.out.println("Expected main function declaration");
                             :};
 
 INIT                        ::= {:
@@ -891,7 +888,7 @@ BOOLEAN_VALUE               ::= bool:bool_val
                               RESULT = sym;
                             :};
 
-VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rparen 
+VALUE_COMPARISON            ::= VALUE:val1 op_relational:op VALUE:val2 
                             {:
 
                               SymbolValueComparison sym;
@@ -927,29 +924,29 @@ VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rp
                                 throw new Error("Value 1 subtype is different from value 2");
                               }
 
-                              Code op_code;
+                              Code op_code = Code.EQ;
                               switch(op){
                                 case "=":
-                                  op_code = Code.if_EQ;
+                                  op_code = Code.EQ;
                                   break;
                                 case "!=":
-                                  op_code = Code.if_NE;
+                                  op_code = Code.NE;
                                   break;
                                 case "<": 
                                   if(subType1 != SUBJACENTTYPE.st_integer) throw new Error("This operator ("+op+") only works with integer subtypes");
-                                  op_code = Code.if_LT;
+                                  op_code = Code.LT;
                                   break;
                                 case "<=":
                                   if(subType1 != SUBJACENTTYPE.st_integer) throw new Error("This operator ("+op+") only works with integer subtypes");
-                                  op_code = Code.if_LE;
+                                  op_code = Code.LE;
                                   break;
                                 case ">": 
                                   if(subType1 != SUBJACENTTYPE.st_integer) throw new Error("This operator ("+op+") only works with integer subtypes");
-                                  op_code = Code.if_GT;
+                                  op_code = Code.GT;
                                   break;
                                 case ">=":
                                   if(subType1 != SUBJACENTTYPE.st_integer) throw new Error("This operator ("+op+") only works with integer subtypes");
-                                  op_code = Code.if_GE;
+                                  op_code = Code.GE;
                                   break;
                               }
 
@@ -1006,6 +1003,13 @@ VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rp
                                 sym = new SymbolValueComparison(var_id);
                               }
 
+                              c3a_g.generateC3aInstr(
+                                op_code,
+                                val1.getVarId(),
+                                val2.getVarId(),
+                                var_id
+                              );
+
                               RESULT = sym;
                             :};
 
@@ -1020,7 +1024,7 @@ COND                         ::=  INITIALIZE_BOOLEAN_OP:bool_op
                                 labelFalseStack.push(false_label);
                                 
                                 c3a_g.generateC3aInstr(
-                                  Code.if_EQ,
+                                  Code.EQ,
                                   var_id,
                                   "true",
                                   true_label
