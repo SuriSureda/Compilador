@@ -11,36 +11,31 @@ public class ParserSym {
   public static final int string = 4;
   public static final int op_logical = 7;
   public static final int number = 3;
-  public static final int inst_main = 32;
-  public static final int separator = 30;
+  public static final int inst_main = 27;
+  public static final int separator = 25;
   public static final int inst_elif = 11;
-  public static final int two_points = 31;
-  public static final int inst_case = 14;
+  public static final int two_points = 26;
   public static final int op_arithmetical = 8;
-  public static final int lbracket = 27;
-  public static final int dconst = 21;
-  public static final int inst_function = 19;
+  public static final int lbracket = 22;
+  public static final int dconst = 16;
+  public static final int inst_function = 14;
   public static final int op_assig = 9;
-  public static final int inst_break = 15;
-  public static final int instr_out = 24;
+  public static final int instr_out = 19;
   public static final int bool = 5;
-  public static final int inst_return = 20;
   public static final int EOF = 0;
+  public static final int inst_return = 15;
   public static final int inst_if = 10;
   public static final int id = 2;
   public static final int inst_else = 12;
-  public static final int inst_switch = 13;
-  public static final int rparen = 26;
-  public static final int nextinstr = 29;
-  public static final int inst_call = 22;
+  public static final int rparen = 21;
+  public static final int nextinstr = 24;
+  public static final int inst_call = 17;
   public static final int error = 1;
-  public static final int inst_default = 16;
-  public static final int rbracket = 28;
+  public static final int rbracket = 23;
   public static final int op_relational = 6;
-  public static final int lparen = 25;
-  public static final int instr_in = 23;
-  public static final int inst_for = 18;
-  public static final int inst_while = 17;
+  public static final int lparen = 20;
+  public static final int instr_in = 18;
+  public static final int inst_while = 13;
   public static final String[] terminalNames = new String[] {
   "EOF",
   "error",
@@ -55,12 +50,7 @@ public class ParserSym {
   "inst_if",
   "inst_elif",
   "inst_else",
-  "inst_switch",
-  "inst_case",
-  "inst_break",
-  "inst_default",
   "inst_while",
-  "inst_for",
   "inst_function",
   "inst_return",
   "dconst",

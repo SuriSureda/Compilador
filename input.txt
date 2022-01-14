@@ -1,13 +1,33 @@
-main {
+function main() {
 	vx : int = 5;
 	vy : int = 10;
 	vz : int = 0;
-	vz = (vx + vy);
-	vz = (vz * vz);
 
-	if(true){
-		vx = (vx + 1);
-	}else{
-		vx = (vx - 1);
+	if(vz > vx){
+		output("VZ > VX\n");
 	}
+	elif(vz > vy){
+		output("VZ > VY\n");
+	}
+	elif(vx < vy){
+		while(vz < vx){
+			output("Inside loop :\n");
+			output("VZ : ");
+			output(vz);
+			output("\n");
+			output("VX : ");
+			output(vx);
+			output("\n");
+			vz = (vz + 1 + 1);
+		}
+		output("Inside outside loop :\n");
+		output("VZ : ");
+		output(vz);
+		output("\n");
+		output("VX : ");
+		output(vx);
+		output("\n");
+	}
+
+	output("End\n");
 }
