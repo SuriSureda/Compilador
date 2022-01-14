@@ -42,6 +42,18 @@ parser code
       );
   }
 
+  public void unrecovered_syntax_error(Symbol s){
+    try {
+      scanner.closeTokensFile((s.left+1), (s.right+1));
+
+      report_fatal_error(
+        "Unrecovered Syntax Error : " + s.value + " (" + (s.left+1) + ":" + (s.right+1) + ")\n", null
+      );
+    } catch (Exception e) {
+			e.printStackTrace();
+		};
+  }
+
   private void initTypes() {
     //init INT type
     Type int_type = new Type(TYPE.dtype, SUBJACENTTYPE.st_integer, 4, Integer.MIN_VALUE, Integer.MIN_VALUE);
