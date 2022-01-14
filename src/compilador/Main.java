@@ -29,7 +29,7 @@ public class Main {
 	private static final String CUP_FILE = CUP_DIR + "Sintax.cup";
 	private static final String CUP_JAVA = "Parser.java";
 
-	private static final String OUTPUT_DIR = WORK_DIR + "output\\";
+	private static final String OUTPUT_DIR = "output\\";
 
 	// All file data
 	// ok cases
