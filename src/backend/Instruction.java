@@ -26,6 +26,7 @@ public class Instruction {
         not,
         skip,
         go_to, // UN-conditional jump
+        jump_cond,
         LT, // <    jl
         LE, // <=   jle
         EQ, // =    je
@@ -83,6 +84,9 @@ public class Instruction {
             case NE: 
                 result += this.dest + "= " + this.op1 + " "+ this.opCode +" "+ this.op2; 
                 break;
+
+            case jump_cond : 
+                result += "if "+ this.op1 + "=" + this.op2 + " goto " + this.dest;   
             /* OTHER OPERATIONS*/    
             case input:
                 break;

@@ -1023,8 +1023,9 @@ COND                         ::=  INITIALIZE_BOOLEAN_OP:bool_op
                                 labelTrueStack.push(true_label);
                                 labelFalseStack.push(false_label);
                                 
+                                
                                 c3a_g.generateC3aInstr(
-                                  Code.EQ,
+                                  Code.jump_cond,
                                   var_id,
                                   "true",
                                   true_label

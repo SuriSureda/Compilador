@@ -211,7 +211,9 @@ public class AssemblerGenerator {
 
             // In order to obtain which branch is we are using an auxiliar method
             // called substract Jump
-
+            case jump_cond : 
+                jumpCondInstruction(instruction);
+                break;
             // Lower than
             case LT:
             // Lower/equals
@@ -244,6 +246,12 @@ public class AssemblerGenerator {
         }
         writeLine("");
         previousInstr = instruction;
+    }
+
+    private void jumpCondInstruction(Instruction instruction){
+        // writeLine("cmp "+instruction.getOp1()+","+instruction.getOp2());
+        writeLine("cmp $1,"+instruction.getOp1());
+        writeLine("je "+instruction.getDest());
     }
 
     private void outputInstruction(Instruction instruction){
