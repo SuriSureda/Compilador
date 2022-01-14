@@ -47,7 +47,7 @@ parser code
       scanner.closeTokensFile((s.left+1), (s.right+1));
 
       report_fatal_error(
-        "Unrecovered Syntax Error : " + s.value + " (" + (s.left+1) + ":" + (s.right+1) + ")\n", null
+        "Unrecovered Syntax Error : " + s.value + " (" + (s.left+1) + ":" + (s.right+1) + ")", null
       );
     } catch (Exception e) {
 			e.printStackTrace();
@@ -1127,6 +1127,14 @@ ELSE                        ::= M_END:mend inst_else lbracket BLOCK_IN COND_F IN
 M_WHILE                     ::= EMPTY
                             {: 
                               String label = backend.addLabel();
+
+                              c3a_g.generateC3aInstr(
+                                Code.skip,
+                                null,
+                                null,
+                                label
+                              );
+
                               RESULT = new SymbolMWhile(label);
                             :};
                   
@@ -1143,7 +1151,7 @@ INSTRUCTION_WHILE            ::= inst_while M_WHILE:mwhile COND lbracket BLOCK_I
 
                               String end_label = labelFalseStack.pop();
                               c3a_g.generateC3aInstr(
-                                Code.go_to,
+                                Code.skip,
                                 null,
                                 null,
                                 end_label
