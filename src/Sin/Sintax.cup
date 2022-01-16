@@ -170,7 +170,7 @@ CALL_MAIN                   ::= inst_function inst_main lparen rparen lbracket I
                               RESULT = new SymbolCallMain();
                             :};
 
-INSTRUCTIONS                ::=   INSTRUCTIONS INSTRUCTION 
+INSTRUCTIONS                ::=  INSTRUCTIONS INSTRUCTION 
                             {:
                               RESULT = new SymbolInstructions();
                             :}
@@ -326,7 +326,7 @@ CONSTANT                    ::=  dconst
                             {:
                               RESULT = new SymbolConstant(true);
                             :}
-                            |  
+                            |  EMPTY
                             {:
                               RESULT = new SymbolConstant(false);
                             :};
