@@ -11,9 +11,9 @@ package Lex;
  * @author soyjo
  */
 
-public class  Tokens{
+public class  Token{
 
-    public enum Token {
+    public enum Tokens {
         ID,
         DIGIT,
         CHARACTER,
@@ -56,27 +56,33 @@ public class  Tokens{
         SEPARATOR,
         TWO_POINTS,
         ERROR   ,
-        EOF
+        EOF,
     }
 
-    private Token id;
+    private Tokens id;
     private int line;
     private int column;
+    private String lexeme;
 
-    public Tokens(Token in, int line, int column){
+    public Token(Tokens in, int line, int column, String lexeme){
         this.id = in;
         this.line = line;
         this.column = column;
+        this.lexeme = lexeme;
     }
 
     @Override
     public String toString(){
-    
-        String result = "";
-        
-        result = "TOKEN DETECTED: [" + this.id + "]\n";
-        
-        result += "AT LINE: [" + this.line + "] - AT COLUMN: [" + this.column + "]\n\r";
+
+        String result = "\t" + this.id.toString();
+
+        result += "["+this.lexeme+"]";
+        result += "("+this.line+":"+this.column+")";
+        if(this.id == Tokens.NEXTINSTR || this.id == Tokens.RBRACKET || this.id == Tokens.LBRACKET){
+            result += "\n\n";
+        }else{
+            result += " ";
+        }
         
         return result;
     }
