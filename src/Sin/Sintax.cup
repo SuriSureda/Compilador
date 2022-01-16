@@ -66,6 +66,10 @@ parser code
     //init BOOLEAN type
     Type bool_type = new Type(TYPE.dtype,SUBJACENTTYPE.st_boolean,2,0,1);
     symbolsTable.add("boolean",bool_type);
+
+    //init VOID type
+    Type void_type = new Type(TYPE.dnull, SUBJACENTTYPE.st_null, 0, 0, 0);
+    symbolsTable.add("void", void_type);
   }
 
 :};
@@ -124,10 +128,10 @@ non terminal  SymbolCaseDefault           CASE_DEFAULT;
 */
 non terminal  SymbolDefFunction           DEFINE_FUNCTION;
 
-non terminal  SymbolFunHead               FUNCTION_HEAD;
+non terminal  SymbolFunInit               FUNCTION_INIT;
 non terminal  SymbolFunParams             FUNCTION_PARAMS;
 non terminal  SymbolFunWParams            FUNCTION_W_PARAMS;
-non terminal  SymbolFunBody               FUNCTION_BODY;
+non terminal  SymbolFunInstructions       FUNCTION_INSTRUCTIONS;
 non terminal  SymbolFunReturn             FUNCTION_RETURN;
 
 non terminal  SymbolCallFunction          CALL_FUNCTION;
@@ -170,7 +174,7 @@ CALL_MAIN                   ::= inst_function inst_main lparen rparen lbracket I
                               RESULT = new SymbolCallMain();
                             :};
 
-INSTRUCTIONS                ::=  INSTRUCTIONS INSTRUCTION 
+INSTRUCTIONS                ::= INSTRUCTIONS INSTRUCTION 
                             {:
                               RESULT = new SymbolInstructions();
                             :}
@@ -1335,20 +1339,84 @@ INSTRUCTION_OUT             ::= instr_out lparen VALUE:value rparen nextinstr
                             :};
 
 
-DEFINE_FUNCTION             ::= FUNCTION_HEAD lbracket BLOCK_IN FUNCTION_BODY FUNCTION_RETURN BLOCK_OUT rbracket;
+DEFINE_FUNCTION             ::= FUNCTION_INIT lbracket BLOCK_IN FUNCTION_INSTRUCTIONS FUNCTION_RETURN BLOCK_OUT rbracket
+                            {:
 
-FUNCTION_HEAD               ::= inst_function id:fun_id FUNCTION_PARAMS rparen two_points id:type_id;
 
-FUNCTION_PARAMS             ::= FUNCTION_W_PARAMS
-                            | lparen;
+                            :};
 
-FUNCTION_W_PARAMS           ::= FUNCTION_W_PARAMS separator id:id two_points id:type_id
-                            | lparen id:id two_points id:type_id ;
+FUNCTION_INIT               ::= inst_function id:fun_id FUNCTION_PARAMS rparen two_points id:type_id
+                            {:
 
-FUNCTION_BODY               ::= INSTRUCTIONS
-                            | ;
+                            :};
 
-FUNCTION_RETURN             ::= inst_return VALUE nextinstr
-                            | ; 
+FUNCTION_PARAMS             ::= FUNCTION_W_PARAMS:params
+                            {:
+                              RESULT = new SymbolFunParams(params.getParams());
+                            :}
+                            | lparen
+                            {:
+                              RESULT = new SymbolFunParams();
+                            :};
+
+FUNCTION_W_PARAMS           ::= FUNCTION_W_PARAMS:prev_params separator id:id two_points id:type_id
+                            {:
+                              //check param type
+                              Type type_type = symbolsTable.get(type_id);
+                              if(type_type.getType() != TYPE.dtype){
+                                throw new Error("Invalid param type");
+                              }
+
+                              Type param_type = new Type(TYPE.darg, type_id);
+
+                              Param param = new Param(id, param_type);
+
+                              RESULT = new SymbolFunWParams(param, prev_params);
+                            :}
+                            | lparen id:id two_points id:type_id
+                            {:
+                              //check param type
+                              Type type_type = symbolsTable.get(type_id);
+                              if(type_type.getType() != TYPE.dtype){
+                                throw new Error("Invalid param type");
+                              }
+
+                              Type param_type = new Type(TYPE.darg, type_id);
+
+                              Param param = new Param(id, param_type);
+
+                              RESULT = new SymbolFunWParams(param);
+                            :};
+
+FUNCTION_INSTRUCTIONS       ::= INSTRUCTIONS
+                            {:
+                              RESULT = new SymbolFunBody();
+                            :}
+                            | 
+                            {:
+                              RESULT = new SymbolFunBody();
+                            :};
+
+FUNCTION_RETURN             ::= inst_return VALUE:value nextinstr
+                            {:
+                              // is literall
+                              SUBJACENTTYPE subType;
+                              if(value.getType() == TYPE.dnull){
+                                subType = value.getSubType();
+                              }
+
+                              // is variable
+                              if(value.getType() != TYPE.dnull){
+                                Type type_type = symbolsTable.get(value.getTypeName());
+                                subType = type.getSubType();
+                              }
+
+                              RESULT = new SymbolFunReturn(value.getVarId(), subType);
+                            :}
+                            // | inst_return
+                            | EMPTY
+                            {:
+                              RESULT = new SymbolFunReturn();
+                            :}; 
 
 EMPTY                       ::= {: RESULT = new SymbolEmpty(); :};
