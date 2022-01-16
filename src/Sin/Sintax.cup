@@ -92,12 +92,18 @@ terminal        op_assig, inst_if, inst_elif, inst_else,
 
 non terminal  SymbolStarts                STARTS;
 non terminal  SymbolInit                  INIT;
-non terminal  SymbolCallMain              CALL_MAIN;
+
+non terminal  SymbolMain                  MAIN;
+non terminal  SymbolMainInstr             MAIN_INSTRUCTIONS;
+
 non terminal  SymbolInstructions          INSTRUCTIONS;
 non terminal  SymbolInstruction           INSTRUCTION;
+
 non terminal  SymbolBlockIn               BLOCK_IN;
 non terminal  SymbolBlockOut              BLOCK_OUT;
+
 non terminal  SymbolDeclarations          DECLARATIONS;
+
 non terminal  SymbolOperatorAssignation   OPERATOR_ASSIG;
 non terminal  SymbolInstructionOut        INSTRUCTION_OUT;
 non terminal  SymbolConstant              CONSTANT;
@@ -126,8 +132,8 @@ non terminal  SymbolInstructionSwitch     INSTRUCTION_SWITCH;
 non terminal  SymbolCases                 CASES;
 non terminal  SymbolCaseDefault           CASE_DEFAULT;
 */
+non terminal  SymbolDeclareFunctions      DECLARE_FUNCTIONS;
 non terminal  SymbolDefFunction           DEFINE_FUNCTION;
-
 non terminal  SymbolFunInit               FUNCTION_INIT;
 non terminal  SymbolFunParams             FUNCTION_PARAMS;
 non terminal  SymbolFunWParams            FUNCTION_W_PARAMS;
@@ -137,7 +143,6 @@ non terminal  SymbolFunReturn             FUNCTION_RETURN;
 non terminal  SymbolCallFunction          CALL_FUNCTION;
 non terminal  SymbolCallBody              CALL_BODY;
 non terminal  SymbolEmpty                 EMPTY;
-non terminal  SymbolDeclareFunctions      DECLARE_FUNCTIONS;
 
 start with STARTS;
 
@@ -164,14 +169,23 @@ DECLARE_FUNCTIONS           ::= DEFINE_FUNCTION DECLARE_FUNCTIONS
                             {:
                               RESULT = new SymbolDeclareFunctions();
                             :}
-                            | CALL_MAIN
+                            | MAIN
                             {:
                               RESULT = new SymbolDeclareFunctions();
                             :};
                             
 
-CALL_MAIN                   ::= inst_function inst_main lparen rparen lbracket INSTRUCTIONS rbracket {:
-                              RESULT = new SymbolCallMain();
+MAIN                        ::= inst_function inst_main lparen rparen lbracket MAIN_INSTRUCTIONS rbracket {:
+                              RESULT = new SymbolMain();
+                            :};
+
+MAIN_INSTRUCTIONS           ::= INSTRUCTIONS
+                            {:
+                              RESULT = new SymbolMainInstr();
+                            :}
+                            | EMPTY
+                            {:
+                              RESULT = new SymbolMainInstr();
                             :};
 
 INSTRUCTIONS                ::= INSTRUCTIONS INSTRUCTION 
