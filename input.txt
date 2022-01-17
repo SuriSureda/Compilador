@@ -1,33 +1,13 @@
+function sum(nA : int, nB : int) : int {
+	return (nA + nB);
+}
+
 function main() {
 	vx : int = 5;
 	vy : int = 10;
 	vz : int = 0;
 
-	if(vz > vx){
-		output("VZ > VX\n");
-	}
-	elif(vz > vy){
-		output("VZ > VY\n");
-	}
-	elif(vx < vy){
-		while(vz < vx){
-			output("Inside loop :\n");
-			output("VZ : ");
-			output(vz);
-			output("\n");
-			output("VX : ");
-			output(vx);
-			output("\n");
-			vz = (vz + 1 + 1);
-		}
-		output("Inside outside loop :\n");
-		output("VZ : ");
-		output(vz);
-		output("\n");
-		output("VX : ");
-		output(vx);
-		output("\n");
-	}
+	suma : int = sum(vx, vy);
 
-	output("End\n");
+	output(suma);
 }
