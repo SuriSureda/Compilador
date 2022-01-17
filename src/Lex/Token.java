@@ -37,7 +37,6 @@ public class  Token{
         INST_DEFAULT,
         INST_FUNCTION,
         INST_RETURN,
-        INST_CALL,
         INST_MAIN,
         ID_MAIN,
         INSTR_IN,

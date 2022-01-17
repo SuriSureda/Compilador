@@ -138,7 +138,6 @@ INST_DEFAULT    = ("default") //ok
 
 INST_FUNCTION   = ("function") //ok
 INST_RETURN     = ("return")    //ok
-INST_CALL       = ("call")      //ok    //*
 INST_MAIN       = ("main")      //ok    //*
 
 // Entrada/salida
@@ -230,11 +229,6 @@ TWO_POINTS       = (":")     //ok
                      Token token = new Token(Token.Tokens.INST_RETURN,yyline,yycolumn, yytext());
                      writeToken(token);
                      return symbol(ParserSym.inst_return, yytext());
-                     }
-{INST_CALL}          {
-                     Token token = new Token(Token.Tokens.INST_CALL,yyline,yycolumn, yytext());
-                     writeToken(token);
-                     return symbol(ParserSym.inst_call, yytext());
                      }
 {INST_MAIN}          {
                      Token token = new Token(Token.Tokens.INST_MAIN,yyline,yycolumn, yytext());
