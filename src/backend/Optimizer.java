@@ -58,10 +58,9 @@ public class Optimizer {
                 instructionSet.remove(i + 1);
                 instructionSet.remove(i + 1);
                 someChangeOcurred = true;
-            } else if (current.getOp2().toString() != null) {
-                                        
+            }
+            if (current.getOp2() != null) {
                 Instruction novainstruccio = new Instruction(current.getOpCode(), current.getOp1(), current.getOp2(), next.getDest() + " = " + current.getOp1() + " " + current.signeOperador() + " " + current.getOp2());
-                
                 instructionSet.add(i, novainstruccio);
                 instructionSet.remove(i + 1);
                 instructionSet.remove(i + 1);
