@@ -5,7 +5,7 @@
  */
 package backend;
 
-import SymbolsTable.Type;
+import SymbolsTable.Type.SUBJACENTTYPE;
 
 /**
  *
@@ -14,18 +14,19 @@ import SymbolsTable.Type;
 
 // Information that procedure table is using (TP)
 public class Procedure {
+    private static int NV = 0;
 
     private String name;    // its name
     private int nv;         // variable number
-    private int depth;      // subprogram from comes
+    private int nparams;
     private int size;       // memory used
     private int offset;     // offset
-    private Type type;      // type
+    private SUBJACENTTYPE type;      // type
 
-    public Procedure(String name, int nv, int depth, int size, int offset, Type type) {
+    public Procedure(String name, int nparams, int size, int offset, SUBJACENTTYPE type) {
         this.name = name;
-        this.nv = nv;
-        this.depth = depth;
+        this.nv = NV++;
+        this.nparams = nparams;
         this.size = size;
         this.offset = offset;
         this.type = type;
@@ -44,25 +45,11 @@ public class Procedure {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public int getNv() {
         return nv;
     }
 
-    public void setNv(int nv) {
-        this.nv = nv;
-    }
-
-    public int getDepth() {
-        return depth;
-    }
-
-    public void setDepth(int depth) {
-        this.depth = depth;
-    }
 
     public int getSize() {
         return size;
@@ -79,13 +66,4 @@ public class Procedure {
     public void setOffset(int offset) {
         this.offset = offset;
     }
-
-    public Type getType() {
-        return type;
-    }
-
-    public void setType(Type type) {
-        this.type = type;
-    }
-    
 }

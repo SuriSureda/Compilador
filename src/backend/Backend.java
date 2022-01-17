@@ -38,7 +38,7 @@ public class Backend {
     public Backend() {
         this.varTable = new ArrayList<>();
         this.procTable = new ArrayList<>();
-        this.procTable.add(new Procedure("main", 0, 0, 0, 0, null));
+        this.procTable.add(new Procedure("main", 0, 0, 0, null));
         this.labelTable = new ArrayList<>();
     }
 
@@ -92,9 +92,9 @@ public class Backend {
 //    private int size;       // memory used
 //    private int offset;     // offset
 //    private Type type;      // type
-    public String addProc(String name, int nv, int depth, int size, int offset, Type type) {
+    public String addProc(String name, int params,int size, int offset, SUBJACENTTYPE type) {
         // We add the new procedure  
-        procTable.add(new Procedure("PROC_" + name, nv, depth, size, offset, type));
+        procTable.add(new Procedure("PROC_" + name, params, size, offset, type));
         
         return name;
     }
