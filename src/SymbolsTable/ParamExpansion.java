@@ -4,11 +4,13 @@ public class ParamExpansion extends Expansion {
 
 	private int next;
 	private String func_id;
+	private String param_id; // no codified param_id
 
-	public ParamExpansion(Type type,  String func_id, String id, int scope, int next) {
+	public ParamExpansion(Type type,  String func_id, String id, String param_id, int scope, int next) {
 		super(type, id, scope);
 		this.next = next;
 		this.func_id = func_id;
+		this.param_id = param_id;
 	}
 
 	public void setNext(int next) {
@@ -21,5 +23,9 @@ public class ParamExpansion extends Expansion {
 
 	public String getFuncId() {
 		return this.func_id;
+	}
+
+	public String getParamId() {
+		return this.param_id;
 	}
 }

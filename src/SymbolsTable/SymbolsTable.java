@@ -38,7 +38,7 @@ public class SymbolsTable {
         descriptionTable.put(id, newDesc);
     }
 
-    public void addParam(String idFun, String idParam, Type type){
+    public void addParam(String idFun, String idParamBack, String idParam, Type type){
         Description funDes = descriptionTable.get(idFun);
         // CHECK TYPE
         try {
@@ -63,10 +63,9 @@ public class SymbolsTable {
             }
 
             idxe = scopeTable.get(scope);
-            idxe += 1 ;
-            scopeTable.set(scope, idxe);
-            ParamExpansion exp = new ParamExpansion(type, idFun, idParam, -1, -1);
-            expansionTable.set(idxe, exp);
+            scopeTable.set(scope, idxe + 1);
+            ParamExpansion exp = new ParamExpansion(type, idFun, idParamBack, idParam, -1, -1);
+            expansionTable.add(idxe, exp);
             if(idxep == -1){
                 funDes.setFirst(idxe);
                 descriptionTable.put(idFun, funDes);
@@ -82,6 +81,15 @@ public class SymbolsTable {
 
     public Type get(String id) {
         if(!descriptionTable.containsKey(id)){
+            //first check if is param inside expansion
+            for(Expansion expansion : expansionTable){
+                if(expansion instanceof ParamExpansion){
+                    ParamExpansion param = (ParamExpansion) expansion;
+                    if(param.getParamId().equals(id)){
+                        return param.getType();
+                    }
+                }
+            }
             return null;
         }
         return descriptionTable.get(id).getType();

@@ -8,8 +8,10 @@ import SymbolsTable.Type.TYPE;
 import SymbolsTable.Type.SUBJACENTTYPE;
 import Lex.*;
 import backend.*;
+
 import java.util.Stack;
-import java.util.List;
+import java.util.ArrayList;
+
 import backend.Instruction.Code;
 
 class Parser;
@@ -68,7 +70,7 @@ parser code
     symbolsTable.add("boolean",bool_type);
 
     //init VOID type
-    Type void_type = new Type(TYPE.dnull, SUBJACENTTYPE.st_null, 0, 0, 0);
+    Type void_type = new Type(TYPE.dtype, SUBJACENTTYPE.st_null, 0, 0, 0);
     symbolsTable.add("void", void_type);
   }
 
@@ -78,7 +80,7 @@ parser code
 
 terminal String id, number, string, bool,  op_relational, op_logical, op_arithmetical;
 terminal        op_assig, inst_if, inst_elif, inst_else,
-                inst_while, inst_function, inst_return, dconst, inst_call, 
+                inst_while, inst_function, inst_return, dconst, 
                 instr_in, instr_out, lparen, rparen, lbracket, rbracket, nextinstr, 
                 separator, two_points, inst_main;
 
@@ -93,6 +95,7 @@ terminal        op_assig, inst_if, inst_elif, inst_else,
 non terminal  SymbolStarts                STARTS;
 non terminal  SymbolInit                  INIT;
 
+non terminal  SymbolMMain                 M_MAIN;
 non terminal  SymbolMain                  MAIN;
 non terminal  SymbolMainInstr             MAIN_INSTRUCTIONS;
 
@@ -175,8 +178,20 @@ DECLARE_FUNCTIONS           ::= DEFINE_FUNCTION DECLARE_FUNCTIONS
                             :};
                             
 
-MAIN                        ::= inst_function inst_main lparen rparen lbracket MAIN_INSTRUCTIONS rbracket {:
+MAIN                        ::= inst_function inst_main M_MAIN lparen rparen lbracket MAIN_INSTRUCTIONS rbracket {:
                               RESULT = new SymbolMain();
+                            :};
+
+M_MAIN                      ::= 
+                            {:
+                              c3a_g.generateC3aInstr(
+                                Code.skip,
+                                null,
+                                null,
+                                "main"
+                              );
+
+                              RESULT = new SymbolMMain();
                             :};
 
 MAIN_INSTRUCTIONS           ::= INSTRUCTIONS
@@ -197,7 +212,7 @@ INSTRUCTIONS                ::= INSTRUCTIONS INSTRUCTION
                               RESULT = new SymbolInstructions();
                             :};
 
-INSTRUCTION                 ::=  DECLARATIONS 
+INSTRUCTION                 ::=  DECLARATIONS nextinstr
                             {:
                               RESULT = new SymbolInstruction();
                             :}
@@ -209,15 +224,15 @@ INSTRUCTION                 ::=  DECLARATIONS
                             {:
                               RESULT = new SymbolInstruction();
                             :}
-                            | OPERATOR_ASSIG
+                            | OPERATOR_ASSIG nextinstr
                             {:
                               RESULT = new SymbolInstruction();
                             :}
-                            | INSTRUCTION_OUT 
+                            | INSTRUCTION_OUT nextinstr
                             {:
                               RESULT = new SymbolInstruction();
                             :}
-                            | CALL_FUNCTION
+                            | CALL_FUNCTION nextinstr
                             {:
                               RESULT = new SymbolInstruction();
                             :}
@@ -269,7 +284,7 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
 
                               RESULT = declarations;
                             :}
-                            | id:id_var CONSTANT:constant two_points id:type_id op_assig VALUE:value nextinstr  
+                            | id:id_var CONSTANT:constant two_points id:type_id op_assig VALUE:value  
                             {:
                               boolean isConst = constant != null ? constant.getIsConst() : false;
 
@@ -290,7 +305,7 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
                                 throw new Error("Value and type must have same subjacent type");
                               }
                               
-                              if(value.getType() != TYPE.dnull && value.getTypeName() != (String) type_id){
+                              if(value.getType() != TYPE.dnull && !value.getTypeName().equals((String) type_id)){
                                 throw new Error("Value must have the same type");
                               }
 
@@ -350,7 +365,7 @@ CONSTANT                    ::=  dconst
                             :};
 
 
-OPERATOR_ASSIG              ::= id:var_id op_assig VALUE:value nextinstr 
+OPERATOR_ASSIG              ::= id:var_id op_assig VALUE:value 
                             {:
                               Type varType = symbolsTable.get(var_id);
                               String type_id = varType.getTypeName();
@@ -1216,7 +1231,7 @@ CASE_DEFAULT                 ::= inst_default INSTRUCTIONS inst_break nextinstr
                              :};
 */
 
-CALL_FUNCTION               ::= inst_call id:fun_id lparen rparen
+CALL_FUNCTION               ::= id:fun_id lparen rparen
                             {:
                               // Check if function and has params 
                               int num_params = symbolsTable.getNumParams(fun_id);
@@ -1225,17 +1240,17 @@ CALL_FUNCTION               ::= inst_call id:fun_id lparen rparen
                               }
 
                               Type fun_type = symbolsTable.get(fun_id);
-                              String id = fun_type.getBackendId();
+                              String backId = fun_type.getBackendId();
                               c3a_g.generateC3aInstr(
                                 Code.call,
                                 null,
                                 null,
-                                id
+                                backId
                               );
 
-                              RESULT = new SymbolCallFunction();
+                              RESULT = new SymbolCallFunction(fun_id, backId);
                             :}
-                            | inst_call CALL_BODY:body rparen
+                            | CALL_BODY:body rparen
                             {:
                               int body_params = body.getNumParams();
                               String fun_id = body.getFunId();
@@ -1253,7 +1268,7 @@ CALL_FUNCTION               ::= inst_call id:fun_id lparen rparen
                                 fun_backId
                               );
 
-                              RESULT = new SymbolCallFunction();
+                              RESULT = new SymbolCallFunction(fun_id, fun_backId);
                             :};
 
 CALL_BODY                   ::= CALL_BODY:body separator VALUE:value
@@ -1274,7 +1289,8 @@ CALL_BODY                   ::= CALL_BODY:body separator VALUE:value
                               }
 
                               //Check param type with function param type
-                              SUBJACENTTYPE paramSubType = symbolsTable.getParam(fun_id, num_params).getSubType();
+                              Type paramType = symbolsTable.getParam(fun_id, num_params);
+                              SUBJACENTTYPE paramSubType = symbolsTable.get(paramType.getTypeName()).getSubType();
 
                               if(paramSubType != subType){
                                 throw new Error(fun_id + ". Incorrect type for param " + num_params + ". Expected " + subType + " but got " + paramSubType);
@@ -1306,7 +1322,8 @@ CALL_BODY                   ::= CALL_BODY:body separator VALUE:value
                               }
 
                               //Check param type with function param type
-                              SUBJACENTTYPE paramSubType = symbolsTable.getParam(fun_id, 0).getSubType();
+                              Type paramType = symbolsTable.getParam(fun_id, 0);
+                              SUBJACENTTYPE paramSubType = symbolsTable.get(paramType.getTypeName()).getSubType();
 
                               if(paramSubType != subType){
                                 throw new Error(fun_id + ". Incorrect type for param 0. Expected " + subType + " but got " + paramSubType);
@@ -1326,7 +1343,7 @@ CALL_BODY                   ::= CALL_BODY:body separator VALUE:value
                             :};
 
 
-INSTRUCTION_OUT             ::= instr_out lparen VALUE:value rparen nextinstr
+INSTRUCTION_OUT             ::= instr_out lparen VALUE:value rparen
                             {:
                               String var_id = value.getVarId();
                               String subtype_name;
@@ -1353,15 +1370,66 @@ INSTRUCTION_OUT             ::= instr_out lparen VALUE:value rparen nextinstr
                             :};
 
 
-DEFINE_FUNCTION             ::= FUNCTION_INIT lbracket BLOCK_IN FUNCTION_INSTRUCTIONS FUNCTION_RETURN BLOCK_OUT rbracket
+DEFINE_FUNCTION             ::= FUNCTION_INIT:fun_init lbracket BLOCK_IN FUNCTION_INSTRUCTIONS FUNCTION_RETURN:fun_ret BLOCK_OUT rbracket
                             {:
+                              //check if fun type and return type are the same
+                              if(fun_init.getSubType() != fun_ret.getSubType()) {
+                                throw new Error("Invalid return type. Expected : "+fun_init.getSubType()+", but got: "+fun_ret.getSubType());
+                              }
 
+                              c3a_g.generateC3aInstr(
+                                Code.rtn,
+                                null,
+                                null,
+                                fun_init.getFunId()
+                              );
 
+                              RESULT = new SymbolDefFunction();
                             :};
 
-FUNCTION_INIT               ::= inst_function id:fun_id FUNCTION_PARAMS rparen two_points id:type_id
+FUNCTION_INIT               ::= inst_function id:fun_id FUNCTION_PARAMS:fun_params rparen two_points id:type_id
                             {:
+                              // check return type
+                              Type return_fun_type = symbolsTable.get(type_id);
+                              if(return_fun_type.getType() != TYPE.dtype){
+                                throw new Error("Function declaration : invalid type");
+                              }
 
+                              SUBJACENTTYPE subType = return_fun_type.getSubType();
+
+                              String backId = backend.addProc(fun_id, 0,return_fun_type.getSize(), 0, subType);
+
+                              Type fun_type = new Type(backId, TYPE.dfun, type_id);
+
+                              symbolsTable.add(fun_id, fun_type);
+                              
+                              // add params if it has
+                              ArrayList<Param> params = fun_params.getParams();
+                              if(params != null){
+                                for(Param param : params){
+                                  Type param_type = param.getType();
+                                  SUBJACENTTYPE param_subType = symbolsTable.get(param.getType().getTypeName()).getSubType();
+                                  String param_backId = backend.addVar(param.getVarId(), 0, backend.getActualProcedure(), 0, param.getSize(), param_subType);
+                                  param_type.setBackendId(param_backId);
+                                  symbolsTable.addParam(fun_id, param_backId, param.getVarId(), param_type);
+                                }
+                              }
+
+                              c3a_g.generateC3aInstr(
+                                Code.skip,
+                                null,
+                                null,
+                                backId
+                              );
+
+                              c3a_g.generateC3aInstr(
+                                Code.pmb,
+                                null,
+                                null,
+                                backId
+                              );
+
+                              RESULT = new SymbolFunInit(backId, subType);
                             :};
 
 FUNCTION_PARAMS             ::= FUNCTION_W_PARAMS:params
@@ -1383,7 +1451,7 @@ FUNCTION_W_PARAMS           ::= FUNCTION_W_PARAMS:prev_params separator id:id tw
 
                               Type param_type = new Type(TYPE.darg, type_id);
 
-                              Param param = new Param(id, param_type);
+                              Param param = new Param(id, param_type, type_type.getSize());
 
                               RESULT = new SymbolFunWParams(param, prev_params);
                             :}
@@ -1397,24 +1465,24 @@ FUNCTION_W_PARAMS           ::= FUNCTION_W_PARAMS:prev_params separator id:id tw
 
                               Type param_type = new Type(TYPE.darg, type_id);
 
-                              Param param = new Param(id, param_type);
+                              Param param = new Param(id, param_type, type_type.getSize());
 
                               RESULT = new SymbolFunWParams(param);
                             :};
 
 FUNCTION_INSTRUCTIONS       ::= INSTRUCTIONS
                             {:
-                              RESULT = new SymbolFunBody();
+                              RESULT = new SymbolFunInstructions();
                             :}
                             | 
                             {:
-                              RESULT = new SymbolFunBody();
+                              RESULT = new SymbolFunInstructions();
                             :};
 
 FUNCTION_RETURN             ::= inst_return VALUE:value nextinstr
                             {:
                               // is literall
-                              SUBJACENTTYPE subType;
+                              SUBJACENTTYPE subType = null;
                               if(value.getType() == TYPE.dnull){
                                 subType = value.getSubType();
                               }
@@ -1422,7 +1490,7 @@ FUNCTION_RETURN             ::= inst_return VALUE:value nextinstr
                               // is variable
                               if(value.getType() != TYPE.dnull){
                                 Type type_type = symbolsTable.get(value.getTypeName());
-                                subType = type.getSubType();
+                                subType = type_type.getSubType();
                               }
 
                               RESULT = new SymbolFunReturn(value.getVarId(), subType);

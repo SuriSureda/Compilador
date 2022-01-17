@@ -66,6 +66,12 @@ public class Type {
         this.typeName = typeName;
     }
 
+    public Type(String backendId, TYPE type, String typeName){
+        this.backendId = backendId;
+        this.type = type;
+        this.typeName = typeName;
+    }
+
     public String getTypeName(){
         return this.typeName;
     }
