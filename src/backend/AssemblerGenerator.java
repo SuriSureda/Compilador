@@ -7,6 +7,7 @@ package backend;
 
 import SymbolsTable.*;
 import SymbolsTable.Type.SUBJACENTTYPE;
+import SymbolsTable.Type.TYPE;
 import backend.Instruction.Code;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -18,6 +19,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+// TODO : revisar retorn de paràmetres
 
 /**
  *
@@ -115,7 +118,6 @@ public class AssemblerGenerator {
         writeLine(".text");
         writeCMPFunctions();
         writePrintBoolFunction();
-        writeLine("main :");
     }
     
     private void declareVariables() {
@@ -475,36 +477,29 @@ public class AssemblerGenerator {
 
        //Declarar parametros del procedimiento como variables.
        String funId = instruction.getDest();
-       Type node = symbolsTable.get(funId);
+       Type type = symbolsTable.get(funId);
 
-       if (node != null) {
-        if (node.getType() == Type.TYPE.dfun) {
-               isFunction = true;
-           } else {
-               isFunction = false;
-           }
-       }
+        if (type == null || type.getType() != TYPE.dfun) {
+            throw new Error("Invalid function");  
+        }
 
-       if (node != null /* && isFunction */) {
+        ArrayList<Expansion> params = symbolsTable.getParams(funId);
 
-            ArrayList<Expansion> params = symbolsTable.getParams(funId);
+        for(Expansion param : params) {
+            newIntegerGlobalVariable(param.getId(), "0");
+        }
 
-            for(Expansion param : params) {
-                newIntegerGlobalVariable(param.getId(), "0");
-            }
-
-            int index = 0;
-            writeLine("# Restaurar paràmetres");
-            for (int i = 0; i < params.size() * 8; i += 8) {
-                writeLine("mov " + (i + 16) + "(%rbp), %rax");
-                writeLine("mov %rax, " + params.get(index).getId());
-                index++;
-            }
-       }
+        int index = 0;
+        writeLine("# Restaurar paràmetres");
+        for (int i = 0; i < params.size() * 8; i += 8) {
+            writeLine("mov " + (i + 16) + "(%rbp), %rax");
+            writeLine("mov %rax, " + params.get(index).getId());
+            index++;
+        }
     }
 
-// Auxiliar method for checking if destination is the last instruction of the
-// program
+    // Auxiliar method for checking if destination is the last instruction of the
+    // program
     private boolean lastProcedure(String dest) {
         int x = backend.getProcTable().size() - 1;
         return backend.getProcTable().get(x).toString().equals(dest);
