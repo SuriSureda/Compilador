@@ -103,7 +103,7 @@ public class Backend {
     }
 
     public void addMain(){
-        this.procTable.add(new Procedure("main", 0, 0, 0, null));
+        this.procTable.add(new Procedure("main", 0, 0, 0, SUBJACENTTYPE.st_null));
     }
     
     public String addLabel(){

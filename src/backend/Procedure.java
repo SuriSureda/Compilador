@@ -33,13 +33,11 @@ public class Procedure {
     }
 
 
-//        
-//    @Override
-//    public String toString() {
-//        return "Procedure{" + "profunditat=" + depth + 
-//                ", nom=" + name + ", numParametres=" + totalPar + 
-//                ", tam=" + size + ", nv=" + nv + '}';
-//    }
+       
+   @Override
+   public String toString() {
+     return this.name.replace("PROC_", "") + "\tnparams=" + this.nparams + "\ttype="+this.type;
+   }
 
     public String getName() {
         return name;
