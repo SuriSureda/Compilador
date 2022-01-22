@@ -109,13 +109,10 @@ public class AssemblerGenerator {
     private void writeHead() {
         writeLine(".global main");
         /* C functions declaration */
-        writeLine(".extern printf");
-        writeLine(".extern exit");
+        writeLine(".extern printf, scanf, exit");
         writeLine(".data");
         declareVariables();
         writeLine(".text");
-        writeCMPFunctions();
-        writePrintBoolFunction();
     }
     
     private void declareVariables() {
@@ -137,10 +134,11 @@ public class AssemblerGenerator {
             }
         }
 
-        //Formato para scanf y printf.
+        //Print formats for int and boolean.
         writeLine("format_int: .asciz \"%d\"");
         writeLine("true_label : .asciz \"true\"");
         writeLine("false_label : .asciz \"false\"");
+
     }
 
     private void writePrintBoolFunction() {
@@ -157,7 +155,10 @@ public class AssemblerGenerator {
 
     private void writeBottom() {
         writeLine("#exit");
-        writeLine("call exit");
+        writeLine("call exit\n");
+        writeLine("\n#auxiliar functions");
+        writeCMPFunctions();
+        writePrintBoolFunction();
     }
 
     public void toAssembly(Instruction instruction, Instruction nextInstruction) {
@@ -242,6 +243,7 @@ public class AssemblerGenerator {
             case or:
                 break;
             case input:
+                inputInstruction(instruction);
                 break;
             case output:
                 outputInstruction(instruction);
@@ -254,9 +256,17 @@ public class AssemblerGenerator {
     }
 
     private void jumpCondInstruction(Instruction instruction){
-        // writeLine("cmp "+instruction.getOp1()+","+instruction.getOp2());
         writeLine("cmp $1,"+instruction.getOp1());
         writeLine("je "+instruction.getDest());
+    }
+
+    private void inputInstruction(Instruction instruction){
+        writeLine("push %rbp");
+        writeLine("xor %rax, %rax");
+        writeLine("mov $format_int, %rdi");
+        writeLine("leaq "+instruction.getDest()+"(%rip), %rsi");
+        writeLine("call scanf");
+        writeLine("pop %rbp");
     }
 
     private void outputInstruction(Instruction instruction){
@@ -281,23 +291,7 @@ public class AssemblerGenerator {
     
     // Auxiliar method for the skip Instruction
     private void skipInstruction(Instruction instruction) {
-        if (lastProcedure(instruction.getDest())) {
-            writeLine(".global main");
-        }
-        // // Indicates if its the return of a method
-        // if (instruction.getDest().contains("Return")) {
-        //     // Liberate the used memory
-        //     writeLine("Liberate the used memory by the previous function");
-
-        //     int offset = nparams * 8;
-        //     writeLine("add $" + offset + ", %rsp");
-
-        //     if ( && previousInstr.getOp1() != null) {
-        //         writeLine("pop" + previousInstr.getOp1());
-        //     }
-        // } else {
         writeLine(instruction.getDest() + ":");
-        // }
     }
 
     // Auxiliar method for return Instruction
@@ -463,7 +457,8 @@ public class AssemblerGenerator {
        }
 
        //Declarar parametros del procedimiento como variables.
-       String funId = instruction.getDest();
+       String backFunId = instruction.getDest();
+       String funId = backFunId.replace("PROC_", "");
        Type type = symbolsTable.get(funId);
 
         if (type == null || type.getType() != TYPE.dfun) {
