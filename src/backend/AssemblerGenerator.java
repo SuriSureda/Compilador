@@ -569,68 +569,74 @@ public class AssemblerGenerator {
     }
 
     private void writeLT() {
+        writeLine("# boolean value assignation LT");
         writeLine("CMP_LT :");
-        writeLine("cmp %rdi, %rsi");
-        writeLine("jge CMP_LT_GE");
-        writeLine("mov $1, %rax");
-        writeLine("ret");
+        writeLine("\tcmp %rdi, %rsi");
+        writeLine("\tjge CMP_LT_GE");
+        writeLine("\tmov $1, %rax");
+        writeLine("\tret");
         writeLine("CMP_LT_GE :");
-        writeLine("mov $0, %rax");
-        writeLine("ret");
+        writeLine("\tmov $0, %rax");
+        writeLine("\tret\n");
     }
 
     private void writeLE() {
+        writeLine("# boolean value assignation LE");
         writeLine("CMP_LE :");
-        writeLine("cmp %rdi, %rsi");
-        writeLine("jg CMP_LE_G");
-        writeLine("mov $1, %rax");
-        writeLine("ret");
+        writeLine("\tcmp %rdi, %rsi");
+        writeLine("\tjg CMP_LE_G");
+        writeLine("\tmov $1, %rax");
+        writeLine("\tret");
         writeLine("CMP_LE_G :");
-        writeLine("mov $0, %rax");
-        writeLine("ret");
+        writeLine("\tmov $0, %rax");
+        writeLine("\tret\n");
     }
 
     private void writeGE() {
+        writeLine("# boolean value assignation GE");
         writeLine("CMP_GE :");
-        writeLine("cmp %rdi, %rsi");
-        writeLine("jl CMP_GE_L");
-        writeLine("mov $1, %rax");
-        writeLine("ret");
+        writeLine("\tcmp %rdi, %rsi");
+        writeLine("\tjl CMP_GE_L");
+        writeLine("\tmov $1, %rax");
+        writeLine("\tret");
         writeLine("CMP_GE_L :");
-        writeLine("mov $0, %rax");
-        writeLine("ret");
+        writeLine("\tmov $0, %rax");
+        writeLine("\tret\n");
     }
 
     private void writeGT() {
+        writeLine("# boolean value assignation GT");
         writeLine("CMP_GT :");
-        writeLine("cmp %rdi, %rsi");
-        writeLine("jl CMP_GT_LE");
-        writeLine("mov $1, %rax");
-        writeLine("ret");
+        writeLine("\tcmp %rdi, %rsi");
+        writeLine("\tjl CMP_GT_LE");
+        writeLine("\tmov $1, %rax");
+        writeLine("\tret");
         writeLine("CMP_GT_LE :");
-        writeLine("mov $0, %rax");
-        writeLine("ret");
+        writeLine("\tmov $0, %rax");
+        writeLine("\tret\n");
     }
 
     private void writeNE() {
+        writeLine("# boolean value assignation NE");
         writeLine("CMP_NE :");
-        writeLine("cmp %rdi, %rsi");
-        writeLine("je CMP_NE_E");
-        writeLine("mov $1, %rax");
-        writeLine("ret");
+        writeLine("\tcmp %rdi, %rsi");
+        writeLine("\tje CMP_NE_E");
+        writeLine("\tmov $1, %rax");
+        writeLine("\tret");
         writeLine("CMP_NE_E :");
-        writeLine("mov $0, %rax");
-        writeLine("ret");
+        writeLine("\tmov $0, %rax");
+        writeLine("\tret\n");
     }
 
     private void writeEQ() {
+        writeLine("# boolean value assignation EQ");
         writeLine("CMP_EQ :");
-        writeLine("cmp %rdi, %rsi");
-        writeLine("jne CMP_EQ_NE");
-        writeLine("mov $1, %rax");
-        writeLine("ret");
+        writeLine("\tcmp %rdi, %rsi");
+        writeLine("\tjne CMP_EQ_NE");
+        writeLine("\tmov $1, %rax");
+        writeLine("\tret");
         writeLine("CMP_EQ_NE :");
-        writeLine("mov $0, %rax");
-        writeLine("ret");
+        writeLine("\tmov $0, %rax");
+        writeLine("\tret\n");
     }
 }
