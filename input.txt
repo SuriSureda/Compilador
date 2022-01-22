@@ -1,13 +1,18 @@
-function sum(nA : int, nB : int) : int {
-	return (nA + nB);
+function printSum(nA : int, nB : int) : void {
+	print(nA);
+	print(" + ");
+	print(nB);
+	print(" = ");
+	print((nA+nB));
+	print("\n");
 }
 
 function main() {
-	vx : int = 5;
-	vy : int = 10;
-	vz : int = 0;
+	print("This program will print the sum 2 numbers : \n");
+	print("Please enter first number : ");
+	nA : int = read();
+	print("Please enter second number : ");
+	nB : int = read();
 
-	suma : int = sum(vx, vy);
-
-	output(suma);
+	printSum(nA, nB);
 }
