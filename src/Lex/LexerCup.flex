@@ -142,8 +142,8 @@ INST_MAIN       = ("main")      //ok    //*
 
 // Entrada/salida
 
-INSTR_IN        = ("input") //ok
-INSTR_OUT       = ("output") //ok
+INSTR_IN        = ("read") //ok
+INSTR_OUT       = ("print") //ok
 
 // Operadores especiales
 
