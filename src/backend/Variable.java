@@ -16,15 +16,13 @@ import SymbolsTable.Type.SUBJACENTTYPE;
 public class Variable {
 
     private String name;    // variable name
-    private int code;       // variable code id  "NV"
     private int idParent;   // parent id
     private int offset;     // offset
     private int size;       // space occupation
     private SUBJACENTTYPE type;      // type
 
-    public Variable(String name, int code, int idParent, int offset, int tam, SUBJACENTTYPE type) {
+    public Variable(String name,int idParent, int offset, int tam, SUBJACENTTYPE type) {
         this.name = name;
-        this.code = code;
         this.idParent = idParent;
         this.offset = offset;
         this.size = tam;

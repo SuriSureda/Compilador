@@ -38,7 +38,6 @@ public class Backend {
     public Backend() {
         this.varTable = new ArrayList<>();
         this.procTable = new ArrayList<>();
-        this.procTable.add(new Procedure("main", 0, 0, 0, null));
         this.labelTable = new ArrayList<>();
     }
 
@@ -49,54 +48,62 @@ public class Backend {
     //    private int offset;     // offset
     //    private int size;       // space occupation
     //    private Type type;      // type
-    public String addVar(String name, int code, int idParent, int offset, int size, SUBJACENTTYPE type) {
-        name = name + "_" + idParent;
+    public String addVar(String varname, int offset, int size, SUBJACENTTYPE type) {
+        int idParent = getLastProcedureId();
+        String name = varname + "_" + idParent;
         // We add the variable into the table
-        varTable.add(new Variable(name, code, idParent, offset, size, type));
+        varTable.add(new Variable(name, idParent, offset, size, type));
 
         return name;
     }
 
     // STRING VARIABLE
-    public String addStrVar(String name, int code, int idParent, int offset, int size, String value) {
-        name = name + "_" + idParent;
+    public String addStrVar(String varname, int offset, int size, String value) {
+        int idParent = getLastProcedureId();
+        String name = varname + "_" + idParent;
         // We add the variable into the table
-        varTable.add(new StrVariable(name, code, idParent, offset, size, value));
+        varTable.add(new StrVariable(name, idParent, offset, size, value));
 
         return name;
     }
 
     // TMP STRING VARIABLE
-    public String addTempStrVar(int idParent, int offset, int size, String value) {
+    public String addTempStrVar(int offset, int size, String value) {
         String name = "T"+tmp_n;
         tmp_n++;
+        int idParent = getLastProcedureId();
         // We add the variable into the table
-        varTable.add(new StrVariable(name, 0, idParent, offset, size, value));
+        varTable.add(new StrVariable(name, idParent, offset, size, value));
 
         return name;
     }
 
-    public String addTempVar(int code, int idParent, int offset, int size, SUBJACENTTYPE type) {
+    public String addTempVar(int offset, int size, SUBJACENTTYPE type) {
         String name = "T"+tmp_n;
         tmp_n++;
+        int idParent = getLastProcedureId();
         // We add the variable into the table
-        varTable.add(new Variable(name, code, idParent, offset, size, type));
-
+        varTable.add(new Variable(name, idParent, offset, size, type));
         return name;
     }
 
     // Adding a new PROCEDURE into the table
-//    private String name;    // its name
-//    private int nv;         // variable number
-//    private int depth;      // subprogram from comes
-//    private int size;       // memory used
-//    private int offset;     // offset
-//    private Type type;      // type
-    public String addProc(String name, int params,int size, int offset, SUBJACENTTYPE type) {
+    //    private String name;    // its name
+    //    private int nv;         // variable number
+    //    private int depth;      // subprogram from comes
+    //    private int size;       // memory used
+    //  private int offset;     // offset
+    //  private Type type;      // type
+    public String addProc(String procName, int params,int size, int offset, SUBJACENTTYPE type) {
+        String name = "PROC_" + procName;
         // We add the new procedure  
-        procTable.add(new Procedure("PROC_" + name, params, size, offset, type));
+        procTable.add(new Procedure(name, params, size, offset, type));
         
         return name;
+    }
+
+    public void addMain(){
+        this.procTable.add(new Procedure("main", 0, 0, 0, null));
     }
     
     public String addLabel(){
@@ -150,12 +157,7 @@ public class Backend {
         return procTable;
     }
     
-    public int getLastProcedureId(){
+    private int getLastProcedureId(){
         return procTable.get(procTable.size() - 1).getNv();
     }
-    public int getActualProcedure(){
-        return procTable.size() - 1;
-    }
-
-
 }

@@ -6,8 +6,8 @@ public class StrVariable extends Variable {
 
 	String value;
 
-	public StrVariable(String name, int code, int idParent, int offset, int size, String value){
-		super(name, code, idParent, offset, size, SUBJACENTTYPE.st_string);
+	public StrVariable(String name, int idParent, int offset, int size, String value){
+		super(name, idParent, offset, size, SUBJACENTTYPE.st_string);
 		this.value = value;
 	}
 
