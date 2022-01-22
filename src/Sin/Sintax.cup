@@ -765,7 +765,7 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
 
                               RESULT = new SymbolValue(var_id, TYPE.dfun, fn_type.getTypeName());
                             :}
-                            | instr_in lparen id rparen
+                            | instr_in lparen rparen
                             {:
                               Type int_type = symbolsTable.get("int");
                               String var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, int_type.getSize(), int_type.getSubType());
@@ -776,7 +776,6 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
                                 null,
                                 var_id
                               );
-
 
                               RESULT = new SymbolValue(var_id, int_type.getSubType());
                             :}; 
