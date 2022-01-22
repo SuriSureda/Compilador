@@ -102,7 +102,7 @@ public class AssemblerGenerator {
     }
 
     public void writeC3A_Comment(Instruction instruction){
-        assemblyInstructions.add("#" + instruction + "\n");
+        assemblyInstructions.add("# " + instruction.toString().replace("\n", "\n# ") + "\n");
     }
 
     // Generates the header of program
@@ -154,9 +154,9 @@ public class AssemblerGenerator {
     }
 
     private void writeBottom() {
-        writeLine("#exit");
+        writeLine("# exit");
         writeLine("call exit\n");
-        writeLine("\n#auxiliar functions");
+        writeLine("\n# auxiliar functions");
         writeCMPFunctions();
         writePrintBoolFunction();
     }
@@ -344,7 +344,7 @@ public class AssemblerGenerator {
 
     // Call Instruction
     private void callInstruction(Instruction instruction) {
-        writeLine("xor %rax, %rax   #clean return register");
+        writeLine("xor %rax, %rax   # clean return register");
         writeLine("call " + instruction.getDest());
     }
 
@@ -381,7 +381,7 @@ public class AssemblerGenerator {
     }
 
     private boolean declarationExists(String name) {
-        for (int i = 0; i < assemblyInstructions.size() && !readLine(i).startsWith("#"); i++) {
+        for (int i = 0; i < assemblyInstructions.size() && !readLine(i).startsWith("# "); i++) {
             if (readLine(i).contains("skip")) {
                 return false;
             }
@@ -422,7 +422,7 @@ public class AssemblerGenerator {
     private void substractCMP(Instruction instruction, Code type) {
         writeLine("mov " + checkLiteral(instruction, 2) + ", %rdi");
         writeLine("mov " + checkLiteral(instruction, 1) +  ", %rsi");
-        writeLine("xor %rax, %rax #clean return value register");
+        writeLine("xor %rax, %rax # clean return value register");
         String functionLabel = getCMPFunctionLabel(type);
         writeLine("call "+functionLabel);
         writeLine("mov %rax,"+instruction.getDest()+" # get return value");

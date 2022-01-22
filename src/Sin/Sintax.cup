@@ -276,7 +276,7 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
                               type.setBackendId(backId);
 
                               symbolsTable.add(var_id, type);
-
+                          
                               c3a_g.generateC3aInstr(
                                 Code.copy,
                                 declarations.getVarId(),
@@ -1362,15 +1362,20 @@ INSTRUCTION_OUT             ::= instr_out lparen VALUE:value rparen
 
                               if(value.getType() == TYPE.dnull && value.getSubType() == SUBJACENTTYPE.st_string){
                                 var_id = backend.addTempStrVar(0, value.getStringSize(), (String) value.getValue());
+                                c3a_g.generateC3aInstr(
+                                  Code.output,
+                                  subtype_name,
+                                  (String) value.getValue(),
+                                  var_id
+                                );
+                              }else{
+                                c3a_g.generateC3aInstr(
+                                  Code.output,
+                                  subtype_name,
+                                  null,
+                                  var_id
+                                );
                               }
-
-                              c3a_g.generateC3aInstr(
-                                Code.output,
-                                subtype_name,
-                                null,
-                                var_id
-                              );
-
                               RESULT = new SymbolInstructionOut();
                             :};
 

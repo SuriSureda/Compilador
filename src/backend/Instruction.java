@@ -68,6 +68,7 @@ public class Instruction {
                 result += this.dest + " = " + this.op1 + " " + this.opCode + " " + this.op2;
                 break;
             case call:
+                result += this.opCode + " " + this.dest;
                 break;
             case copy:
                 result += this.dest + " = " + this.op1;
@@ -89,17 +90,27 @@ public class Instruction {
                 result += "if "+ this.op1 + "=" + this.op2 + " goto " + this.dest;   
             /* OTHER OPERATIONS*/    
             case input:
+                result += this.dest + " = " + this.opCode;
                 break;
             case neg:
                 break;
             case output:
+                if(this.op2 != null){
+                    result += this.dest + " = \"" +this.op2 + "\"\n";
+                }
                 result += this.opCode +" "+ this.dest;
                 break;
             case param:
+                result += this.opCode + " " + this.dest +"("+ this.op1 + ")";
                 break;
             case pmb:
+                result += this.opCode + " " + this.dest;
                 break;
             case rtn:
+                result += this.opCode;
+                if(this.op1 != null){
+                    result += " " + this.op1;
+                }
                 break;
             case skip:
                 result += this.dest + ":"+ this.opCode;

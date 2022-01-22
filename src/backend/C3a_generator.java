@@ -119,7 +119,4 @@ public class C3a_generator {
     public void setWriter(BufferedWriter writer) {
         this.writer = writer;
     }
-    
-    
-
 }
