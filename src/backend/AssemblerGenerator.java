@@ -47,8 +47,6 @@ public class AssemblerGenerator {
 
     private int nparams;
     private Instruction previousInstr;
-    private boolean isFunction;
-    private boolean paramIsString;
 
     private ArrayList<String> variablesFromKeyboard;
 
@@ -286,28 +284,28 @@ public class AssemblerGenerator {
         if (lastProcedure(instruction.getDest())) {
             writeLine(".global main");
         }
-        // Indicates if its the return of a method
-        if (instruction.getDest().contains("Return")) {
-            // Liberate the used memory
-            writeLine("Liberate the used memory by the previous function");
+        // // Indicates if its the return of a method
+        // if (instruction.getDest().contains("Return")) {
+        //     // Liberate the used memory
+        //     writeLine("Liberate the used memory by the previous function");
 
-            int offset = nparams * 8;
-            writeLine("add $" + offset + ", %rsp");
+        //     int offset = nparams * 8;
+        //     writeLine("add $" + offset + ", %rsp");
 
-            if (isFunction && previousInstr.getOp1() != null) {
-                writeLine("pop" + previousInstr.getOp1());
-            }
-        } else {
-            writeLine(instruction.getDest() + ":");
-        }
+        //     if ( && previousInstr.getOp1() != null) {
+        //         writeLine("pop" + previousInstr.getOp1());
+        //     }
+        // } else {
+        writeLine(instruction.getDest() + ":");
+        // }
     }
 
     // Auxiliar method for return Instruction
     private void returnInstruction(Instruction instruction) {
-        if (isFunction) {
-            writeLine("# Moving function results into stack");
-            writeLine("mov " + instruction.getDest() + ", %rdi");
-            writeLine("mov %rdi, " + (16 + (nparams * 8)) + "(%rbp)\n");
+        // is function with return value, op1 register that stores return value
+        if (instruction.getOp1() != null) {
+            writeLine("# Moving function result into %rax");
+            writeLine("mov " + instruction.getOp1() + ", %rax");
         }
 
         writeLine("mov %rbp, %rsp       # Restaurar valor inicial de RSP.");
@@ -352,22 +350,8 @@ public class AssemblerGenerator {
 
     // Call Instruction
     private void callInstruction(Instruction instruction) {
-        if (symbolsTable.get(instruction.getDest()) != null 
-            && symbolsTable.get(instruction.getDest()).getType() == Type.TYPE.dfun) {
-           writeLine("call " + instruction.getDest());
-        } else {
-
-           if (instruction.getDest().equals("input")) {
-               writeLine("call scanf");
-               writeLine("pop %rbp");
-
-           } else if (instruction.getDest().equals("output")) {
-               writeLine("call printf");
-               writeLine("pop %rbx");
-           } else {
-               writeLine("call imprimirLogic");
-           }
-        }
+        writeLine("xor %rax, %rax   #clean return register");
+        writeLine("call " + instruction.getDest());
     }
 
     private void paramInstruction(Instruction instruction, Instruction nextInstruction) {
@@ -452,7 +436,10 @@ public class AssemblerGenerator {
 
     // Auxiliar method that generates the copy Instruction
     private void copyInstruction(Instruction instruction) {
-        if (instruction.isLiteralOp1()) {
+        if(instruction.getOp1().contains("return")){
+            writeLine("mov %rax, "+instruction.getDest());
+        }
+        else if (instruction.isLiteralOp1()) {
             if(instruction.isBoolOp1()){
                 if (instruction.getOp1().equals("true")) { //cert
                     writeLine("movl $1, " + instruction.getDest());

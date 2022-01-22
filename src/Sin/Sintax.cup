@@ -750,11 +750,15 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
                               Type fn_type = symbolsTable.get(call_fn.getFunctionId());
                               Type dfn_type = symbolsTable.get(fn_type.getTypeName());
                               
+                              if(dfn_type.getSubType() == SUBJACENTTYPE.st_null){
+                                throw new Error("Function call : "+call_fn.getFunctionId() + " does not return any value");
+                              }
+                              
                               String var_id = backend.addTempVar(0, backend.getActualProcedure(), 0, fn_type.getSize(), dfn_type.getSubType());
 
                               c3a_g.generateC3aInstr(
                                 Code.copy,
-                                call_fn.getBackendId(),
+                                "return "+call_fn.getFunctionId(),
                                 null,
                                 var_id
                               );                                
@@ -1377,12 +1381,25 @@ DEFINE_FUNCTION             ::= FUNCTION_INIT:fun_init lbracket BLOCK_IN FUNCTIO
                                 throw new Error("Invalid return type. Expected : "+fun_init.getSubType()+", but got: "+fun_ret.getSubType());
                               }
 
-                              c3a_g.generateC3aInstr(
-                                Code.rtn,
-                                null,
-                                null,
-                                fun_init.getFunId()
-                              );
+                              // no return value
+                              if(fun_init.getSubType() == SUBJACENTTYPE.st_null){
+                                c3a_g.generateC3aInstr(
+                                  Code.rtn,
+                                  null,
+                                  null,
+                                  fun_init.getFunId()
+                                );
+                              }
+                              // return value
+                              else{
+
+                                c3a_g.generateC3aInstr(
+                                  Code.rtn,
+                                  fun_ret.getVarId(),
+                                  null,
+                                  fun_init.getFunId()
+                                );
+                              }
 
                               RESULT = new SymbolDefFunction();
                             :};
