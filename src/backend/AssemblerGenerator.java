@@ -471,12 +471,12 @@ public class AssemblerGenerator {
             newIntegerGlobalVariable(param.getId(), "0");
         }
 
-        int index = 0;
+        int index = params.size() - 1;
         writeLine("# Restaurar paràmetres");
         for (int i = 0; i < params.size() * 8; i += 8) {
             writeLine("mov " + (i + 16) + "(%rbp), %rax");
             writeLine("mov %rax, " + params.get(index).getId());
-            index++;
+            index--;
         }
     }
 
