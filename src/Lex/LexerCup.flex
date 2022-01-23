@@ -103,7 +103,7 @@ LETTER          = [a-zA-Z]  //ok
 BLANK           = (" "|\t|\r|\n)
 COMMENT         = ("/*".*"*/") //OK 
 
-ID              = (({LETTER}{LETTER})({LETTER}|{DIGIT})*)   // ok
+ID              = (({LETTER})({LETTER}|{DIGIT})*)   // ok
 NUMBER          = ("0" | [1-9]{DIGIT}*)                     // ok
 STRING          = \" [^\"]* \"                              // ok
 BOOL            = ("true" | "false")                        // ok
