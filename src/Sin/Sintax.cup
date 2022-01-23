@@ -57,9 +57,9 @@ parser code
   }
 
   private void initTypes() {
-    //init INT type
-    Type int_type = new Type(TYPE.dtype, SUBJACENTTYPE.st_integer, 4, Integer.MIN_VALUE, Integer.MIN_VALUE);
-    symbolsTable.add("int", int_type);
+    //init NUMBER type
+    Type number_type = new Type(TYPE.dtype, SUBJACENTTYPE.st_number, 4, Integer.MIN_VALUE, Integer.MIN_VALUE);
+    symbolsTable.add("number", number_type);
     
     // init String type
     Type str_type = new Type(TYPE.dtype, SUBJACENTTYPE.st_string, 2, 0, 0);
@@ -86,7 +86,7 @@ terminal        op_assig, inst_if, inst_elif, inst_else,
 
 /*
   inst_switch, inst_case, inst_break, inst_default, inst_for, 
-  character,spc_asgmul,Void, spc_asgdec, spc_dec,spc_asgdiv,spc_asginc,spc_inc,id_main 
+  character,spc_asgmul,spc_asgdec, spc_dec,spc_asgdiv,spc_asginc,spc_inc
 */
 
 
@@ -297,7 +297,7 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
                               }
 
                               if(type.getSubType() != SUBJACENTTYPE.st_boolean
-                                && type.getSubType() != SUBJACENTTYPE.st_integer
+                                && type.getSubType() != SUBJACENTTYPE.st_number
                                 && type.getSubType() != SUBJACENTTYPE.st_string ){
                                   throw new Error("Invalid subjacent type");
                               }
@@ -463,7 +463,7 @@ ARITHMETICAL_OP             ::= ARITHMETICAL_OP:arith_op op_arithmetical:op ARIT
                                 }
                               }
 
-                              Type type_int = symbolsTable.get("int");
+                              Type type_int = symbolsTable.get("number");
                               
                               String var_id = backend.addTempVar(0, type_int.getSize(), type_int.getSubType());
 
@@ -538,7 +538,7 @@ ARITHMETICAL_OP             ::= ARITHMETICAL_OP:arith_op op_arithmetical:op ARIT
                                 }
                               }
 
-                              Type type_int = symbolsTable.get("int");
+                              Type type_int = symbolsTable.get("number");
                               
                               String var_id = backend.addTempVar( 0, type_int.getSize(), type_int.getSubType());
 
@@ -557,8 +557,6 @@ ARITHMETICAL_OP             ::= ARITHMETICAL_OP:arith_op op_arithmetical:op ARIT
                               }
                               
                               RESULT = sym;
-                            
-
                             :};
  
 ARITHMETICAL_VALUE          ::= lparen ARITHMETICAL_OP:arith_op rparen
@@ -585,7 +583,7 @@ ARITHMETICAL_VALUE          ::= lparen ARITHMETICAL_OP:arith_op rparen
                                 value = Integer.valueOf(n_val);
                               }
 
-                              Type type_int = symbolsTable.get("int");
+                              Type type_int = symbolsTable.get("number");
                               
                               String var_id = backend.addTempVar(0, type_int.getSize(),  type_int.getSubType());
 
@@ -610,7 +608,7 @@ ARITHMETICAL_VALUE          ::= lparen ARITHMETICAL_OP:arith_op rparen
 
                               Type var_dtype = symbolsTable.get(var_type.getTypeName());
 
-                              if(var_dtype.getSubType() != SUBJACENTTYPE.st_integer){
+                              if(var_dtype.getSubType() != SUBJACENTTYPE.st_number){
                                 throw new Error("Invalid subjacent type");
                               }
 
@@ -655,9 +653,9 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
                               SymbolValue sym;
                               String var_id = arith_op.getVarId();
                               if(arith_op.getIsConst()){
-                                sym = new SymbolValue(var_id, SUBJACENTTYPE.st_integer, arith_op.getValue());
+                                sym = new SymbolValue(var_id, SUBJACENTTYPE.st_number, arith_op.getValue());
                               }else{
-                                sym = new SymbolValue(var_id, SUBJACENTTYPE.st_integer);
+                                sym = new SymbolValue(var_id, SUBJACENTTYPE.st_number);
                               }
 
                               RESULT = sym;
@@ -673,7 +671,7 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
                                 value = Integer.valueOf(n_val);
                               }
 
-                              Type type_int = symbolsTable.get("int");
+                              Type type_int = symbolsTable.get("number");
                               
                               String var_id = backend.addTempVar(0, type_int.getSize(), type_int.getSubType());
 
@@ -684,7 +682,7 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
                                 var_id
                               );
 
-                              RESULT = new SymbolValue(var_id, SUBJACENTTYPE.st_integer, value);
+                              RESULT = new SymbolValue(var_id, SUBJACENTTYPE.st_number, value);
                             :}
                             | string:value 
                             {:
@@ -769,8 +767,8 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
                             :}
                             | instr_in lparen rparen
                             {:
-                              Type int_type = symbolsTable.get("int");
-                              String var_id = backend.addTempVar( 0, int_type.getSize(), int_type.getSubType());
+                              Type number_type = symbolsTable.get("number");
+                              String var_id = backend.addTempVar( 0, number_type.getSize(), number_type.getSubType());
 
                               c3a_g.generateC3aInstr(
                                 Code.input,
@@ -779,7 +777,7 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
                                 var_id
                               );
 
-                              RESULT = new SymbolValue(var_id, int_type.getSubType());
+                              RESULT = new SymbolValue(var_id, number_type.getSubType());
                             :}; 
 
 INITIALIZE_BOOLEAN_OP       ::= lparen BOOLEAN_OP:bool_op rparen 
@@ -849,6 +847,25 @@ BOOLEAN_OP                  ::= BOOLEAN_OP:bool_op op_logical:op BOOLEAN_VALUE:b
                             :}
                             | BOOLEAN_VALUE:bool_val
                             {:
+                              SymbolBoolOp sym;
+
+                              String var_id = new String(bool_val.getVarId());
+                              if(bool_val.getIsConst()){
+                                sym = new SymbolBoolOp(var_id, bool_val.getValue());
+                              }
+                              else{
+                                sym = new SymbolBoolOp(var_id);
+                              }
+
+                              RESULT = sym;
+                              
+                            :}
+                            | op_logical:op BOOLEAN_VALUE:bool_val
+                            {:
+                              if(!op_logical.equals("!")){
+                                throw new Error("Invalid boolean operator");
+                              }
+
                               SymbolBoolOp sym;
 
                               String var_id = new String(bool_val.getVarId());
@@ -978,19 +995,19 @@ VALUE_COMPARISON            ::= VALUE:val1 op_relational:op VALUE:val2
                                   op_code = Code.NE;
                                   break;
                                 case "<": 
-                                  if(subType1 != SUBJACENTTYPE.st_integer) throw new Error("This operator ("+op+") only works with integer subtypes");
+                                  if(subType1 != SUBJACENTTYPE.st_number) throw new Error("This operator ("+op+") only works with integer subtypes");
                                   op_code = Code.LT;
                                   break;
                                 case "<=":
-                                  if(subType1 != SUBJACENTTYPE.st_integer) throw new Error("This operator ("+op+") only works with integer subtypes");
+                                  if(subType1 != SUBJACENTTYPE.st_number) throw new Error("This operator ("+op+") only works with integer subtypes");
                                   op_code = Code.LE;
                                   break;
                                 case ">": 
-                                  if(subType1 != SUBJACENTTYPE.st_integer) throw new Error("This operator ("+op+") only works with integer subtypes");
+                                  if(subType1 != SUBJACENTTYPE.st_number) throw new Error("This operator ("+op+") only works with integer subtypes");
                                   op_code = Code.GT;
                                   break;
                                 case ">=":
-                                  if(subType1 != SUBJACENTTYPE.st_integer) throw new Error("This operator ("+op+") only works with integer subtypes");
+                                  if(subType1 != SUBJACENTTYPE.st_number) throw new Error("This operator ("+op+") only works with integer subtypes");
                                   op_code = Code.GE;
                                   break;
                               }
@@ -1001,7 +1018,7 @@ VALUE_COMPARISON            ::= VALUE:val1 op_relational:op VALUE:val2
                               if(allConst){
                                 switch(op){
                                   case "=":
-                                    if(subType1 == SUBJACENTTYPE.st_integer){
+                                    if(subType1 == SUBJACENTTYPE.st_number){
                                        val = (Integer) val1.getValue() == (Integer) val2.getValue();
                                     }
                                     if(subType1 == SUBJACENTTYPE.st_string){
@@ -1012,7 +1029,7 @@ VALUE_COMPARISON            ::= VALUE:val1 op_relational:op VALUE:val2
                                     }
                                     break;
                                   case "!=":
-                                    if(subType1 == SUBJACENTTYPE.st_integer){
+                                    if(subType1 == SUBJACENTTYPE.st_number){
                                       val = (Integer) val1.getValue() != (Integer) val2.getValue();
                                     }
                                     if(subType1 == SUBJACENTTYPE.st_string){
@@ -1351,27 +1368,27 @@ CALL_BODY                   ::= CALL_BODY:body separator VALUE:value
 INSTRUCTION_OUT             ::= instr_out lparen VALUE:value rparen
                             {:
                               String var_id = value.getVarId();
-                              String subtype_name;
+                              SUBJACENTTYPE subtype;
 
                               if(value.getType() == TYPE.dnull){
-                                subtype_name = value.getSubType().toString();
+                                subtype = value.getSubType();
                               }else{
                                 Type var_type = symbolsTable.get(value.getTypeName());
-                                subtype_name = var_type.getSubType().toString();
+                                subtype = var_type.getSubType();
                               }
 
                               if(value.getType() == TYPE.dnull && value.getSubType() == SUBJACENTTYPE.st_string){
                                 var_id = backend.addTempStrVar(0, value.getStringSize(), (String) value.getValue());
                                 c3a_g.generateC3aInstr(
                                   Code.output,
-                                  subtype_name,
+                                  subtype.toString(),
                                   (String) value.getValue(),
                                   var_id
                                 );
                               }else{
                                 c3a_g.generateC3aInstr(
                                   Code.output,
-                                  subtype_name,
+                                  subtype.toString(),
                                   null,
                                   var_id
                                 );

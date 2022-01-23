@@ -102,7 +102,7 @@ public class Type {
 
     public static enum SUBJACENTTYPE {
         st_boolean,
-        st_integer,
+        st_number,
         st_string,
         st_null,
     }

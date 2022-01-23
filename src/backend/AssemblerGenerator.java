@@ -121,7 +121,7 @@ public class AssemblerGenerator {
             Variable var = backend.getVarTable().get(i);
 
             switch (var.getType()) {
-                case st_integer:
+                case st_number:
                 case st_boolean:
                     writeLine(var.getName() + ": .quad 0");
                     break;
@@ -271,7 +271,7 @@ public class AssemblerGenerator {
 
     private void outputInstruction(Instruction instruction){
         /* when we call output, op1 stores type of dest in string format */
-        if(instruction.getOp1().equals(SUBJACENTTYPE.st_integer.toString())){
+        if(instruction.getOp1().equals(SUBJACENTTYPE.st_number.toString())){
             writeLine("mov $format_int, %rdi");
             writeLine("mov "+instruction.getDest()+", %rsi");
             writeLine("xor %rax, %rax");
