@@ -20,7 +20,6 @@ public class Instruction {
         prod,
         div,
         mod,
-        neg,
         and,
         or,
         not,
@@ -64,9 +63,10 @@ public class Instruction {
             /* BOOLEAN OP */
             case and:
             case or:
-            case not:
                 result += this.dest + " = " + this.op1 + " " + this.opCode + " " + this.op2;
                 break;
+            case not:
+                result += this.dest + " = " + this.opCode + " " + this.op1;
             case call:
                 result += this.opCode + " " + this.dest;
                 break;
@@ -91,8 +91,6 @@ public class Instruction {
             /* OTHER OPERATIONS*/    
             case input:
                 result += this.dest + " = " + this.opCode;
-                break;
-            case neg:
                 break;
             case output:
                 if(this.op2 != null){
