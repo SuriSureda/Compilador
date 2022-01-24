@@ -9,20 +9,20 @@ package Symbols;
  *
  * @author soyjo
  */
-public class SymbolBoolValue extends SymbolBase{
+public class SymbolBoolOpValue extends SymbolBase{
 
     private Boolean value;
     private boolean isConstant;
     private String var_id;
 
-    public SymbolBoolValue(String var_id) {
-        super("Symbol Boolean value", 0);
+    public SymbolBoolOpValue(String var_id) {
+        super("Symbol Boolean Operation Value", 0);
         this.isConstant = false;
         this.var_id = var_id;
     }
     
-    public SymbolBoolValue(String var_id, Boolean value) {
-        super("Symbol Boolean value", 0);
+    public SymbolBoolOpValue(String var_id, Boolean value) {
+        super("Symbol Boolean Operation Value", 0);
         this.value = value;
         this.isConstant = true;
         this.var_id = var_id;

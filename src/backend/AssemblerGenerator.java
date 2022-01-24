@@ -20,8 +20,6 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-// TODO : revisar retorn de paràmetres
-
 /**
  *
  * @author soyjo
@@ -45,18 +43,11 @@ public class AssemblerGenerator {
     // List of instructions
     private ArrayList<String> assemblyInstructions;
 
-    private int nparams;
-    private Instruction previousInstr;
-
-    private ArrayList<String> variablesFromKeyboard;
-
     public AssemblerGenerator(SymbolsTable symbolTable, Backend backend, C3a_generator c3a_g) {
         //this.writer = writer;
         this.symbolsTable = symbolTable;
         this.backend = backend;
         this.c3a_g = c3a_g;
-        previousInstr = new Instruction(null, null, null, null);
-        variablesFromKeyboard = new ArrayList<>();
         assemblyInstructions = new ArrayList<String>();
     }
 
@@ -235,12 +226,12 @@ public class AssemblerGenerator {
                 substractCMP(instruction, instruction.getOpCode());
                 break;
             case and:
-                break;
-            case neg:
+            case or:
+                logicalInstruction(instruction);
                 break;
             case not:
-                break;
-            case or:
+            case neg:
+                unaryInstruction(instruction);
                 break;
             case input:
                 inputInstruction(instruction);
@@ -252,7 +243,6 @@ public class AssemblerGenerator {
                 break;
         }
         writeLine("");
-        previousInstr = instruction;
     }
 
     private void jumpCondInstruction(Instruction instruction){
@@ -267,6 +257,20 @@ public class AssemblerGenerator {
         writeLine("leaq "+instruction.getDest()+"(%rip), %rsi");
         writeLine("call scanf");
         writeLine("pop %rbp");
+    }
+
+    private void unaryInstruction(Instruction instruction){
+        writeLine("mov "+ instruction.getOp1() + ", %rdi");
+        writeLine(instruction.getOpCode() + " %rdi");
+        writeLine("mov %rdi, " + instruction.getDest());
+    }
+
+    private void logicalInstruction(Instruction instruction){
+        // AND or OR
+        writeLine("mov " + instruction.getOp1() + ", %rdi");
+        writeLine("mov " + instruction.getOp2() + ", %rax");
+        writeLine(instruction.getOpCode() + " %rax, %rdi");
+        writeLine("mov %rdi, " + instruction.getDest());
     }
 
     private void outputInstruction(Instruction instruction){

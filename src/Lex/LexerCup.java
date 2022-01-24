@@ -8,7 +8,7 @@
 package Lex;                         // PAQUETE AL QUE PERTENECE
 import java_cup.runtime.Symbol;      // CLASE SYMBOL PARA LOS TOKENS DE CUP
 import Sin.ParserSym;
-import Lex.Tokens.*;
+import Lex.Token.*;
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
@@ -48,14 +48,13 @@ public class LexerCup implements java_cup.runtime.Scanner {
    * Translates characters to character classes
    */
   private static final String ZZ_CMAP_PACKED = 
-    "\11\0\1\3\1\4\1\7\1\7\1\4\22\0\1\3\1\31\1\11"+
-    "\2\0\1\27\1\33\1\0\1\45\1\46\1\6\1\27\1\52\1\27"+
-    "\1\0\1\5\1\10\11\1\1\53\1\51\1\32\1\30\1\32\2\0"+
-    "\2\2\1\22\12\2\1\24\1\23\3\2\1\25\1\26\6\2\6\0"+
-    "\1\17\1\2\1\41\1\2\1\15\1\16\1\2\1\37\1\35\2\2"+
-    "\1\20\1\43\1\40\1\42\1\44\1\2\1\13\1\21\1\12\1\14"+
-    "\1\2\1\36\3\2\1\47\1\34\1\50\7\0\1\7\u1fa2\0\1\7"+
-    "\1\7\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\udfe6\0";
+    "\11\0\1\3\1\4\1\7\1\7\1\4\22\0\1\3\1\30\1\11"+
+    "\2\0\1\26\1\32\1\0\1\42\1\43\1\6\1\25\1\47\1\25"+
+    "\1\0\1\5\1\10\11\1\1\50\1\46\1\31\1\27\1\31\2\0"+
+    "\32\2\6\0\1\17\1\2\1\22\1\40\1\15\1\16\1\2\1\36"+
+    "\1\34\2\2\1\20\1\37\1\24\1\23\1\41\1\2\1\13\1\21"+
+    "\1\12\1\14\1\2\1\35\3\2\1\44\1\33\1\45\7\0\1\7"+
+    "\u1fa2\0\1\7\1\7\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\udfe6\0";
 
   /** 
    * Translates characters to character classes
@@ -68,15 +67,15 @@ public class LexerCup implements java_cup.runtime.Scanner {
   private static final int [] ZZ_ACTION = zzUnpackAction();
 
   private static final String ZZ_ACTION_PACKED_0 =
-    "\1\0\1\1\1\2\1\1\1\3\2\4\1\2\6\1"+
-    "\1\5\1\6\1\7\7\1\1\10\1\11\1\12\1\13"+
-    "\1\14\1\15\1\16\1\17\2\0\1\20\6\17\1\7"+
-    "\1\6\1\21\5\17\1\0\14\17\1\3\1\22\1\17"+
-    "\1\23\1\24\4\17\1\25\1\17\1\26\2\17\1\27"+
-    "\1\30\1\31\1\17\1\32\1\17\1\33\1\17\1\34";
+    "\1\0\1\1\1\2\1\3\1\4\2\5\1\2\1\1"+
+    "\5\3\1\6\1\7\1\10\1\11\2\1\4\3\1\12"+
+    "\1\13\1\14\1\15\1\16\1\17\1\20\2\0\1\21"+
+    "\6\3\1\11\1\22\1\23\3\3\1\0\13\3\1\4"+
+    "\1\24\1\3\1\25\1\26\1\27\3\3\1\30\3\3"+
+    "\1\31\1\32\1\33\1\34\2\3\1\35";
 
   private static int [] zzUnpackAction() {
-    int [] result = new int[85];
+    int [] result = new int[78];
     int offset = 0;
     offset = zzUnpackAction(ZZ_ACTION_PACKED_0, offset, result);
     return result;
@@ -101,20 +100,19 @@ public class LexerCup implements java_cup.runtime.Scanner {
   private static final int [] ZZ_ROWMAP = zzUnpackRowMap();
 
   private static final String ZZ_ROWMAP_PACKED_0 =
-    "\0\0\0\54\0\130\0\204\0\54\0\260\0\54\0\54"+
-    "\0\334\0\u0108\0\u0134\0\u0160\0\u018c\0\u01b8\0\u01e4\0\u01e4"+
-    "\0\u01e4\0\u0210\0\u023c\0\u0268\0\u0294\0\u02c0\0\u02ec\0\u0318"+
-    "\0\54\0\54\0\54\0\54\0\54\0\54\0\54\0\u0344"+
-    "\0\u0370\0\334\0\54\0\u039c\0\u03c8\0\u03f4\0\u0420\0\u044c"+
-    "\0\u0478\0\54\0\54\0\u0344\0\u04a4\0\u04d0\0\u04fc\0\u0528"+
-    "\0\u0554\0\u0580\0\u05ac\0\u05d8\0\u0604\0\u0630\0\u065c\0\u0688"+
-    "\0\u06b4\0\u06e0\0\u070c\0\u0738\0\u0764\0\u0790\0\u0370\0\u0344"+
-    "\0\u07bc\0\u0344\0\u0344\0\u07e8\0\u0814\0\u0840\0\u086c\0\u0344"+
-    "\0\u0898\0\u0344\0\u08c4\0\u08f0\0\u0344\0\u0344\0\u0344\0\u091c"+
-    "\0\u0344\0\u0948\0\u0344\0\u0974\0\u0344";
+    "\0\0\0\51\0\122\0\173\0\51\0\244\0\51\0\51"+
+    "\0\315\0\366\0\u011f\0\u0148\0\u0171\0\u019a\0\51\0\u01c3"+
+    "\0\u01c3\0\u01c3\0\u01ec\0\u0215\0\u023e\0\u0267\0\u0290\0\u02b9"+
+    "\0\51\0\51\0\51\0\51\0\51\0\51\0\51\0\u02e2"+
+    "\0\315\0\51\0\u030b\0\u0334\0\u035d\0\u0386\0\u03af\0\u03d8"+
+    "\0\51\0\51\0\173\0\u0401\0\u042a\0\u0453\0\u047c\0\u04a5"+
+    "\0\u04ce\0\u04f7\0\u0520\0\u0549\0\u0572\0\u059b\0\u05c4\0\u05ed"+
+    "\0\u0616\0\u063f\0\u02e2\0\173\0\u0668\0\173\0\173\0\173"+
+    "\0\u0691\0\u06ba\0\u06e3\0\173\0\u070c\0\u0735\0\u075e\0\173"+
+    "\0\173\0\173\0\173\0\u0787\0\u07b0\0\173";
 
   private static int [] zzUnpackRowMap() {
-    int [] result = new int[85];
+    int [] result = new int[78];
     int offset = 0;
     offset = zzUnpackRowMap(ZZ_ROWMAP_PACKED_0, offset, result);
     return result;
@@ -139,69 +137,63 @@ public class LexerCup implements java_cup.runtime.Scanner {
   private static final String ZZ_TRANS_PACKED_0 =
     "\1\2\1\3\1\4\2\5\1\6\1\7\1\2\1\10"+
     "\1\11\1\12\1\13\1\4\1\14\1\15\3\4\1\16"+
-    "\4\4\1\7\1\17\1\20\1\21\1\22\1\23\1\24"+
-    "\1\25\2\4\1\26\1\27\1\30\1\4\1\31\1\32"+
-    "\1\33\1\34\1\35\1\36\1\37\55\0\1\3\6\0"+
-    "\1\3\45\0\1\40\7\0\15\40\6\0\10\40\15\0"+
-    "\1\41\45\0\11\42\1\43\42\42\2\0\1\40\7\0"+
-    "\1\40\1\44\13\40\6\0\10\40\11\0\1\40\7\0"+
-    "\3\40\1\45\11\40\6\0\10\40\11\0\1\40\7\0"+
-    "\6\40\1\46\6\40\6\0\10\40\11\0\1\40\7\0"+
-    "\2\40\1\47\2\40\1\50\7\40\6\0\10\40\11\0"+
-    "\1\40\7\0\11\40\1\51\3\40\6\0\10\40\37\0"+
-    "\1\52\56\0\1\53\54\0\1\53\21\0\1\40\7\0"+
-    "\4\40\1\54\10\40\6\0\3\40\1\55\4\40\11\0"+
-    "\1\40\7\0\15\40\6\0\2\40\1\56\5\40\11\0"+
-    "\1\40\7\0\5\40\1\57\7\40\6\0\10\40\11\0"+
-    "\1\40\7\0\2\40\1\60\12\40\6\0\10\40\11\0"+
-    "\1\40\7\0\5\40\1\61\7\40\6\0\10\40\10\0"+
-    "\2\40\5\0\1\40\1\0\15\40\6\0\10\40\7\0"+
-    "\4\41\1\0\1\41\1\62\1\0\44\41\1\0\2\40"+
-    "\5\0\1\40\1\0\2\40\1\63\12\40\6\0\10\40"+
-    "\10\0\2\40\5\0\1\40\1\0\1\64\14\40\6\0"+
-    "\10\40\10\0\2\40\5\0\1\40\1\0\7\40\1\65"+
-    "\5\40\6\0\1\66\7\40\10\0\2\40\5\0\1\40"+
-    "\1\0\15\40\6\0\3\40\1\67\4\40\10\0\2\40"+
-    "\5\0\1\40\1\0\6\40\1\70\6\40\6\0\10\40"+
-    "\10\0\2\40\5\0\1\40\1\0\12\40\1\71\2\40"+
-    "\6\0\10\40\10\0\2\40\5\0\1\40\1\0\15\40"+
-    "\6\0\7\40\1\72\10\0\2\40\5\0\1\40\1\0"+
-    "\15\40\6\0\1\73\7\40\10\0\2\40\5\0\1\40"+
-    "\1\0\6\40\1\74\6\40\6\0\10\40\10\0\2\40"+
-    "\5\0\1\40\1\0\1\75\14\40\6\0\10\40\10\0"+
-    "\2\40\5\0\1\40\1\0\15\40\6\0\1\76\7\40"+
-    "\7\0\4\41\1\0\1\77\1\62\1\0\44\41\1\0"+
-    "\2\40\5\0\1\40\1\0\3\40\1\100\11\40\6\0"+
-    "\10\40\10\0\2\40\5\0\1\40\1\0\2\40\1\101"+
-    "\12\40\6\0\10\40\10\0\2\40\5\0\1\40\1\0"+
-    "\3\40\1\102\11\40\6\0\10\40\10\0\2\40\5\0"+
-    "\1\40\1\0\4\40\1\103\10\40\6\0\10\40\10\0"+
-    "\2\40\5\0\1\40\1\0\15\40\6\0\4\40\1\104"+
-    "\3\40\10\0\2\40\5\0\1\40\1\0\7\40\1\63"+
-    "\5\40\6\0\10\40\10\0\2\40\5\0\1\40\1\0"+
-    "\13\40\1\105\1\40\6\0\10\40\10\0\2\40\5\0"+
-    "\1\40\1\0\2\40\1\106\12\40\6\0\10\40\10\0"+
-    "\2\40\5\0\1\40\1\0\6\40\1\107\6\40\6\0"+
-    "\10\40\10\0\2\40\5\0\1\40\1\0\6\40\1\110"+
-    "\6\40\6\0\10\40\10\0\2\40\5\0\1\40\1\0"+
-    "\15\40\6\0\7\40\1\111\10\0\2\40\5\0\1\40"+
-    "\1\0\15\40\6\0\3\40\1\112\4\40\10\0\2\40"+
-    "\5\0\1\40\1\0\1\40\1\113\13\40\6\0\10\40"+
-    "\10\0\2\40\5\0\1\40\1\0\1\114\14\40\6\0"+
-    "\10\40\10\0\2\40\5\0\1\40\1\0\14\40\1\115"+
-    "\6\0\10\40\10\0\2\40\5\0\1\40\1\0\1\116"+
-    "\14\40\6\0\10\40\10\0\2\40\5\0\1\40\1\0"+
-    "\3\40\1\117\11\40\6\0\10\40\10\0\2\40\5\0"+
-    "\1\40\1\0\2\40\1\120\12\40\6\0\10\40\10\0"+
-    "\2\40\5\0\1\40\1\0\15\40\6\0\3\40\1\121"+
-    "\4\40\10\0\2\40\5\0\1\40\1\0\15\40\6\0"+
-    "\1\122\7\40\10\0\2\40\5\0\1\40\1\0\1\123"+
-    "\14\40\6\0\10\40\10\0\2\40\5\0\1\40\1\0"+
-    "\15\40\6\0\5\40\1\124\2\40\10\0\2\40\5\0"+
-    "\1\40\1\0\15\40\6\0\3\40\1\125\4\40\7\0";
+    "\2\4\1\17\1\7\1\20\1\21\1\22\1\23\1\24"+
+    "\1\25\1\26\1\4\1\27\1\4\1\30\1\31\1\32"+
+    "\1\33\1\34\1\35\1\36\1\37\52\0\1\3\6\0"+
+    "\1\3\41\0\2\4\5\0\1\4\1\0\13\4\7\0"+
+    "\6\4\15\0\1\40\42\0\11\41\1\42\37\41\1\0"+
+    "\2\4\5\0\1\4\1\0\1\4\1\43\11\4\7\0"+
+    "\6\4\10\0\2\4\5\0\1\4\1\0\3\4\1\44"+
+    "\7\4\7\0\6\4\10\0\2\4\5\0\1\4\1\0"+
+    "\6\4\1\45\4\4\7\0\6\4\10\0\2\4\5\0"+
+    "\1\4\1\0\2\4\1\46\2\4\1\47\5\4\7\0"+
+    "\6\4\10\0\2\4\5\0\1\4\1\0\11\4\1\50"+
+    "\1\4\7\0\6\4\36\0\1\51\53\0\1\52\51\0"+
+    "\1\52\16\0\2\4\5\0\1\4\1\0\4\4\1\53"+
+    "\6\4\7\0\6\4\10\0\2\4\5\0\1\4\1\0"+
+    "\13\4\7\0\2\4\1\54\3\4\10\0\2\4\5\0"+
+    "\1\4\1\0\5\4\1\55\5\4\7\0\6\4\10\0"+
+    "\2\4\5\0\1\4\1\0\1\4\1\56\11\4\7\0"+
+    "\6\4\7\0\4\40\1\0\1\40\1\57\1\0\41\40"+
+    "\1\0\2\4\5\0\1\4\1\0\2\4\1\60\10\4"+
+    "\7\0\6\4\10\0\2\4\5\0\1\4\1\0\1\61"+
+    "\4\4\1\62\5\4\7\0\6\4\10\0\2\4\5\0"+
+    "\1\4\1\0\7\4\1\63\3\4\7\0\1\64\5\4"+
+    "\10\0\2\4\5\0\1\4\1\0\12\4\1\65\7\0"+
+    "\6\4\10\0\2\4\5\0\1\4\1\0\6\4\1\66"+
+    "\4\4\7\0\6\4\10\0\2\4\5\0\1\4\1\0"+
+    "\12\4\1\67\7\0\6\4\10\0\2\4\5\0\1\4"+
+    "\1\0\13\4\7\0\1\70\5\4\10\0\2\4\5\0"+
+    "\1\4\1\0\13\4\7\0\1\71\5\4\10\0\2\4"+
+    "\5\0\1\4\1\0\13\4\7\0\1\72\5\4\7\0"+
+    "\4\40\1\0\1\73\1\57\1\0\41\40\1\0\2\4"+
+    "\5\0\1\4\1\0\3\4\1\74\7\4\7\0\6\4"+
+    "\10\0\2\4\5\0\1\4\1\0\2\4\1\75\10\4"+
+    "\7\0\6\4\10\0\2\4\5\0\1\4\1\0\13\4"+
+    "\7\0\4\4\1\76\1\4\10\0\2\4\5\0\1\4"+
+    "\1\0\3\4\1\77\7\4\7\0\6\4\10\0\2\4"+
+    "\5\0\1\4\1\0\4\4\1\100\6\4\7\0\6\4"+
+    "\10\0\2\4\5\0\1\4\1\0\10\4\1\101\2\4"+
+    "\7\0\6\4\10\0\2\4\5\0\1\4\1\0\7\4"+
+    "\1\60\3\4\7\0\6\4\10\0\2\4\5\0\1\4"+
+    "\1\0\7\4\1\102\3\4\7\0\6\4\10\0\2\4"+
+    "\5\0\1\4\1\0\6\4\1\103\4\4\7\0\6\4"+
+    "\10\0\2\4\5\0\1\4\1\0\12\4\1\104\7\0"+
+    "\6\4\10\0\2\4\5\0\1\4\1\0\12\4\1\105"+
+    "\7\0\6\4\10\0\2\4\5\0\1\4\1\0\1\4"+
+    "\1\106\11\4\7\0\6\4\10\0\2\4\5\0\1\4"+
+    "\1\0\1\107\12\4\7\0\6\4\10\0\2\4\5\0"+
+    "\1\4\1\0\1\110\12\4\7\0\6\4\10\0\2\4"+
+    "\5\0\1\4\1\0\3\4\1\111\7\4\7\0\6\4"+
+    "\10\0\2\4\5\0\1\4\1\0\1\112\12\4\7\0"+
+    "\6\4\10\0\2\4\5\0\1\4\1\0\12\4\1\113"+
+    "\7\0\6\4\10\0\2\4\5\0\1\4\1\0\13\4"+
+    "\7\0\1\114\5\4\10\0\2\4\5\0\1\4\1\0"+
+    "\11\4\1\115\1\4\7\0\6\4\10\0\2\4\5\0"+
+    "\1\4\1\0\12\4\1\116\7\0\6\4\7\0";
 
   private static int [] zzUnpackTrans() {
-    int [] result = new int[2464];
+    int [] result = new int[2009];
     int offset = 0;
     offset = zzUnpackTrans(ZZ_TRANS_PACKED_0, offset, result);
     return result;
@@ -239,11 +231,12 @@ public class LexerCup implements java_cup.runtime.Scanner {
   private static final int [] ZZ_ATTRIBUTE = zzUnpackAttribute();
 
   private static final String ZZ_ATTRIBUTE_PACKED_0 =
-    "\1\0\1\11\2\1\1\11\1\1\2\11\20\1\7\11"+
-    "\1\1\2\0\1\11\6\1\2\11\6\1\1\0\43\1";
+    "\1\0\1\11\2\1\1\11\1\1\2\11\6\1\1\11"+
+    "\11\1\7\11\2\0\1\11\6\1\2\11\4\1\1\0"+
+    "\37\1";
 
   private static int [] zzUnpackAttribute() {
-    int [] result = new int[85];
+    int [] result = new int[78];
     int offset = 0;
     offset = zzUnpackAttribute(ZZ_ATTRIBUTE_PACKED_0, offset, result);
     return result;
@@ -346,7 +339,7 @@ public class LexerCup implements java_cup.runtime.Scanner {
         return yycolumn + 1;
     }
 
-    public void writeToken(Tokens token){
+    public void writeToken(Token token){
         try{
             out.write(token.toString());
         }catch(Exception e){
@@ -391,7 +384,7 @@ public class LexerCup implements java_cup.runtime.Scanner {
     char [] map = new char[0x110000];
     int i = 0;  /* index in packed string  */
     int j = 0;  /* index in unpacked array */
-    while (i < 176) {
+    while (i < 160) {
       int  count = packed.charAt(i++);
       char value = packed.charAt(i++);
       do map[j++] = value; while (--count > 0);
@@ -602,8 +595,8 @@ public class LexerCup implements java_cup.runtime.Scanner {
     if (!zzEOFDone) {
       zzEOFDone = true;
         try {
-        writeToken(new Tokens(Tokens.Token.EOF,yyline,yycolumn));
-        out.write("-- All token data shown! --");
+        writeToken(new Token(Token.Tokens.EOF,yyline,yycolumn, ""));
+        out.write("\n\n-- All token data shown! --");
         out.close();
     }catch(Exception e){
         System.out.println("Error writing Tokens : " + e);
@@ -764,7 +757,7 @@ public class LexerCup implements java_cup.runtime.Scanner {
       else {
         switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
           case 1: 
-            { Tokens token = new Tokens(Tokens.Token.ERROR,yyline,yycolumn);
+            { Token token = new Token(Token.Tokens.ERROR,yyline,yycolumn, yytext());
                         writeToken(token);
                         System.out.println("[Lexical error]:" + "[" + getLine() + ":" + getColumn() + "]" + " Unkown symbol: "+"'"+this.yytext()+"'");
                         Writer w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(TOKENS_ERROR_PATH, true), "utf-8"));
@@ -774,194 +767,201 @@ public class LexerCup implements java_cup.runtime.Scanner {
                         return symbol(ParserSym.error);
             } 
             // fall through
-          case 29: break;
+          case 30: break;
           case 2: 
-            { Tokens token = new Tokens(Tokens.Token.NUMBER,yyline,yycolumn);
+            { Token token = new Token(Token.Tokens.NUMBER,yyline,yycolumn, yytext());
                      writeToken(token);
                      return symbol(ParserSym.number, yytext());
             } 
             // fall through
-          case 30: break;
-          case 3: 
-            { /*Ignore*/
-            } 
-            // fall through
           case 31: break;
-          case 4: 
-            { Tokens token = new Tokens(Tokens.Token.OP_ARITHMETICAL,yyline,yycolumn);
-                        writeToken(token);
-                        return symbol(ParserSym.op_arithmetical, yytext());
-            } 
-            // fall through
-          case 32: break;
-          case 5: 
-            { Tokens token = new Tokens(Tokens.Token.OP_ASSIG,yyline,yycolumn);
-                     writeToken(token);
-                     return symbol(ParserSym.op_assig, yytext());
-            } 
-            // fall through
-          case 33: break;
-          case 6: 
-            { Tokens token = new Tokens(Tokens.Token.OP_LOGICAL,yyline,yycolumn);
-                     writeToken(token);
-                     return symbol(ParserSym.op_logical, yytext());
-            } 
-            // fall through
-          case 34: break;
-          case 7: 
-            { Tokens token = new Tokens(Tokens.Token.OP_RELATIONAL,yyline,yycolumn);
-                     writeToken(token);
-                     return symbol(ParserSym.op_relational, yytext());
-            } 
-            // fall through
-          case 35: break;
-          case 8: 
-            { Tokens token = new Tokens(Tokens.Token.LPAREN,yyline,yycolumn);
-                     writeToken(token);
-                     return symbol(ParserSym.lparen, yytext());
-            } 
-            // fall through
-          case 36: break;
-          case 9: 
-            { Tokens token = new Tokens(Tokens.Token.RPAREN,yyline,yycolumn);
-                     writeToken(token);
-                     return symbol(ParserSym.rparen, yytext());
-            } 
-            // fall through
-          case 37: break;
-          case 10: 
-            { Tokens token = new Tokens(Tokens.Token.LBRACKET,yyline,yycolumn);
-                     writeToken(token);
-                     return symbol(ParserSym.lbracket, yytext());
-            } 
-            // fall through
-          case 38: break;
-          case 11: 
-            { Tokens token = new Tokens(Tokens.Token.RBRACKET,yyline,yycolumn);
-                     writeToken(token);
-                     return symbol(ParserSym.rbracket, yytext());
-            } 
-            // fall through
-          case 39: break;
-          case 12: 
-            { Tokens token = new Tokens(Tokens.Token.NEXTINSTR,yyline,yycolumn);
-                     writeToken(token);
-                     return symbol(ParserSym.nextinstr, yytext());
-            } 
-            // fall through
-          case 40: break;
-          case 13: 
-            { Tokens token = new Tokens(Tokens.Token.SEPARATOR,yyline,yycolumn);
-                     writeToken(token);
-                     return symbol(ParserSym.separator, yytext());
-            } 
-            // fall through
-          case 41: break;
-          case 14: 
-            { Tokens token = new Tokens(Tokens.Token.TWO_POINTS,yyline,yycolumn);
-                     writeToken(token);
-                     return symbol(ParserSym.two_points, yytext());
-            } 
-            // fall through
-          case 42: break;
-          case 15: 
-            { Tokens token = new Tokens(Tokens.Token.ID,yyline,yycolumn);
+          case 3: 
+            { Token token = new Token(Token.Tokens.ID,yyline,yycolumn, yytext());
                      writeToken(token);
                      return symbol(ParserSym.id, yytext());
             } 
             // fall through
+          case 32: break;
+          case 4: 
+            { /*Ignore*/
+            } 
+            // fall through
+          case 33: break;
+          case 5: 
+            { Token token = new Token(Token.Tokens.OP_ARITHMETICAL_C,yyline,yycolumn, yytext());
+                        writeToken(token);
+                        return symbol(ParserSym.op_arithmetical_c, yytext());
+            } 
+            // fall through
+          case 34: break;
+          case 6: 
+            { Token token = new Token(Token.Tokens.OP_ARITHMETICAL_B,yyline,yycolumn, yytext());
+                        writeToken(token);
+                        return symbol(ParserSym.op_arithmetical_b, yytext());
+            } 
+            // fall through
+          case 35: break;
+          case 7: 
+            { Token token = new Token(Token.Tokens.OP_ASSIG,yyline,yycolumn, yytext());
+                     writeToken(token);
+                     return symbol(ParserSym.op_assig, yytext());
+            } 
+            // fall through
+          case 36: break;
+          case 8: 
+            { Token token = new Token(Token.Tokens.OP_LOGICAL_NOT,yyline,yycolumn, yytext());
+                     writeToken(token);
+                     return symbol(ParserSym.op_logical_not, yytext());
+            } 
+            // fall through
+          case 37: break;
+          case 9: 
+            { Token token = new Token(Token.Tokens.OP_RELATIONAL,yyline,yycolumn, yytext());
+                     writeToken(token);
+                     return symbol(ParserSym.op_relational, yytext());
+            } 
+            // fall through
+          case 38: break;
+          case 10: 
+            { Token token = new Token(Token.Tokens.LPAREN,yyline,yycolumn, yytext());
+                     writeToken(token);
+                     return symbol(ParserSym.lparen, yytext());
+            } 
+            // fall through
+          case 39: break;
+          case 11: 
+            { Token token = new Token(Token.Tokens.RPAREN,yyline,yycolumn, yytext());
+                     writeToken(token);
+                     return symbol(ParserSym.rparen, yytext());
+            } 
+            // fall through
+          case 40: break;
+          case 12: 
+            { Token token = new Token(Token.Tokens.LBRACKET,yyline,yycolumn, yytext());
+                     writeToken(token);
+                     return symbol(ParserSym.lbracket, yytext());
+            } 
+            // fall through
+          case 41: break;
+          case 13: 
+            { Token token = new Token(Token.Tokens.RBRACKET,yyline,yycolumn, yytext());
+                     writeToken(token);
+                     return symbol(ParserSym.rbracket, yytext());
+            } 
+            // fall through
+          case 42: break;
+          case 14: 
+            { Token token = new Token(Token.Tokens.NEXTINSTR,yyline,yycolumn, yytext());
+                     writeToken(token);
+                     return symbol(ParserSym.nextinstr, yytext());
+            } 
+            // fall through
           case 43: break;
+          case 15: 
+            { Token token = new Token(Token.Tokens.SEPARATOR,yyline,yycolumn, yytext());
+                     writeToken(token);
+                     return symbol(ParserSym.separator, yytext());
+            } 
+            // fall through
+          case 44: break;
           case 16: 
-            { Tokens token = new Tokens(Tokens.Token.STRING,yyline,yycolumn);
+            { Token token = new Token(Token.Tokens.TWO_POINTS,yyline,yycolumn, yytext());
+                     writeToken(token);
+                     return symbol(ParserSym.two_points, yytext());
+            } 
+            // fall through
+          case 45: break;
+          case 17: 
+            { Token token = new Token(Token.Tokens.STRING,yyline,yycolumn, yytext());
                         writeToken(token);
                         return symbol(ParserSym.string, yytext());
             } 
             // fall through
-          case 44: break;
-          case 17: 
-            { Tokens token = new Tokens(Tokens.Token.INST_IF,yyline,yycolumn);
+          case 46: break;
+          case 18: 
+            { Token token = new Token(Token.Tokens.OP_LOGICAL,yyline,yycolumn, yytext());
+                     writeToken(token);
+                     return symbol(ParserSym.op_logical, yytext());
+            } 
+            // fall through
+          case 47: break;
+          case 19: 
+            { Token token = new Token(Token.Tokens.INST_IF,yyline,yycolumn, yytext());
                         writeToken(token);
                         return symbol(ParserSym.inst_if, yytext());
             } 
             // fall through
-          case 45: break;
-          case 18: 
-            { Tokens token = new Tokens(Tokens.Token.BOOL,yyline,yycolumn);
+          case 48: break;
+          case 20: 
+            { Token token = new Token(Token.Tokens.BOOL,yyline,yycolumn, yytext());
                      writeToken(token);
                      return symbol(ParserSym.bool, yytext());
             } 
             // fall through
-          case 46: break;
-          case 19: 
-            { Tokens token = new Tokens(Tokens.Token.INST_ELSE,yyline,yycolumn);
-                        writeToken(token);
-                        return symbol(ParserSym.inst_else, yytext());
-            } 
-            // fall through
-          case 47: break;
-          case 20: 
-            { Tokens token = new Tokens(Tokens.Token.INST_ELSE,yyline,yycolumn);
-                        writeToken(token);
-                        return symbol(ParserSym.inst_elif, yytext());
-            } 
-            // fall through
-          case 48: break;
-          case 21: 
-            { Tokens token = new Tokens(Tokens.Token.INST_CALL,yyline,yycolumn);
-                     writeToken(token);
-                     return symbol(ParserSym.inst_call, yytext());
-            } 
-            // fall through
           case 49: break;
-          case 22: 
-            { Tokens token = new Tokens(Tokens.Token.INST_MAIN,yyline,yycolumn);
-                     writeToken(token);
-                     return symbol(ParserSym.inst_main, yytext());
-            } 
-            // fall through
-          case 50: break;
-          case 23: 
-            { Tokens token = new Tokens(Tokens.Token.DCONST,yyline,yycolumn);
-                     writeToken(token);
-                     return symbol(ParserSym.dconst, yytext());
-            } 
-            // fall through
-          case 51: break;
-          case 24: 
-            { Tokens token = new Tokens(Tokens.Token.INSTR_IN,yyline,yycolumn);
+          case 21: 
+            { Token token = new Token(Token.Tokens.INSTR_IN,yyline,yycolumn, yytext());
                      writeToken(token);
                      return symbol(ParserSym.instr_in, yytext());
             } 
             // fall through
+          case 50: break;
+          case 22: 
+            { Token token = new Token(Token.Tokens.INST_ELSE,yyline,yycolumn, yytext());
+                        writeToken(token);
+                        return symbol(ParserSym.inst_else, yytext());
+            } 
+            // fall through
+          case 51: break;
+          case 23: 
+            { Token token = new Token(Token.Tokens.INST_ELSE,yyline,yycolumn, yytext());
+                        writeToken(token);
+                        return symbol(ParserSym.inst_elif, yytext());
+            } 
+            // fall through
           case 52: break;
+          case 24: 
+            { Token token = new Token(Token.Tokens.INST_MAIN,yyline,yycolumn, yytext());
+                     writeToken(token);
+                     return symbol(ParserSym.inst_main, yytext());
+            } 
+            // fall through
+          case 53: break;
           case 25: 
-            { Tokens token = new Tokens(Tokens.Token.INST_WHILE,yyline,yycolumn);
+            { Token token = new Token(Token.Tokens.DCONST,yyline,yycolumn, yytext());
+                     writeToken(token);
+                     return symbol(ParserSym.dconst, yytext());
+            } 
+            // fall through
+          case 54: break;
+          case 26: 
+            { Token token = new Token(Token.Tokens.INST_WHILE,yyline,yycolumn, yytext());
                         writeToken(token);
                         return symbol(ParserSym.inst_while, yytext());
             } 
             // fall through
-          case 53: break;
-          case 26: 
-            { Tokens token = new Tokens(Tokens.Token.INST_RETURN,yyline,yycolumn);
-                     writeToken(token);
-                     return symbol(ParserSym.inst_return, yytext());
-            } 
-            // fall through
-          case 54: break;
+          case 55: break;
           case 27: 
-            { Tokens token = new Tokens(Tokens.Token.INSTR_OUT,yyline,yycolumn);
+            { Token token = new Token(Token.Tokens.INSTR_OUT,yyline,yycolumn, yytext());
                      writeToken(token);
                      return symbol(ParserSym.instr_out, yytext());
             } 
             // fall through
-          case 55: break;
+          case 56: break;
           case 28: 
-            { Tokens token = new Tokens(Tokens.Token.INST_FUNCTION,yyline,yycolumn);
+            { Token token = new Token(Token.Tokens.INST_RETURN,yyline,yycolumn, yytext());
+                     writeToken(token);
+                     return symbol(ParserSym.inst_return, yytext());
+            } 
+            // fall through
+          case 57: break;
+          case 29: 
+            { Token token = new Token(Token.Tokens.INST_FUNCTION,yyline,yycolumn, yytext());
                      writeToken(token);
                      return symbol(ParserSym.inst_function, yytext());
             } 
             // fall through
-          case 56: break;
+          case 58: break;
           default:
             zzScanError(ZZ_NO_MATCH);
         }

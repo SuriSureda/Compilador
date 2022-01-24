@@ -104,6 +104,21 @@ public class Type {
         st_boolean,
         st_number,
         st_string,
-        st_null,
+        st_null;
+
+        public String toString() {
+            switch (this) {
+                case st_boolean:
+                    return "boolean";
+                case st_null:
+                    return "null";
+                case st_number:
+                    return "number";
+                case st_string:
+                    return "string";
+                default:
+                    return "";                
+            }
+        }
     }
 }

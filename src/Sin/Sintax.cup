@@ -78,7 +78,7 @@ parser code
 
 /******Declaració de simbols terminals*********/
 
-terminal String id, number, string, bool,  op_relational, op_logical, op_arithmetical;
+terminal String id, number, string, bool,  op_relational, op_logical, op_logical_not, op_arithmetical_c, op_arithmetical_b;
 terminal        op_assig, inst_if, inst_elif, inst_else,
                 inst_while, inst_function, inst_return, dconst, 
                 instr_in, instr_out, lparen, rparen, lbracket, rbracket, nextinstr, 
@@ -107,17 +107,24 @@ non terminal  SymbolBlockOut              BLOCK_OUT;
 
 non terminal  SymbolDeclarations          DECLARATIONS;
 
+non terminal  SymbolConstant              CONSTANT;
+
+non terminal  SymbolNumberVal             NUMBER_VALUE;
+non terminal  SymbolIdVal                 ID_VALUE;
+non terminal  SymbolStringVal             STRING_VALUE;
+non terminal  SymbolBoolVal               BOOLEAN_VALUE;
+
+non terminal  SymbolValue                 VALUE;
+
 non terminal  SymbolOperatorAssignation   OPERATOR_ASSIG;
 non terminal  SymbolInstructionOut        INSTRUCTION_OUT;
-non terminal  SymbolConstant              CONSTANT;
-non terminal  SymbolValue                 VALUE;
-non terminal  SymbolInitArithOp           INITIALIZE_ARITHMETICAL_OP;
-non terminal  SymbolArithOp               ARITHMETICAL_OP;
+
+non terminal  SymbolArithOperator         ARITH_OP;
+non terminal  SymbolArithOperation        ARITHMETICAL_OPERATION;
 non terminal  SymbolArithValue            ARITHMETICAL_VALUE;
-non terminal  SymbolPosNeg                POS_NEG;
-non terminal  SymbolBoolOp                BOOLEAN_OP;
-non terminal  SymbolInitBoolOp            INITIALIZE_BOOLEAN_OP;
-non terminal  SymbolBoolValue             BOOLEAN_VALUE;
+
+non terminal  SymbolBoolOp                BOOLEAN_OPERATION;
+non terminal  SymbolBoolOpValue           BOOLEAN_OP_VALUE;
 non terminal  SymbolValueComparison       VALUE_COMPARISON;
 non terminal  SymbolMEnd                  M_END;
 non terminal  SymbolCondition             COND;
@@ -145,7 +152,14 @@ non terminal  SymbolFunReturn             FUNCTION_RETURN;
 
 non terminal  SymbolCallFunction          CALL_FUNCTION;
 non terminal  SymbolCallBody              CALL_BODY;
+
 non terminal  SymbolEmpty                 EMPTY;
+
+// precedences
+precedence left op_arithmetical_b;
+precedence left op_arithmetical_c;
+precedence left op_logical;
+precedence left op_logical_not;
 
 start with STARTS;
 
@@ -177,7 +191,6 @@ DECLARE_FUNCTIONS           ::= DEFINE_FUNCTION DECLARE_FUNCTIONS
                               RESULT = new SymbolDeclareFunctions();
                             :};
                             
-
 MAIN                        ::= inst_function inst_main M_MAIN lparen rparen lbracket MAIN_INSTRUCTIONS rbracket {:
                               RESULT = new SymbolMain();
                             :};
@@ -237,17 +250,7 @@ INSTRUCTION                 ::=  DECLARATIONS nextinstr
                             | CALL_FUNCTION nextinstr
                             {:
                               RESULT = new SymbolInstruction();
-                            :}
-                            /*
-                            | INSTRUCTION_SWITCH
-                            {:
-                              RESULT = new SymbolInstruction();
-                            :}
-                            | INSTRUCTION_FOR
-                            {:
-                              RESULT = new SymbolInstruction();
-                            :}*/
-                            ;
+                            :};
 
 BLOCK_IN                    ::=
                             {:
@@ -307,7 +310,7 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
                                 throw new Error("Value and type must have same subjacent type");
                               }
                               
-                              if(value.getType() != TYPE.dnull && !value.getTypeName().equals((String) type_id)){
+                              if(value.getType() != TYPE.dnull && !value.getTypeName().equals(type_id)){
                                 throw new Error("Value must have the same type");
                               }
 
@@ -366,7 +369,6 @@ CONSTANT                    ::=  dconst
                               RESULT = new SymbolConstant(false);
                             :};
 
-
 OPERATOR_ASSIG              ::= id:var_id op_assig VALUE:value 
                             {:
                               Type varType = symbolsTable.get(var_id);
@@ -395,103 +397,19 @@ OPERATOR_ASSIG              ::= id:var_id op_assig VALUE:value
                               RESULT = new SymbolOperatorAssignation();
                             :};    
 
+ARITH_OP                    ::= op_arithmetical_b:op
+                            {: RESULT = new SymbolArithOperator(op); :}
+                            | op_arithmetical_c:op
+                            {: RESULT = new SymbolArithOperator(op); :};
 
-INITIALIZE_ARITHMETICAL_OP  ::= lparen ARITHMETICAL_OP:arith_op rparen 
+ARITHMETICAL_OPERATION      ::= ARITHMETICAL_VALUE:arith_val1 ARITH_OP:op ARITHMETICAL_VALUE:arith_val2
                             {:
-                              SymbolInitArithOp sym; 
-                              if(arith_op.getIsConst()){
-                                sym = new SymbolInitArithOp(arith_op.getVarId(),arith_op.getValue());
-                              }else{
-                                sym = new SymbolInitArithOp(arith_op.getVarId());
-                              }
-
-                              RESULT = sym;
-                            :};
-
-
-ARITHMETICAL_OP             ::= ARITHMETICAL_OP:arith_op op_arithmetical:op ARITHMETICAL_VALUE:arith_val
-                            {:
-                              
-                              SymbolArithOp sym;
-                              boolean allConst = arith_op.getIsConst() && arith_val.getIsConst();
-
-                              Code op_code;
-                              switch(op){
-                                case "+" : 
-                                  op_code = Code.add;
-                                  break;
-                                case "-" : 
-                                  op_code = Code.sub;
-                                  break;
-                                case "*" : 
-                                  op_code = Code.prod;
-                                  break;
-                                case "/" : 
-                                  op_code = Code.div;
-                                  break;
-                                case "%" : 
-                                  op_code = Code.mod;
-                                  break;
-                                default : 
-                                  throw new Error("Invalid arithmetical operator");
-                              }
-
-                              Integer value = null;
-                              if(allConst) {
-                                Integer val1 = (Integer) arith_op.getValue();
-                                Integer val2 = (Integer) arith_val.getValue();
-
-                                switch(op){
-                                  case "+" : 
-                                    value = val1 + val2;
-                                    break;
-                                  case "-" : 
-                                    value = val1 - val2;
-                                    break;
-                                  case "*" : 
-                                    value = val1 * val2;
-                                    break;
-                                  case "/" : 
-                                    if(val2 == 0){
-                                      throw new Error("Cannot divide by zero");
-                                    }
-                                    value = val1 / val2;
-                                    break;
-                                  case "%" : 
-                                    value = val1 % val2;
-                                    break;
-                                }
-                              }
-
-                              Type type_int = symbolsTable.get("number");
-                              
-                              String var_id = backend.addTempVar(0, type_int.getSize(), type_int.getSubType());
-
-                              c3a_g.generateC3aInstr(
-                                op_code,
-                                arith_op.getVarId(),
-                                arith_val.getVarId(),
-                                var_id
-                              );
-
-                              if(allConst){
-                                sym = new SymbolArithOp(var_id, value);
-                              }
-                              else{
-                                sym = new SymbolArithOp(var_id);
-                              }
-
-                              RESULT = sym;
-
-                            :}
-                            | ARITHMETICAL_VALUE:arith_val1 op_arithmetical:op ARITHMETICAL_VALUE:arith_val2
-                              {:
-                              SymbolArithOp sym;
+                              SymbolArithOperation sym;
                               boolean allConst = arith_val1.getIsConst() && arith_val2.getIsConst();
 
                               Code op_code;
                               
-                              switch(op){
+                              switch(op.getOperator()){
                                 case "+" : 
                                   op_code = Code.add;
                                   break;
@@ -516,7 +434,7 @@ ARITHMETICAL_OP             ::= ARITHMETICAL_OP:arith_op op_arithmetical:op ARIT
                                 Integer val1 = (Integer) arith_val1.getValue();
                                 Integer val2 = (Integer) arith_val2.getValue();
 
-                                switch(op){
+                                switch(op.getOperator()){
                                   case "+" : 
                                     value = val1 + val2;
                                     break;
@@ -538,9 +456,9 @@ ARITHMETICAL_OP             ::= ARITHMETICAL_OP:arith_op op_arithmetical:op ARIT
                                 }
                               }
 
-                              Type type_int = symbolsTable.get("number");
+                              Type type_number = symbolsTable.get("number");
                               
-                              String var_id = backend.addTempVar( 0, type_int.getSize(), type_int.getSubType());
+                              String var_id = backend.addTempVar( 0, type_number.getSize(), type_number.getSubType());
 
                               c3a_g.generateC3aInstr(
                                 op_code,
@@ -550,42 +468,258 @@ ARITHMETICAL_OP             ::= ARITHMETICAL_OP:arith_op op_arithmetical:op ARIT
                               );
 
                               if(allConst){
-                                sym = new SymbolArithOp(var_id, value);
+                                sym = new SymbolArithOperation(var_id, value);
                               }
                               else{
-                                sym = new SymbolArithOp(var_id);
+                                sym = new SymbolArithOperation(var_id);
                               }
                               
+                              RESULT = sym;
+                            :}
+                            | op_arithmetical_b:op lparen ARITHMETICAL_OPERATION:arith_op rparen
+                            {:
+                              SymbolArithOperation sym = arith_op;
+                              if(op.equals("-")){
+                                Type type_number = symbolsTable.get("number");
+                                String var_id = backend.addTempVar(0, type_number.getSize(),  type_number.getSubType());
+
+                                if(arith_op.getIsConst()){
+                                  Integer value = - arith_op.getValue().intValue();
+                                  sym = new SymbolArithOperation(arith_op.getVarId(), value);
+                                }else{
+                                  sym = new SymbolArithOperation(var_id);
+                                }
+
+                                c3a_g.generateC3aInstr(
+                                  Code.neg,
+                                  arith_op.getVarId(),
+                                  null,
+                                  var_id
+                                );
+                              }
+
+                              RESULT = sym;
+                            :}
+                            | lparen ARITHMETICAL_OPERATION:arith_op rparen
+                            {:
+                              RESULT = arith_op;
+                            :};
+
+NUMBER_VALUE                ::= number:n_val
+                            {:
+                              Integer value = Integer.valueOf(n_val);
+                              RESULT = new SymbolNumberVal(value);
+                            :}
+                            | lparen NUMBER_VALUE:n_val rparen
+                            {:
+                              RESULT = n_val;
+                            :}
+                            | op_arithmetical_b:op NUMBER_VALUE:n_val
+                            {:
+                              SymbolNumberVal sym = n_val;
+                              if(op.equals("-")){
+                                Integer value = - n_val.getValue().intValue();
+                                sym = new SymbolNumberVal(value);
+                              }
+
                               RESULT = sym;
                             :};
- 
-ARITHMETICAL_VALUE          ::= lparen ARITHMETICAL_OP:arith_op rparen
-                            {:
-                              SymbolArithValue sym;
-                              String var_id = new String(arith_op.getVarId());
 
-                              if(arith_op.getIsConst()){
-                                sym = new SymbolArithValue(var_id, arith_op.getValue());
-                              }else{
-                                sym = new SymbolArithValue(var_id);
+ARITHMETICAL_VALUE          ::= NUMBER_VALUE:n_val
+                          {:
+                            Integer value = n_val.getValue();
+
+                            Type type_number = symbolsTable.get("number");
+                            
+                            String var_id = backend.addTempVar(0, type_number.getSize(),  type_number.getSubType());
+
+                            c3a_g.generateC3aInstr(
+                              Code.copy,
+                              Integer.toString(value),
+                              null,
+                              var_id
+                            );
+
+                            RESULT = new SymbolArithValue(var_id, value);
+                          :}
+                          | ID_VALUE:id_val
+                          {:
+
+                            TYPE main_var_type = id_val.getType();
+
+                            if(main_var_type != TYPE.darg && main_var_type != TYPE.dconst && main_var_type != TYPE.dvar){
+                              throw new Error("Invalid arithmetic value type");
+                            }
+
+                            Type var_dtype = symbolsTable.get(id_val.getTypeName());
+
+                            if(var_dtype.getSubType() != SUBJACENTTYPE.st_number){
+                              throw new Error("Invalid subjacent type");
+                            }
+
+                            SymbolArithValue sym;
+                            String var_id = id_val.getId();
+
+                            if(main_var_type == TYPE.dconst){
+                              Integer value = (Integer) id_val.getValue();
+                              sym = new SymbolArithValue(var_id, value);
+                            }else{
+                              sym = new SymbolArithValue(var_id);
+                            }
+
+                            RESULT = sym;
+                          :}
+                          | ARITHMETICAL_OPERATION:arith_op
+                          {:
+                            SymbolArithValue sym;
+                            if(arith_op.getIsConst()){
+                              sym = new SymbolArithValue(arith_op.getVarId(), arith_op.getValue());
+                            }else{
+                              sym = new SymbolArithValue(arith_op.getVarId());
+                            }
+
+                            RESULT = sym;
+                          :};
+
+ID_VALUE                    ::= id:id_val
+                            {:
+                              Type id_type = symbolsTable.get(id_val);
+                              String var_id = id_type.getBackendId();
+                              SymbolIdVal sym = new SymbolIdVal(var_id, id_type.getType(), id_type.getTypeName());
+                              if(id_type.getType() == TYPE.dconst){
+                                sym = new SymbolIdVal(var_id, id_type.getType(), id_type.getTypeName(), id_type.getValue());
                               }
 
                               RESULT = sym;
-
                             :}
-                            | POS_NEG:neg number:n_val
+                            | lparen ID_VALUE:id_val rparen
                             {:
-                              Integer value;
-                              if(neg != null && neg.isNegative()){
-                                value = Integer.valueOf("-" + n_val);
-                              }
-                              else{
-                                value = Integer.valueOf(n_val);
+                              RESULT = id_val;
+                            :}
+                            | op_logical_not:op ID_VALUE:id_val
+                            {:
+                              SymbolIdVal sym;
+                              // check if unary operator is type valid
+                              SUBJACENTTYPE subType = symbolsTable.get(id_val.getTypeName()).getSubType();
+
+                              if(subType != SUBJACENTTYPE.st_boolean) {
+                                throw new Error("Invalid unary operator " + op + " for type " + subType);
                               }
 
-                              Type type_int = symbolsTable.get("number");
+                              Type type_boolean = symbolsTable.get("boolean");
+                              String var_id = backend.addTempVar(0, type_boolean.getSize(),  type_boolean.getSubType());
+
+                              c3a_g.generateC3aInstr(
+                                Code.not,
+                                id_val.getId(),
+                                null,
+                                var_id
+                              );
                               
-                              String var_id = backend.addTempVar(0, type_int.getSize(),  type_int.getSubType());
+                              if(id_val.getType() == TYPE.dconst){
+                                Boolean value = !((Boolean) id_val.getValue()).booleanValue();
+                                sym = new SymbolIdVal(var_id, id_val.getType(), id_val.getTypeName(), value);
+                              }else{
+                                sym = new SymbolIdVal(var_id, id_val.getType(), id_val.getTypeName());
+                              }
+                              
+                              RESULT = sym;
+                            :}
+                            | op_arithmetical_b:op ID_VALUE:id_val
+                            {:
+                              SymbolIdVal sym = id_val;
+                              // check if unary operator is type valid
+                              SUBJACENTTYPE subType = symbolsTable.get(id_val.getTypeName()).getSubType();
+
+                              if(subType != SUBJACENTTYPE.st_boolean) {
+                                throw new Error("Invalid unary operator " + op + " for type " + subType);
+                              }
+
+                              if(op.equals("-")){
+                                Type type_number = symbolsTable.get("number");
+                                String var_id = backend.addTempVar(0, type_number.getSize(),  type_number.getSubType());
+
+                                c3a_g.generateC3aInstr(
+                                  Code.neg,
+                                  id_val.getId(),
+                                  null,
+                                  var_id
+                                );
+                                
+                                if(id_val.getType() == TYPE.dconst){
+                                  Integer value = -((Integer) id_val.getValue()).intValue();
+                                  sym = new SymbolIdVal(var_id, id_val.getType(), id_val.getTypeName(), value);
+                                }else{
+                                  sym = new SymbolIdVal(var_id, id_val.getType(), id_val.getTypeName());
+                                }
+                              }
+
+                              RESULT = sym;
+                            :};
+
+STRING_VALUE                ::= string:string_val
+                            {:
+                              RESULT = new SymbolStringVal(string_val);
+                            :}
+                            | lparen STRING_VALUE:string_val rparen
+                            {:
+                              RESULT = string_val;
+                            :};  
+
+VALUE                       ::= ID_VALUE:id_val
+                            {:
+                              SymbolValue sym;
+                              
+                              String var_id = id_val.getId();
+
+                              if(id_val.getType() == TYPE.dconst){
+                                sym = new SymbolValue(var_id, id_val.getType(), id_val.getTypeName(), id_val.getValue());
+                              }
+                              else {
+                                sym = new SymbolValue(var_id, id_val.getType(), id_val.getTypeName());
+                              }
+
+                              RESULT = sym;
+                            :}
+                            | STRING_VALUE:str_value
+                            {:
+                              String value = str_value.getString().replace("\"", "");
+                              Type type_string = symbolsTable.get("string");
+
+                              if (value.length() > 1000){
+                                throw new Error("String must be shorter than 1000 characters.");
+                              }
+                              
+                              // string size in bytes
+                              int stringSize = value.length() * type_string.getSize();
+                              
+                              SymbolValue sym = new SymbolValue(value, stringSize);
+
+                              RESULT = sym;
+                            :}
+                            | BOOLEAN_VALUE:bool_val
+                            {:
+                              Boolean value = bool_val.getValue();
+                              Type type_bool = symbolsTable.get("boolean");
+
+                              String var_id = backend.addTempVar(0, type_bool.getSize(), type_bool.getSubType());
+
+                              c3a_g.generateC3aInstr(
+                                Code.copy,
+                                value.toString(),
+                                null,
+                                var_id
+                              );                                 
+
+                              RESULT = new SymbolValue(var_id, SUBJACENTTYPE.st_boolean, value);
+                            :}
+                            | NUMBER_VALUE:n_val
+                            {:
+                              Integer value = n_val.getValue();
+
+                              Type type_number = symbolsTable.get("number");
+                              
+                              String var_id = backend.addTempVar(0, type_number.getSize(), type_number.getSubType());
 
                               c3a_g.generateC3aInstr(
                                 Code.copy,
@@ -594,61 +728,46 @@ ARITHMETICAL_VALUE          ::= lparen ARITHMETICAL_OP:arith_op rparen
                                 var_id
                               );
 
-                              RESULT = new SymbolArithValue(var_id, value);
+                              RESULT = new SymbolValue(var_id, SUBJACENTTYPE.st_number, value);
                             :}
-                            | id:id_val
+                            | VALUE_COMPARISON:comp_val
                             {:
+                              SymbolValue sym;
+                              String id = comp_val.getVarId(); 
 
-                              Type var_type = symbolsTable.get(id_val);
-                              TYPE main_var_type = var_type.getType();
-
-                              if(main_var_type != TYPE.darg && main_var_type != TYPE.dconst && main_var_type != TYPE.dvar){
-                                throw new Error("Invalid arithmetic value type");
-                              }
-
-                              Type var_dtype = symbolsTable.get(var_type.getTypeName());
-
-                              if(var_dtype.getSubType() != SUBJACENTTYPE.st_number){
-                                throw new Error("Invalid subjacent type");
-                              }
-
-                              SymbolArithValue sym;
-                              String var_id = new String(var_type.getBackendId());
-
-                              if(main_var_type == TYPE.dconst){
-                                Integer value = (Integer) var_type.getValue();
-                                sym = new SymbolArithValue(var_id, value);
+                              if(comp_val.getIsConst()){
+                                Boolean value = comp_val.getValue();
+                                sym = new SymbolValue(id, SUBJACENTTYPE.st_boolean, value);
                               }else{
-                                sym = new SymbolArithValue(var_id);
+                                sym = new SymbolValue(id, SUBJACENTTYPE.st_boolean); 
                               }
 
                               RESULT = sym;
-                            
-                            :} ;
-
-
-POS_NEG                     ::= op_arithmetical:op
-                            {:
-
-                              if(!op.equals("+") && !op.equals("-")){
-                                throw new Error("Sign operator not valid");
-                              }
-
-                              boolean isNegative = true;
-                              
-                              if(op.equals("+")){
-                                isNegative = false;
-                              }
-
-                              RESULT = new SymbolPosNeg(isNegative);
                             :}
-                            | EMPTY
+                            | op_logical_not VALUE_COMPARISON:comp_val
                             {:
-                              RESULT = new SymbolPosNeg(false);
-                            :};
+                              SymbolValue sym;
 
+                              Type type_bool = symbolsTable.get("boolean");
+                              String var_id = backend.addTempVar(0,type_bool.getSize(), type_bool.getSubType());
 
-VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
+                              c3a_g.generateC3aInstr(
+                                Code.not,
+                                comp_val.getVarId(),
+                                null,
+                                var_id
+                              );
+
+                              if(comp_val.getIsConst()){
+                                Boolean value = ! comp_val.getValue().booleanValue(); 
+                                sym = new SymbolValue(var_id, SUBJACENTTYPE.st_boolean, value);
+                              }else{
+                                sym = new SymbolValue(var_id, SUBJACENTTYPE.st_boolean); 
+                              }
+
+                              RESULT = sym;
+                            :}
+                            | ARITHMETICAL_OPERATION:arith_op
                             {:
                               SymbolValue sym;
                               String var_id = arith_op.getVarId();
@@ -660,80 +779,7 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
 
                               RESULT = sym;
                             :}
-                            | POS_NEG:neg number:n_val
-                            {:
-                              Integer value;
-
-                              if(neg != null && neg.isNegative()){
-                                value = Integer.valueOf("-" + n_val);
-                              }
-                              else{
-                                value = Integer.valueOf(n_val);
-                              }
-
-                              Type type_int = symbolsTable.get("number");
-                              
-                              String var_id = backend.addTempVar(0, type_int.getSize(), type_int.getSubType());
-
-                              c3a_g.generateC3aInstr(
-                                Code.copy,
-                                Integer.toString(value),
-                                null,
-                                var_id
-                              );
-
-                              RESULT = new SymbolValue(var_id, SUBJACENTTYPE.st_number, value);
-                            :}
-                            | string:value 
-                            {:
-                             //delete quotes
-                              value = value.replace("\"", "");
-                              Type type_string = symbolsTable.get("string");
-                              
-                              // string size in bytes
-                              int stringSize = value.length() * type_string.getSize();
-
-                              if (value.length() > 999){
-                                throw new Error("String must be shorter than 1000 characters.");
-                              }
-                              
-                              SymbolValue sym = new SymbolValue(value, stringSize);
-
-                              RESULT = sym;
-                            :}
-                            | bool:bool_val
-                            {:
-                              Boolean value = Boolean.valueOf(bool_val);
-                              Type type_bool = symbolsTable.get("boolean");
-
-                              String var_id = backend.addTempVar(0, type_bool.getSize(), type_bool.getSubType());
-
-                              c3a_g.generateC3aInstr(
-                                Code.copy,
-                                bool_val,
-                                null,
-                                var_id
-                              );                                 
-
-                              RESULT = new SymbolValue(var_id, SUBJACENTTYPE.st_boolean, value);
-                            :}
-                            | id:id_val
-                            {:
-                              SymbolValue sym;
-                              
-                              Type val_type = symbolsTable.get(id_val);
-                              String var_id = new String(val_type.getBackendId());
-
-                              if(val_type.getType() == TYPE.dconst){
-                                sym = new SymbolValue(var_id, val_type.getType(), val_type.getTypeName(), val_type.getValue());
-                              }
-                              else {
-                                sym = new SymbolValue(var_id, val_type.getType(), val_type.getTypeName());
-                              }
-
-                              RESULT = sym;
-                            :}
-                            | INITIALIZE_BOOLEAN_OP:bool_op
+                            | BOOLEAN_OPERATION:bool_op
                             {:
                               SymbolValue sym;
                               String var_id = new String(bool_op.getVarId());
@@ -778,21 +824,9 @@ VALUE                       ::= INITIALIZE_ARITHMETICAL_OP:arith_op
                               );
 
                               RESULT = new SymbolValue(var_id, number_type.getSubType());
-                            :}; 
-
-INITIALIZE_BOOLEAN_OP       ::= lparen BOOLEAN_OP:bool_op rparen 
-                            {:
-                              SymbolInitBoolOp sym; 
-                              if(bool_op.getIsConst()){
-                                sym = new SymbolInitBoolOp(bool_op.getVarId(),bool_op.getValue());
-                              }else{
-                                sym = new SymbolInitBoolOp(bool_op.getVarId());
-                              }
-
-                              RESULT = sym;
                             :};
 
-BOOLEAN_OP                  ::= BOOLEAN_OP:bool_op op_logical:op BOOLEAN_VALUE:bool_val
+BOOLEAN_OPERATION           ::= BOOLEAN_OP_VALUE:bool_val1 op_logical:op BOOLEAN_OP_VALUE:bool_val2
                             {:
                               SymbolBoolOp sym;
                               Code op_code;
@@ -808,12 +842,12 @@ BOOLEAN_OP                  ::= BOOLEAN_OP:bool_op op_logical:op BOOLEAN_VALUE:b
                                   throw new Error("Invalid boolean operator");
                               }
 
-                              boolean allConst = bool_op.getIsConst() && bool_val.getIsConst();
+                              boolean allConst = bool_val1.getIsConst() && bool_val2.getIsConst();
                               Boolean value = null;
 
                               if(allConst){
-                                Boolean val1 = (Boolean) bool_op.getValue();
-                                Boolean val2 = (Boolean) bool_val.getValue();
+                                Boolean val1 = (Boolean) bool_val1.getValue();
+                                Boolean val2 = (Boolean) bool_val2.getValue();
                                 switch(op){
                                 case "&&":
                                   value = val1 && val2;
@@ -827,8 +861,8 @@ BOOLEAN_OP                  ::= BOOLEAN_OP:bool_op op_logical:op BOOLEAN_VALUE:b
                               Type type_bool = symbolsTable.get("boolean"); 
                               String var_id = backend.addTempVar( 0, type_bool.getSize(), type_bool.getSubType());
                               
-                              String val1_id = bool_val.getVarId();
-                              String val2_id = bool_op.getVarId();
+                              String val1_id = bool_val1.getVarId();
+                              String val2_id = bool_val2.getVarId();
                               c3a_g.generateC3aInstr(
                                 op_code,
                                 val1_id,
@@ -843,116 +877,138 @@ BOOLEAN_OP                  ::= BOOLEAN_OP:bool_op op_logical:op BOOLEAN_VALUE:b
                               }
 
                               RESULT = sym;
-
                             :}
-                            | BOOLEAN_VALUE:bool_val
+                            | lparen BOOLEAN_OPERATION:bool_op rparen
+                            {:
+                              RESULT = bool_op;
+                            :}
+                            | op_logical_not lparen BOOLEAN_OPERATION:bool_op rparen
                             {:
                               SymbolBoolOp sym;
-
-                              String var_id = new String(bool_val.getVarId());
-                              if(bool_val.getIsConst()){
-                                sym = new SymbolBoolOp(var_id, bool_val.getValue());
-                              }
-                              else{
-                                sym = new SymbolBoolOp(var_id);
-                              }
-
-                              RESULT = sym;
-                              
-                            :}
-                            | op_logical:op BOOLEAN_VALUE:bool_val
-                            {:
-                              if(!op_logical.equals("!")){
-                                throw new Error("Invalid boolean operator");
-                              }
-
-                              SymbolBoolOp sym;
-
-                              String var_id = new String(bool_val.getVarId());
-                              if(bool_val.getIsConst()){
-                                sym = new SymbolBoolOp(var_id, bool_val.getValue());
-                              }
-                              else{
-                                sym = new SymbolBoolOp(var_id);
-                              }
-
-                              RESULT = sym;
-                              
-                            :};
-
-BOOLEAN_VALUE               ::= bool:bool_val  
-                            {:
-                              Boolean value = Boolean.valueOf(bool_val);
-                              
-                              Type type_bool = symbolsTable.get("boolean");
-                              String var_id = backend.addTempVar( 0, type_bool.getSize(), type_bool.getSubType());
+                              Type type_boolean = symbolsTable.get("boolean");
+                              String var_id = backend.addTempVar(0, type_boolean.getSize(),  type_boolean.getSubType());
 
                               c3a_g.generateC3aInstr(
-                                Code.copy,
-                                bool_val,
+                                Code.neg,
+                                bool_op.getVarId(),
                                 null,
                                 var_id
                               );
 
-                              RESULT = new SymbolBoolValue(var_id, value);
-
-                            :}
-                            | id:id_var
-                            {:
-                              Type var_type = symbolsTable.get(id_var);
-                              TYPE main_var_type = var_type.getType();
-
-                              if(main_var_type != TYPE.dconst || main_var_type != TYPE.dvar || main_var_type != TYPE.darg){
-                                throw new Error("");
-                              }
-                              
-                              Type dtype_type = symbolsTable.get(var_type.getTypeName());
-                              if(dtype_type.getSubType() != SUBJACENTTYPE.st_boolean){
-                                throw new Error("Must be boolean variable or constant");
-                              }
-
-                              SymbolBoolValue sym;
-                              String backId = new String(var_type.getBackendId());
-
-                              if(TYPE.dconst == main_var_type){
-                                Boolean value = (Boolean) var_type.getValue();
-                                sym = new SymbolBoolValue(backId, value);
-                              }else{
-                                sym = new SymbolBoolValue(backId);
-                              }
-
-                              RESULT = sym;
-                            :}
-                            | lparen BOOLEAN_OP:bool_op rparen
-                            {:
-                              SymbolBoolValue sym;
-                              String id = new String(bool_op.getVarId()); 
                               if(bool_op.getIsConst()){
-                                Boolean value = (Boolean) bool_op.getValue();
-                                sym = new SymbolBoolValue(id, value);
+                                Boolean value = ! bool_op.getValue().booleanValue();
+                                sym = new SymbolBoolOp(bool_op.getVarId(), value);
                               }else{
-                                sym = new SymbolBoolValue(id); 
-                              }
-
-                              RESULT = sym;
-                              
-                            :}
-                            | VALUE_COMPARISON:comp_val
-                            {:
-                              SymbolBoolValue sym;
-                              String id = new String(comp_val.getVarId()); 
-                              if(comp_val.getIsConst()){
-                                sym = new SymbolBoolValue(id, comp_val.getValue());
-                              }else{
-                                sym = new SymbolBoolValue(id); 
+                                sym = new SymbolBoolOp(var_id);
                               }
 
                               RESULT = sym;
                             :};
 
-VALUE_COMPARISON            ::= VALUE:val1 op_relational:op VALUE:val2 
+BOOLEAN_OP_VALUE            ::= BOOLEAN_VALUE:bool_val
                             {:
+                              Boolean value = bool_val.getValue();
+                              Type type_boolean = symbolsTable.get("boolean");
+                              
+                              String var_id = backend.addTempVar(0, type_boolean.getSize(),  type_boolean.getSubType());
 
+                              c3a_g.generateC3aInstr(
+                                Code.copy,
+                                value.toString(),
+                                null,
+                                var_id
+                              );
+
+                              RESULT = new SymbolBoolOpValue(var_id, value);
+                            :}
+                            | ID_VALUE:id_val
+                            {:
+                              TYPE main_var_type = id_val.getType();
+                              if(main_var_type != TYPE.darg && main_var_type != TYPE.dconst && main_var_type != TYPE.dvar){
+                                throw new Error("Invalid arithmetic value type");
+                              }
+
+                              Type var_dtype = symbolsTable.get(id_val.getTypeName());
+
+                              if(var_dtype.getSubType() != SUBJACENTTYPE.st_boolean){
+                                throw new Error("Invalid subjacent type");
+                              }
+
+                              SymbolBoolOpValue sym;
+                              String var_id = id_val.getId();
+
+                              if(main_var_type == TYPE.dconst){
+                                Boolean value = (Boolean) id_val.getValue();
+                                sym = new SymbolBoolOpValue(var_id, value);
+                              }else{
+                                sym = new SymbolBoolOpValue(var_id);
+                              }
+
+                              RESULT = sym;
+                            :}
+                            | BOOLEAN_OPERATION:bool_op
+                            {:
+                              SymbolBoolOpValue sym;
+                              if(bool_op.getIsConst()){
+                                sym = new SymbolBoolOpValue(bool_op.getVarId(), bool_op.getValue());
+                              }else{
+                                sym = new SymbolBoolOpValue(bool_op.getVarId());
+                              }
+                              RESULT = sym;
+                            :}
+                            | VALUE_COMPARISON:comp_val
+                            {:
+                              SymbolBoolOpValue sym;
+                              String id = new String(comp_val.getVarId()); 
+                              if(comp_val.getIsConst()){
+                                sym = new SymbolBoolOpValue(id, comp_val.getValue());
+                              }else{
+                                sym = new SymbolBoolOpValue(id); 
+                              }
+
+                              RESULT = sym;
+                            :}
+                            | op_logical_not VALUE_COMPARISON:comp_val
+                            {:
+                              Type type_bool = symbolsTable.get("boolean");
+                              String var_id = backend.addTempVar(0,type_bool.getSize(), type_bool.getSubType());
+
+                              c3a_g.generateC3aInstr(
+                                Code.not,
+                                comp_val.getVarId(),
+                                null,
+                                var_id
+                              );
+
+                              SymbolBoolOpValue sym;
+                              if(comp_val.getIsConst()){
+                                Boolean value = ! comp_val.getValue().booleanValue();
+                                sym = new SymbolBoolOpValue(var_id, value);
+                              }else{
+                                sym = new SymbolBoolOpValue(var_id); 
+                              }
+                              RESULT = sym;
+                            :}
+                            ;
+
+BOOLEAN_VALUE               ::= bool:bool_val
+                            {:
+                              Boolean value = Boolean.valueOf(bool_val);
+                              RESULT = new SymbolBoolVal(value);
+                            :}
+                            | op_logical_not BOOLEAN_VALUE:bool_val
+                            {:
+                              Boolean value = ! bool_val.getValue().booleanValue();
+                              RESULT = new SymbolBoolVal(value);
+                            :}
+                            | lparen BOOLEAN_VALUE:bool_val rparen
+                            {:
+                              RESULT = bool_val;
+                            :}
+                            ;
+
+VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rparen
+                            {:
                               SymbolValueComparison sym;
 
                               TYPE type1 = val1.getType();
@@ -988,7 +1044,7 @@ VALUE_COMPARISON            ::= VALUE:val1 op_relational:op VALUE:val2
 
                               Code op_code = Code.EQ;
                               switch(op){
-                                case "=":
+                                case "==":
                                   op_code = Code.EQ;
                                   break;
                                 case "!=":
@@ -1017,7 +1073,7 @@ VALUE_COMPARISON            ::= VALUE:val1 op_relational:op VALUE:val2
                               Boolean val = null;
                               if(allConst){
                                 switch(op){
-                                  case "=":
+                                  case "==":
                                     if(subType1 == SUBJACENTTYPE.st_number){
                                        val = (Integer) val1.getValue() == (Integer) val2.getValue();
                                     }
@@ -1075,9 +1131,9 @@ VALUE_COMPARISON            ::= VALUE:val1 op_relational:op VALUE:val2
                               RESULT = sym;
                             :};
 
-COND                         ::=  INITIALIZE_BOOLEAN_OP:bool_op
+COND                        ::= lparen BOOLEAN_OP_VALUE:bool_val rparen
                               {:
-                                String var_id = bool_op.getVarId();
+                                String var_id = bool_val.getVarId();
 
                                 String true_label = backend.addLabel();
                                 String false_label = backend.addLabel();
@@ -1103,7 +1159,7 @@ COND                         ::=  INITIALIZE_BOOLEAN_OP:bool_op
                                 RESULT = new SymbolCondition();
                               :};
 
-COND_T                        ::= 
+COND_T                      ::= 
                               {:
                                 String label = labelTrueStack.pop();
 
@@ -1117,7 +1173,7 @@ COND_T                        ::=
                                 RESULT = new SymbolConditionTrue();   
                               :};
                               
-COND_F                        ::= 
+COND_F                      ::= 
                               {:
                                 String label = labelFalseStack.pop();
 
@@ -1131,7 +1187,7 @@ COND_F                        ::=
                                 RESULT = new SymbolConditionFalse();   
                               :};
 
-INSTRUCTION_IF               ::= inst_if COND lbracket BLOCK_IN COND_T INSTRUCTIONS BLOCK_OUT rbracket ELIF ELSE
+INSTRUCTION_IF              ::= inst_if COND lbracket BLOCK_IN COND_T INSTRUCTIONS BLOCK_OUT rbracket ELIF ELSE
                             {:
                               RESULT = new SymbolInstructionIf();
                             :};
@@ -1198,10 +1254,9 @@ M_WHILE                     ::= EMPTY
                               );
 
                               RESULT = new SymbolMWhile(label);
-                            :};
-                  
+                            :};                
  
-INSTRUCTION_WHILE            ::= inst_while M_WHILE:mwhile COND lbracket BLOCK_IN COND_T INSTRUCTIONS BLOCK_OUT rbracket         
+INSTRUCTION_WHILE           ::= inst_while M_WHILE:mwhile COND lbracket BLOCK_IN COND_T INSTRUCTIONS BLOCK_OUT rbracket         
                             {:
                               String loop_label = mwhile.getLabel();
                               c3a_g.generateC3aInstr(
@@ -1221,37 +1276,6 @@ INSTRUCTION_WHILE            ::= inst_while M_WHILE:mwhile COND lbracket BLOCK_I
 
                               RESULT = new SymbolInstructionWhile();
                             :};
-
-/*
-INSTRUCTION_FOR              ::= inst_for lparen INTERNAL_FOR rparen lbracket INSTRUCTIONS rbracket
-                            {:
-                            RESULT = new SymbolInstructionFor();
-                            :};
-
-INTERNAL_FOR                 ::= OPERATOR_ASSIG nextinstr INITIALIZE_BOOLEAN_OP nextinstr ARITHMETICAL_OP 
-                             | 
-                            {:
-                            RESULT = new SymbolInternalFor();
-                            :};
-
-
-INSTRUCTION_SWITCH           ::= inst_switch lparen VALUE rparen lbracket CASES rbracket 
-                             {:
-                             RESULT = new SymbolInstructionSwitch();
-                             :};
-
-CASES                        ::= inst_case VALUE two_points INSTRUCTIONS inst_break nextinstr CASES
-                             | CASE_DEFAULT
-                             {:
-                             RESULT = new SymbolCases();
-                             :};
-
-CASE_DEFAULT                 ::= inst_default INSTRUCTIONS inst_break nextinstr
-                             | 
-                             {:
-                             RESULT = new SymbolCaseDefault();
-                             :};
-*/
 
 CALL_FUNCTION               ::= id:fun_id lparen rparen
                             {:
@@ -1364,7 +1388,6 @@ CALL_BODY                   ::= CALL_BODY:body separator VALUE:value
                               RESULT = new SymbolCallBody(fun_id, fun_back_id, 0+1);
                             :};
 
-
 INSTRUCTION_OUT             ::= instr_out lparen VALUE:value rparen
                             {:
                               String var_id = value.getVarId();
@@ -1395,7 +1418,6 @@ INSTRUCTION_OUT             ::= instr_out lparen VALUE:value rparen
                               }
                               RESULT = new SymbolInstructionOut();
                             :};
-
 
 DEFINE_FUNCTION             ::= FUNCTION_INIT:fun_init lbracket BLOCK_IN FUNCTION_INSTRUCTIONS FUNCTION_RETURN:fun_ret BLOCK_OUT rbracket
                             {:

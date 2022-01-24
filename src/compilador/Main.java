@@ -19,39 +19,32 @@ import java_cup.runtime.ComplexSymbolFactory;
 import java_cup.runtime.SymbolFactory;
 
 public class Main {
-	private static final String WORK_DIR = System.getProperty("user.dir") + "\\src\\";
+	private static final String USER_DIR = System.getProperty("user.dir");
+	private static final String WORK_DIR = USER_DIR + "\\src\\";
 	
 	private static final String LEX_DIR = WORK_DIR + "Lex\\";
 	private static final String JFLEX_FILE = LEX_DIR + "LexerCup.flex";
-	private static final String JFLEX_JAVA = "LexerCup.java";
 
 	private static final String CUP_DIR = WORK_DIR + "Sin\\";
 	private static final String CUP_FILE = CUP_DIR + "Sintax.cup";
-	private static final String CUP_JAVA = "Parser.java";
 
 	private static final String OUTPUT_DIR = "output\\";
 
 	// All file data
-	// ok cases
-	private static final String FILE1 = "input.txt";
-	private static final String FILE2 = "";
-	private static final String FILE3 = "";
-	// wrong cases
-	private static final String FILE4 = "";
-	private static final String FILE5 = "";
-	private static final String FILE6 = "";
 
 	public static void main(String[] args) {
-
-		// generateJavaFiles();
-		
-		try {
-			executeCompiler();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
-		};
+		generateJavaFiles();
+		// try {
+		// 	String file = ".\\examples\\example3.txt";
+		// 	if(args.length != 0){
+		// 		file = args[0];
+		// 	}
+		// 	executeCompiler(file);
+		// } catch (FileNotFoundException e) {
+		// 	e.printStackTrace();
+		// } catch (Exception e) {
+		// 	e.printStackTrace();
+		// };
 	}
 
 	private static void generateJavaFiles() {
@@ -69,7 +62,7 @@ public class Main {
 	}
 
 	private static void generateCupFile() throws internal_error, IOException, Exception {
-		String[] commands  = {"-parser", "Parser", CUP_FILE};
+		String[] commands  = {"-dump_grammar", "-parser", "Parser",CUP_FILE};
 		java_cup.Main.main(commands);
 		// generates on WorkDir folder Parser.java and ParserSym.java
 
@@ -89,13 +82,13 @@ public class Main {
 		Files.move(sym_o, sym_d);
 	}
 
-	private static void executeCompiler() throws FileNotFoundException, Exception{
+	private static void executeCompiler(String file) throws FileNotFoundException, Exception{
 		//Clean all output files
 		cleanOutputFiles();
 
 		// Here we are executing the files specified 
 		// We read the input.txt
-		Reader reader = new BufferedReader(new FileReader(FILE1));
+		Reader reader = new BufferedReader(new FileReader(file));
 		// generate intermediate code
 		LexerCup scanner = new LexerCup(reader);
 		SymbolFactory sf = new ComplexSymbolFactory();

@@ -15,6 +15,7 @@ public class Instruction {
     // All posible operations that our c3@ will be able to use
     public static enum Code {
         copy,
+        neg,
         add,
         sub,
         prod,
@@ -54,6 +55,11 @@ public class Instruction {
     public String toString() {
         String result = "";
         switch (opCode) {
+            /* UNARY OP */
+            case not:
+            case neg:
+                result += this.dest + " = " + this.opCode + " " + this.op1;
+                break;
             /* ARITHMETICAL OP*/
             case add:
             case sub:
@@ -65,8 +71,6 @@ public class Instruction {
             case or:
                 result += this.dest + " = " + this.op1 + " " + this.opCode + " " + this.op2;
                 break;
-            case not:
-                result += this.dest + " = " + this.opCode + " " + this.op1;
             case call:
                 result += this.opCode + " " + this.dest;
                 break;
@@ -85,7 +89,6 @@ public class Instruction {
             case NE: 
                 result += this.dest + "= " + this.op1 + " "+ this.opCode +" "+ this.op2; 
                 break;
-
             case jump_cond : 
                 result += "if "+ this.op1 + "=" + this.op2 + " goto " + this.dest;   
             /* OTHER OPERATIONS*/    
@@ -186,12 +189,12 @@ public class Instruction {
     
     public boolean isLiteralOp1() {
         if(op1 == null) return false;
-        return op1.charAt(0) == '"' || op1.matches("[0-9]+") || isBoolean(op1);
+        return op1.charAt(0) == '"' || (op1.matches("[0-9]+") || op1.charAt(0) == '-') || isBoolean(op1);
     }
     
     public boolean isLiteralOp2() {
         if(op2 == null) return false;
-        return op2.charAt(0) == '"' || op2.matches("[0-9]+") || isBoolean(op2);
+        return op2.charAt(0) == '"' || (op1.matches("[0-9]+") || op1.charAt(0) == '-') || isBoolean(op2);
     }
 
     public boolean isInt(String n) {

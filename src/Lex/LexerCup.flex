@@ -111,13 +111,15 @@ BOOL            = ("true" | "false")                        // ok
 // PALABRAS RESERVADAS
 
 // Declaraciones
-DCONST          = ("CONST")     //ok
+DCONST          = ("const")     //ok
 
 // Operadores
 
-OP_ARITHMETICAL = ("+"|"-"|"*"|"/"|"%") //ok
+OP_ARITHMETICAL_B = ("+"|"-")
+OP_ARITHMETICAL_C = ("*"|"/"|"%")
 OP_RELATIONAL   = ("=="|"!="|"<"|">"|"<="|">=") //ok
-OP_LOGICAL      = ("&&"|"||"|"!")   //ok
+OP_LOGICAL      = ("&&"|"||")   //ok
+OP_LOGICAL_NOT  = ("!")
 OP_ASSIG        = ("=")            //ok
 
 // Operaciones
@@ -283,11 +285,16 @@ TWO_POINTS       = (":")     //ok
                      return symbol(ParserSym.two_points, yytext());
                      }
 //==============================================================================
-{OP_ARITHMETICAL}    {
-                        Token token = new Token(Token.Tokens.OP_ARITHMETICAL,yyline,yycolumn, yytext());
+{OP_ARITHMETICAL_B}    {
+                        Token token = new Token(Token.Tokens.OP_ARITHMETICAL_B,yyline,yycolumn, yytext());
                         writeToken(token);
-                        return symbol(ParserSym.op_arithmetical, yytext());
+                        return symbol(ParserSym.op_arithmetical_b, yytext());
                      }
+{OP_ARITHMETICAL_C} {
+                        Token token = new Token(Token.Tokens.OP_ARITHMETICAL_C,yyline,yycolumn, yytext());
+                        writeToken(token);
+                        return symbol(ParserSym.op_arithmetical_c, yytext());
+                    }
 {OP_RELATIONAL}      {
                      Token token = new Token(Token.Tokens.OP_RELATIONAL,yyline,yycolumn, yytext());
                      writeToken(token);
@@ -297,6 +304,11 @@ TWO_POINTS       = (":")     //ok
                      Token token = new Token(Token.Tokens.OP_LOGICAL,yyline,yycolumn, yytext());
                      writeToken(token);
                      return symbol(ParserSym.op_logical, yytext());
+                     }
+{OP_LOGICAL_NOT}         {
+                     Token token = new Token(Token.Tokens.OP_LOGICAL_NOT,yyline,yycolumn, yytext());
+                     writeToken(token);
+                     return symbol(ParserSym.op_logical_not, yytext());
                      }
 {OP_ASSIG}           {
                      Token token = new Token(Token.Tokens.OP_ASSIG,yyline,yycolumn, yytext());

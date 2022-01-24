@@ -12,7 +12,7 @@ package Symbols;
 public class SymbolArithValue extends SymbolBase{
     
     private String var_id;
-    private Object value;
+    private Integer value;
     private boolean isConst;
 
     public SymbolArithValue(String var_id) {
@@ -21,7 +21,7 @@ public class SymbolArithValue extends SymbolBase{
         this.isConst = false;
     }
 
-    public SymbolArithValue(String var_id, Object value) {
+    public SymbolArithValue(String var_id, Integer value) {
         super("Symbol Arithmetical Value", 0);
         this.var_id = var_id;
         this.value = value;

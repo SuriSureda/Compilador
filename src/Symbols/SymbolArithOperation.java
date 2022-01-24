@@ -9,20 +9,20 @@ package Symbols;
  *
  * @author soyjo
  */
-public class SymbolArithOp extends SymbolBase{
+public class SymbolArithOperation extends SymbolBase{
 
     private String var_id;
-    private Object value;
+    private Integer value;
     private boolean isConst;
 
-    public SymbolArithOp(String var_id) {
-        super("Symbol Arithmetical Operator", 0);
+    public SymbolArithOperation(String var_id) {
+        super("Symbol Arithmetical Operation", 0);
         this.var_id = var_id;
         this.isConst = false;
     }
 
-    public SymbolArithOp(String var_id, Object value) {
-        super("Symbol Arithmetical Operator", 0);
+    public SymbolArithOperation(String var_id, Integer value) {
+        super("Symbol Arithmetical Operation", 0);
         this.var_id = var_id;
         this.value = value;
         this.isConst = true;
@@ -36,7 +36,7 @@ public class SymbolArithOp extends SymbolBase{
         return this.isConst;
     }
 
-    public Object getValue(){
+    public Integer getValue(){
         return this.value;
     }
     
