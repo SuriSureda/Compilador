@@ -1,5 +1,8 @@
 package SymbolsTable;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -8,6 +11,8 @@ public class SymbolsTable {
     private ArrayList<Integer> scopeTable;
     private HashMap<String, Description> descriptionTable;
     private ArrayList<Expansion> expansionTable;
+    private static BufferedWriter out;
+    private final String SYMBOLS_TABLE_PATH = "output\\SymbolsTableData.txt";
 
     public SymbolsTable() {
         reset();
@@ -223,4 +228,60 @@ public class SymbolsTable {
         scopeTable.add(0);
         scope  = 1;
     }
-}
+
+    public void saveTableInFile() {
+
+        try {
+            out = new BufferedWriter(new FileWriter(SYMBOLS_TABLE_PATH, false));
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        // Header
+        String result = "-----------------------------------------------\n"
+                      + "---------------- SYMBOLS TABLE DATA -----------: \n"
+                      + "-----------------------------------------------\n";
+
+        // Description table data
+        result += "-----------------------------------------------\n";
+        result += "-----------DESCRIPTION TABLE  -------------\n";
+        for(String key: this.descriptionTable.keySet()) {
+            Description desc = this.descriptionTable.get(key);
+            result += desc.toString() +"\n";
+        } 
+        result += "-----------------------------------------------\n";
+
+       // Scope table data
+        result += "-----------------------------------------------\n";
+        result += "--------SCOPE INFO : " + this.scope+ " --------\n";
+        
+
+        for (int i = 0; i < this.scopeTable.size(); i++) {
+            result+= "scope:" + i + ", pointing at: " + scopeTable.get(i) + " value\n";
+        }
+        result += "-----------------------------------------------\n";
+
+        // Expansion table data
+        result += "-----------------------------------------------\n";
+        result += "-------------EXPANSION TABLE-------------------\n";
+        for (int i = 0; i < this.expansionTable.size(); i++) {
+            result += this.expansionTable.get(i).toString() + "\n";
+        }
+        result += "-----------------------------------------------\n";
+
+        // ENDING
+        result +="-----------------------------------------------\n";
+        result +="               All Data Shown!!!             \n";
+        result +="-----------------------------------------------\n";
+
+        try {
+            out.write(result); 
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }    
+    }
+
+
