@@ -525,7 +525,7 @@ NUMBER_VALUE                ::= number:n_val
                               RESULT = sym;
                             :};
 
-ARITHMETICAL_VALUE          ::= NUMBER_VALUE:n_val
+ARITHMETICAL_VALUE         ::= NUMBER_VALUE:n_val
                           {:
                             Integer value = n_val.getValue();
 
@@ -579,6 +579,55 @@ ARITHMETICAL_VALUE          ::= NUMBER_VALUE:n_val
                             }
 
                             RESULT = sym;
+                          :}
+                          | CALL_FUNCTION:call_fn
+                          {:
+                            Type fn_type = symbolsTable.get(call_fn.getFunctionId());
+                            Type dfn_type = symbolsTable.get(fn_type.getTypeName());
+                            
+                            if(dfn_type.getSubType() != SUBJACENTTYPE.st_number){
+                              throw new Error("Invalid function call "+call_fn.getFunctionId() + " with return type "+ dfn_type.getSubType() +". Expected :"+SUBJACENTTYPE.st_number);
+                            }
+                            
+                            String var_id = backend.addTempVar( 0, fn_type.getSize(), dfn_type.getSubType());
+
+                            c3a_g.generateC3aInstr(
+                              Code.copy,
+                              "return "+call_fn.getFunctionId(),
+                              null,
+                              var_id
+                            );                                
+
+                            RESULT = new SymbolArithValue(var_id);
+                          :}
+                          | op_arithmetical_b:op CALL_FUNCTION:call_fn
+                          {:
+                            Type fn_type = symbolsTable.get(call_fn.getFunctionId());
+                            Type dfn_type = symbolsTable.get(fn_type.getTypeName());
+                            
+                            if(dfn_type.getSubType() != SUBJACENTTYPE.st_number){
+                              throw new Error("Invalid function call "+call_fn.getFunctionId() + " with return type "+ dfn_type.getSubType() +". Expected :"+SUBJACENTTYPE.st_number);
+                            }
+                            
+                            String var_id = backend.addTempVar( 0, fn_type.getSize(), dfn_type.getSubType());
+
+                            c3a_g.generateC3aInstr(
+                              Code.copy,
+                              "return "+call_fn.getFunctionId(),
+                              null,
+                              var_id
+                            );                                
+
+                            if(op.equals("-")){
+                              c3a_g.generateC3aInstr(
+                                Code.neg,
+                                var_id,
+                                null,
+                                var_id
+                              );
+                            }
+
+                            RESULT = new SymbolArithValue(var_id);
                           :};
 
 ID_VALUE                    ::= id:id_val
@@ -989,6 +1038,53 @@ BOOLEAN_OP_VALUE            ::= BOOLEAN_VALUE:bool_val
                               }
                               RESULT = sym;
                             :}
+                            | CALL_FUNCTION:call_fn
+                            {:
+                              Type fn_type = symbolsTable.get(call_fn.getFunctionId());
+                              Type dfn_type = symbolsTable.get(fn_type.getTypeName());
+                              
+                              if(dfn_type.getSubType() != SUBJACENTTYPE.st_boolean){
+                                throw new Error("Invalid function call "+call_fn.getFunctionId() + " with return type "+ dfn_type.getSubType() +". Expected :"+SUBJACENTTYPE.st_boolean);
+                              }
+                              
+                              String var_id = backend.addTempVar( 0, fn_type.getSize(), dfn_type.getSubType());
+
+                              c3a_g.generateC3aInstr(
+                                Code.copy,
+                                "return "+call_fn.getFunctionId(),
+                                null,
+                                var_id
+                              );                                
+
+                              RESULT = new SymbolBoolOpValue(var_id);
+                            :}
+                            | op_logical_not:op CALL_FUNCTION:call_fn
+                            {:
+                              Type fn_type = symbolsTable.get(call_fn.getFunctionId());
+                              Type dfn_type = symbolsTable.get(fn_type.getTypeName());
+                              
+                              if(dfn_type.getSubType() != SUBJACENTTYPE.st_number){
+                                throw new Error("Invalid function call "+call_fn.getFunctionId() + " with return type "+ dfn_type.getSubType() +". Expected :"+SUBJACENTTYPE.st_number);
+                              }
+                              
+                              String var_id = backend.addTempVar( 0, fn_type.getSize(), dfn_type.getSubType());
+
+                              c3a_g.generateC3aInstr(
+                                Code.copy,
+                                "return "+call_fn.getFunctionId(),
+                                null,
+                                var_id
+                              );                                
+
+                              c3a_g.generateC3aInstr(
+                                Code.neg,
+                                var_id,
+                                null,
+                                var_id
+                              );
+
+                              RESULT = new SymbolBoolOpValue(var_id);
+                            :}
                             ;
 
 BOOLEAN_VALUE               ::= bool:bool_val
@@ -1129,6 +1225,10 @@ VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rp
                               );
 
                               RESULT = sym;
+                            :}
+                            | lparen VALUE_COMPARISON:cmp_val rparen
+                            {:
+                              RESULT = cmp_val;
                             :};
 
 COND                        ::= lparen BOOLEAN_OP_VALUE:bool_val rparen
