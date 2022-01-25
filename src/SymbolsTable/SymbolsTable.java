@@ -15,6 +15,14 @@ public class SymbolsTable {
     private final String SYMBOLS_TABLE_PATH = "output\\SymbolsTableData.txt";
 
     public SymbolsTable() {
+        try {
+            out = new BufferedWriter(new FileWriter(SYMBOLS_TABLE_PATH));
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        // Before deleting the symbols table we do write one last time
+        saveTableInFile();
         reset();
     }
 
@@ -41,6 +49,8 @@ public class SymbolsTable {
         // write into description table
         Description newDesc = new Description(id, type, scope);
         descriptionTable.put(id, newDesc);
+        // We've just put data inside the table, so we are writing it
+        saveTableInFile();
     }
 
     public void addParam(String idFun, String idParamBack, String idParam, Type type){
@@ -79,6 +89,8 @@ public class SymbolsTable {
                 expP.setNext(idxe);
                 expansionTable.set(idxep, expP);
             }
+            // We've just put data inside the table, so we are writing it
+            saveTableInFile();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -188,6 +200,8 @@ public class SymbolsTable {
     public void enterBlock() {
         scopeTable.add(scope + 1, scopeTable.get(scope));
         scope +=1;
+        // We are increasing the scope lvl
+        saveTableInFile();
     }
 
     public void leaveBlock() {
@@ -218,6 +232,8 @@ public class SymbolsTable {
                 }
             }
         }
+        // We are decreasing the block's level and deleting data
+        saveTableInFile();
     }
 
     public void reset() {
@@ -230,13 +246,8 @@ public class SymbolsTable {
     }
 
     public void saveTableInFile() {
-
-        try {
-            out = new BufferedWriter(new FileWriter(SYMBOLS_TABLE_PATH, false));
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        // We ensure that the .txt file is deleted every time we launch the whole compiler (?)
+        // This method is called everytime something ocurres to the Symbols Table
 
         // Header
         String result = "-----------------------------------------------\n"
@@ -275,13 +286,24 @@ public class SymbolsTable {
         result +="               All Data Shown!!!             \n";
         result +="-----------------------------------------------\n";
 
+        // Write in a file
         try {
-            out.write(result); 
+            out.write(result);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+    
+    // This method is called at the very end to close the link between the compiler
+    // and the .txt file
+    public void closeSymbolsTableFiles(){
+        try {
             out.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }    
+    }
     }
 
 

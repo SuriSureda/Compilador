@@ -165,6 +165,8 @@ start with STARTS;
 
 STARTS                      ::=  INIT DECLARE_FUNCTIONS
                             {:
+                            // close symbolsTable.txt file
+                              symbolsTable.closeSymbolsTableFiles();
                               backend.storeTables();
 
                               //NOT OPTIMIZED CODE
