@@ -353,35 +353,8 @@ public class AssemblerGenerator {
     }
 
     private void paramInstruction(Instruction instruction, Instruction nextInstruction) {
-        if (nextInstruction.getDest() != null && nextInstruction.getDest().equals("input")) {
-
-            if (!declarationExists(instruction.getOp1())) {   //Si no esta declarada, hacerlo.
-                newIntegerGlobalVariable(instruction.getOp1(), "0");
-            }
-
-            writeLine("push %rbp");
-            writeLine("mov $0, %eax");
-            writeLine("movabsq $format, %rdi         # Carregar format de string.");
-            writeLine("movabsq $" + instruction.getOp1() + ", %rsi         # Carregar direcció per guardar l'entrada.");
-
-        } else if (nextInstruction.getDest() != null && nextInstruction.getDest().equals("output")) {
-
-            if (isStringDeclaration(instruction.getOp1())) {
-                writeLine("push %rbx");
-                writeLine("lea " + instruction.getOp1() + "(%rip), %rdi         # Carreguem la direcció de la variable.");
-                writeLine("mov  $0, %esi");
-                writeLine("xor %eax, %eax       # Netetjem el registre");
-            } else {
-                writeLine("push %rbx");
-                writeLine("lea format(%rip), %rdi         # Carreguem la direcció de la variable.");
-                writeLine("mov " + instruction.getOp1() + ", %esi");
-                writeLine("xor %eax, %eax       # Netetjem el registre");
-            }
-
-        } else {
-            writeLine("mov " + instruction.getOp1() + ",%rdx");
-            writeLine("push %rdx");
-        }
+        writeLine("mov " + instruction.getOp1() + ",%rdx");
+        writeLine("push %rdx");
     }
 
     private boolean declarationExists(String name) {
@@ -411,15 +384,6 @@ public class AssemblerGenerator {
 
     public void writeSpecificLine(int lineNumber, String codeToWrite) {
         assemblyInstructions.add(lineNumber, codeToWrite);
-    }
-
-    private boolean isStringDeclaration(String name) {
-        for (int i = 0; i < assemblyInstructions.size(); i++) {
-            if (readLine(i).contains(name + ": .asciz")) {
-                return true;
-            }
-        }
-        return false;
     }
 
     // Auxiliar method which indicates what kind of jump are we analyzing
