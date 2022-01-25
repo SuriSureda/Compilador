@@ -15,15 +15,14 @@ public class SymbolsTable {
     private final String SYMBOLS_TABLE_PATH = "output\\SymbolsTableData.txt";
 
     public SymbolsTable() {
+        reset();
         try {
             out = new BufferedWriter(new FileWriter(SYMBOLS_TABLE_PATH));
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         // Before deleting the symbols table we do write one last time
         saveTableInFile(null);
-        reset();
     }
 
     public void add(String id, Type type) {
