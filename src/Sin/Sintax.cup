@@ -8,6 +8,7 @@ import SymbolsTable.Type.TYPE;
 import SymbolsTable.Type.SUBJACENTTYPE;
 import Lex.*;
 import backend.*;
+import Error.*;
 
 import java.util.Stack;
 import java.util.ArrayList;
@@ -40,6 +41,7 @@ parser code
 
   public void syntax_error(Symbol s) {
       report_error(
+        throw new syntaxError("Syntax Error : " + s.value + " (" + (s.left+1) + ":" + (s.right+1) + ")");
         "Syntax Error : " + s.value + " (" + (s.left+1) + ":" + (s.right+1) + ")\n", null
       );
   }
@@ -49,6 +51,7 @@ parser code
       scanner.closeTokensFile((s.left+1), (s.right+1));
 
       report_fatal_error(
+        throw new syntaxError("Unrecovered Syntax Error : " + s.value + " (" + (s.left+1) + ":" + (s.right+1) + ")");
         "Unrecovered Syntax Error : " + s.value + " (" + (s.left+1) + ":" + (s.right+1) + ")", null
       );
     } catch (Exception e) {
@@ -298,22 +301,22 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
                               Type type = symbolsTable.get(type_id);
 
                               if(type.getType() != TYPE.dtype){
-                                throw new Error("Type not valid");
+                                throw new semanticError("Type not valid");
                               }
 
                               if(type.getSubType() != SUBJACENTTYPE.st_boolean
                                 && type.getSubType() != SUBJACENTTYPE.st_number
                                 && type.getSubType() != SUBJACENTTYPE.st_string ){
-                                  throw new Error("Invalid subjacent type");
+                                  throw new semanticError("Invalid subjacent type");
                               }
 
                               //IF LITERALL (type = null) CHECK SUBJACENT TYPE
                               if(value.getType() == TYPE.dnull && type.getSubType() != value.getSubType()){
-                                throw new Error("Value and type must have same subjacent type");
+                                throw new semanticError("Value and type must have same subjacent type");
                               }
                               
                               if(value.getType() != TYPE.dnull && !value.getTypeName().equals(type_id)){
-                                throw new Error("Value must have the same type");
+                                throw new semanticError("Value must have the same type");
                               }
 
                               Type var_type;
@@ -377,16 +380,16 @@ OPERATOR_ASSIG              ::= id:var_id op_assig VALUE:value
                               String type_id = varType.getTypeName();
 
                               if(varType.getType() == TYPE.dconst){
-                                throw new Error("Cant assign value to constant");
+                                throw new semanticError("Cant assign value to constant");
                               }
 
                               //IF LITERALL (type = null) CHECK SUBJACENT TYPE
                               if(value.getType() == TYPE.dnull && varType.getSubType() == value.getSubType()){
-                                throw new Error("Value and type must have same subjacent type");
+                                throw new semanticError("Value and type must have same subjacent type");
                               }
                               
                               if(value.getType() != TYPE.dnull && value.getTypeName() != type_id){
-                                throw new Error("Value must have the same type");
+                                throw new semanticError("Value must have the same type");
                               }
 
                               c3a_g.generateC3aInstr(
@@ -428,7 +431,7 @@ ARITHMETICAL_OPERATION      ::= ARITHMETICAL_VALUE:arith_val1 ARITH_OP:op ARITHM
                                   op_code = Code.mod;
                                   break;
                                 default : 
-                                  throw new Error("Invalid arithmetical operator");
+                                  throw new semanticError("Invalid arithmetical operator");
                               }
 
                               Integer value = null;
@@ -448,7 +451,7 @@ ARITHMETICAL_OPERATION      ::= ARITHMETICAL_VALUE:arith_val1 ARITH_OP:op ARITHM
                                     break;
                                   case "/" : 
                                     if(val2 == 0){
-                                      throw new Error("Cannot divide by zero");
+                                      throw new semanticError("Cannot divide by zero");
                                     }
                                     value = val1 / val2;
                                     break;
@@ -550,13 +553,13 @@ ARITHMETICAL_VALUE         ::= NUMBER_VALUE:n_val
                             TYPE main_var_type = id_val.getType();
 
                             if(main_var_type != TYPE.darg && main_var_type != TYPE.dconst && main_var_type != TYPE.dvar){
-                              throw new Error("Invalid arithmetic value type");
+                              throw new semanticError("Invalid arithmetic value type");
                             }
 
                             Type var_dtype = symbolsTable.get(id_val.getTypeName());
 
                             if(var_dtype.getSubType() != SUBJACENTTYPE.st_number){
-                              throw new Error("Invalid subjacent type");
+                              throw new semanticError("Invalid subjacent type");
                             }
 
                             SymbolArithValue sym;
@@ -588,7 +591,7 @@ ARITHMETICAL_VALUE         ::= NUMBER_VALUE:n_val
                             Type dfn_type = symbolsTable.get(fn_type.getTypeName());
                             
                             if(dfn_type.getSubType() != SUBJACENTTYPE.st_number){
-                              throw new Error("Invalid function call "+call_fn.getFunctionId() + " with return type "+ dfn_type.getSubType() +". Expected :"+SUBJACENTTYPE.st_number);
+                              throw new semanticError("Invalid function call "+call_fn.getFunctionId() + " with return type "+ dfn_type.getSubType() +". Expected :"+SUBJACENTTYPE.st_number);
                             }
                             
                             String var_id = backend.addTempVar( 0, fn_type.getSize(), dfn_type.getSubType());
@@ -608,7 +611,7 @@ ARITHMETICAL_VALUE         ::= NUMBER_VALUE:n_val
                             Type dfn_type = symbolsTable.get(fn_type.getTypeName());
                             
                             if(dfn_type.getSubType() != SUBJACENTTYPE.st_number){
-                              throw new Error("Invalid function call "+call_fn.getFunctionId() + " with return type "+ dfn_type.getSubType() +". Expected :"+SUBJACENTTYPE.st_number);
+                              throw new semanticError("Invalid function call "+call_fn.getFunctionId() + " with return type "+ dfn_type.getSubType() +". Expected :"+SUBJACENTTYPE.st_number);
                             }
                             
                             String var_id = backend.addTempVar( 0, fn_type.getSize(), dfn_type.getSubType());
@@ -654,7 +657,7 @@ ID_VALUE                    ::= id:id_val
                               SUBJACENTTYPE subType = symbolsTable.get(id_val.getTypeName()).getSubType();
 
                               if(subType != SUBJACENTTYPE.st_boolean) {
-                                throw new Error("Invalid unary operator " + op + " for type " + subType);
+                                throw new semanticError("Invalid unary operator " + op + " for type " + subType);
                               }
 
                               Type type_boolean = symbolsTable.get("boolean");
@@ -683,7 +686,7 @@ ID_VALUE                    ::= id:id_val
                               SUBJACENTTYPE subType = symbolsTable.get(id_val.getTypeName()).getSubType();
 
                               if(subType != SUBJACENTTYPE.st_boolean) {
-                                throw new Error("Invalid unary operator " + op + " for type " + subType);
+                                throw new semanticError("Invalid unary operator " + op + " for type " + subType);
                               }
 
                               if(op.equals("-")){
@@ -738,7 +741,7 @@ VALUE                       ::= ID_VALUE:id_val
                               Type type_string = symbolsTable.get("string");
 
                               if (value.length() > 1000){
-                                throw new Error("String must be shorter than 1000 characters.");
+                                throw new semanticError("String must be shorter than 1000 characters.");
                               }
                               
                               // string size in bytes
@@ -848,7 +851,7 @@ VALUE                       ::= ID_VALUE:id_val
                               Type dfn_type = symbolsTable.get(fn_type.getTypeName());
                               
                               if(dfn_type.getSubType() == SUBJACENTTYPE.st_null){
-                                throw new Error("Function call : "+call_fn.getFunctionId() + " does not return any value");
+                                throw new semanticError("Function call : "+call_fn.getFunctionId() + " does not return any value");
                               }
                               
                               String var_id = backend.addTempVar( 0, fn_type.getSize(), dfn_type.getSubType());
@@ -890,7 +893,7 @@ BOOLEAN_OPERATION           ::= BOOLEAN_OP_VALUE:bool_val1 op_logical:op BOOLEAN
                                   op_code = Code.or;
                                   break;
                                 default : 
-                                  throw new Error("Invalid boolean operator");
+                                  throw new semanticError("Invalid boolean operator");
                               }
 
                               boolean allConst = bool_val1.getIsConst() && bool_val2.getIsConst();
@@ -976,13 +979,13 @@ BOOLEAN_OP_VALUE            ::= BOOLEAN_VALUE:bool_val
                             {:
                               TYPE main_var_type = id_val.getType();
                               if(main_var_type != TYPE.darg && main_var_type != TYPE.dconst && main_var_type != TYPE.dvar){
-                                throw new Error("Invalid arithmetic value type");
+                                throw new semanticError("Invalid arithmetic value type");
                               }
 
                               Type var_dtype = symbolsTable.get(id_val.getTypeName());
 
                               if(var_dtype.getSubType() != SUBJACENTTYPE.st_boolean){
-                                throw new Error("Invalid subjacent type");
+                                throw new semanticError("Invalid subjacent type");
                               }
 
                               SymbolBoolOpValue sym;
@@ -1046,7 +1049,7 @@ BOOLEAN_OP_VALUE            ::= BOOLEAN_VALUE:bool_val
                               Type dfn_type = symbolsTable.get(fn_type.getTypeName());
                               
                               if(dfn_type.getSubType() != SUBJACENTTYPE.st_boolean){
-                                throw new Error("Invalid function call "+call_fn.getFunctionId() + " with return type "+ dfn_type.getSubType() +". Expected :"+SUBJACENTTYPE.st_boolean);
+                                throw new semanticError("Invalid function call "+call_fn.getFunctionId() + " with return type "+ dfn_type.getSubType() +". Expected :"+SUBJACENTTYPE.st_boolean);
                               }
                               
                               String var_id = backend.addTempVar( 0, fn_type.getSize(), dfn_type.getSubType());
@@ -1066,7 +1069,7 @@ BOOLEAN_OP_VALUE            ::= BOOLEAN_VALUE:bool_val
                               Type dfn_type = symbolsTable.get(fn_type.getTypeName());
                               
                               if(dfn_type.getSubType() != SUBJACENTTYPE.st_number){
-                                throw new Error("Invalid function call "+call_fn.getFunctionId() + " with return type "+ dfn_type.getSubType() +". Expected :"+SUBJACENTTYPE.st_number);
+                                throw new semanticError("Invalid function call "+call_fn.getFunctionId() + " with return type "+ dfn_type.getSubType() +". Expected :"+SUBJACENTTYPE.st_number);
                               }
                               
                               String var_id = backend.addTempVar( 0, fn_type.getSize(), dfn_type.getSubType());
@@ -1116,7 +1119,7 @@ VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rp
                                 subType1 = val1.getSubType();
                               }else{
                                 if(type1 != TYPE.dvar && type1 != TYPE.dconst && type1 != TYPE.darg && type1 != TYPE.dfun) {
-                                  throw new Error("Value 1 of comparison wrong type");
+                                  throw new semanticError("Value 1 of comparison wrong type");
                                 }
                                 Type dtype_type = symbolsTable.get(val1.getTypeName());
                                 subType1 = dtype_type.getSubType();
@@ -1129,7 +1132,7 @@ VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rp
                                 subType2 = val2.getSubType();
                               }else{
                                 if(type2 != TYPE.dvar && type2 != TYPE.dconst && type2 != TYPE.darg && type2 != TYPE.dfun) {
-                                  throw new Error("Value 2 of comparison wrong type");
+                                  throw new semanticError("Value 2 of comparison wrong type");
                                 }
                                 Type dtype_type = symbolsTable.get(val2.getTypeName());
                                 subType2 = dtype_type.getSubType();
@@ -1137,7 +1140,7 @@ VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rp
 
                               //Check same subtype
                               if(subType1 != subType2) {
-                                throw new Error("Value 1 subtype is different from value 2");
+                                throw new semanticError("Value 1 subtype is different from value 2");
                               }
 
                               Code op_code = Code.EQ;
@@ -1149,19 +1152,19 @@ VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rp
                                   op_code = Code.NE;
                                   break;
                                 case "<": 
-                                  if(subType1 != SUBJACENTTYPE.st_number) throw new Error("This operator ("+op+") only works with integer subtypes");
+                                  if(subType1 != SUBJACENTTYPE.st_number) throw new semanticError("This operator ("+op+") only works with integer subtypes");
                                   op_code = Code.LT;
                                   break;
                                 case "<=":
-                                  if(subType1 != SUBJACENTTYPE.st_number) throw new Error("This operator ("+op+") only works with integer subtypes");
+                                  if(subType1 != SUBJACENTTYPE.st_number) throw new semanticError("This operator ("+op+") only works with integer subtypes");
                                   op_code = Code.LE;
                                   break;
                                 case ">": 
-                                  if(subType1 != SUBJACENTTYPE.st_number) throw new Error("This operator ("+op+") only works with integer subtypes");
+                                  if(subType1 != SUBJACENTTYPE.st_number) throw new semanticError("This operator ("+op+") only works with integer subtypes");
                                   op_code = Code.GT;
                                   break;
                                 case ">=":
-                                  if(subType1 != SUBJACENTTYPE.st_number) throw new Error("This operator ("+op+") only works with integer subtypes");
+                                  if(subType1 != SUBJACENTTYPE.st_number) throw new semanticError("This operator ("+op+") only works with integer subtypes");
                                   op_code = Code.GE;
                                   break;
                               }
@@ -1384,7 +1387,7 @@ CALL_FUNCTION               ::= id:fun_id lparen rparen
                               // Check if function and has params 
                               int num_params = symbolsTable.getNumParams(fun_id);
                               if(num_params > 0 ){
-                                throw new Error("Missing parameters. Function " + fun_id + " has " + num_params + " parameters.");
+                                throw new semanticError("Missing parameters. Function " + fun_id + " has " + num_params + " parameters.");
                               }
 
                               Type fun_type = symbolsTable.get(fun_id);
@@ -1405,7 +1408,7 @@ CALL_FUNCTION               ::= id:fun_id lparen rparen
                               int fun_params = symbolsTable.getNumParams(fun_id);
 
                               if(fun_params != body_params){
-                                throw new Error("Incorrect number of parameters :"+ body_params + ".Function " + fun_id + " has " + fun_params + "params");
+                                throw new semanticError("Incorrect number of parameters :"+ body_params + ".Function " + fun_id + " has " + fun_params + "params");
                               }
 
                               String fun_backId = body.getFunBackId();
@@ -1430,7 +1433,7 @@ CALL_BODY                   ::= CALL_BODY:body separator VALUE:value
                               }
                               else{
                                 if(value.getType() != TYPE.dvar && value.getType() != TYPE.dconst && value.getType() != TYPE.darg){
-                                  throw new Error(fun_id + ". Incorrect type for param "+ num_params);
+                                  throw new semanticError(fun_id + ". Incorrect type for param "+ num_params);
                                 }
                                 Type value_type = symbolsTable.get(value.getTypeName());
                                 subType = value_type.getSubType();
@@ -1441,7 +1444,7 @@ CALL_BODY                   ::= CALL_BODY:body separator VALUE:value
                               SUBJACENTTYPE paramSubType = symbolsTable.get(paramType.getTypeName()).getSubType();
 
                               if(paramSubType != subType){
-                                throw new Error(fun_id + ". Incorrect type for param " + num_params + ". Expected " + subType + " but got " + paramSubType);
+                                throw new semanticError(fun_id + ". Incorrect type for param " + num_params + ". Expected " + subType + " but got " + paramSubType);
                               }
 
                               String fun_back_id = body.getFunBackId();
@@ -1463,7 +1466,7 @@ CALL_BODY                   ::= CALL_BODY:body separator VALUE:value
                               }
                               else{
                                 if(value.getType() != TYPE.dvar && value.getType() != TYPE.dconst && value.getType() != TYPE.darg){
-                                  throw new Error(fun_id + ". Incorrect type for param 0");
+                                  throw new semanticError(fun_id + ". Incorrect type for param 0");
                                 }
                                 Type value_type = symbolsTable.get(value.getTypeName());
                                 subType = value_type.getSubType();
@@ -1474,7 +1477,7 @@ CALL_BODY                   ::= CALL_BODY:body separator VALUE:value
                               SUBJACENTTYPE paramSubType = symbolsTable.get(paramType.getTypeName()).getSubType();
 
                               if(paramSubType != subType){
-                                throw new Error(fun_id + ". Incorrect type for param 0. Expected " + subType + " but got " + paramSubType);
+                                throw new semanticError(fun_id + ". Incorrect type for param 0. Expected " + subType + " but got " + paramSubType);
                               }
 
                               Type fun_type = symbolsTable.get(fun_id);
@@ -1525,7 +1528,7 @@ DEFINE_FUNCTION             ::= FUNCTION_INIT:fun_init lbracket BLOCK_IN FUNCTIO
                             {:
                               //check if fun type and return type are the same
                               if(fun_init.getSubType() != fun_ret.getSubType()) {
-                                throw new Error("Invalid return type. Expected : "+fun_init.getSubType()+", but got: "+fun_ret.getSubType());
+                                throw new semanticError("Invalid return type. Expected : "+fun_init.getSubType()+", but got: "+fun_ret.getSubType());
                               }
 
                               // no return value
@@ -1556,7 +1559,7 @@ FUNCTION_INIT               ::= inst_function id:fun_id FUNCTION_PARAMS:fun_para
                               // check return type
                               Type return_fun_type = symbolsTable.get(type_id);
                               if(return_fun_type.getType() != TYPE.dtype){
-                                throw new Error("Function declaration : invalid type");
+                                throw new semanticError("Function declaration : invalid type");
                               }
 
                               SUBJACENTTYPE subType = return_fun_type.getSubType();
@@ -1624,7 +1627,7 @@ FUNCTION_W_PARAMS           ::= FUNCTION_W_PARAMS:prev_params separator id:id tw
                               //check param type
                               Type type_type = symbolsTable.get(type_id);
                               if(type_type.getType() != TYPE.dtype){
-                                throw new Error("Invalid param type");
+                                throw new semanticError("Invalid param type");
                               }
 
                               Type param_type = new Type(TYPE.darg, type_id);

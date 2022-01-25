@@ -14,6 +14,7 @@ import java.io.Writer;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.io.IOException;
+import Errors.*;
 
 %%                              //INICIO DE OPCIONES
          
@@ -383,11 +384,12 @@ TWO_POINTS       = (":")     //ok
 [^]                  {
                         Token token = new Token(Token.Tokens.ERROR,yyline,yycolumn, yytext());
                         writeToken(token);
-                        System.out.println("[Lexical error]:" + "[" + getLine() + ":" + getColumn() + "]" + " Unkown symbol: "+"'"+this.yytext()+"'");
-                        Writer w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(TOKENS_ERROR_PATH, true), "utf-8"));
-                        w.write("[Lexical error]:" + "[" + getLine() + ":" + getColumn() + "]" + " Unkown symbol: "+"'"+this.yytext()+"'"+".\n");
-                        w.close();
-
+                        try{
+                            throw new lexicalError("[Lexical error]:" + "[" + getLine() + ":" + getColumn() + "]" + " Unkown symbol: "+"'"+this.yytext()+"'");
+                        } catch (DoesNotExistException ex) {
+                            System.err.println("ERROR: " + ex.getMessage());
+                        }
+                        
                         return symbol(ParserSym.error);
                      }
 //==============================================================================

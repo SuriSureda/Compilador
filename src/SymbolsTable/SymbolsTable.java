@@ -35,9 +35,8 @@ public class SymbolsTable {
             if(oldDescription.getScope() == scope){
                 // llançar error
                 try {
-                    //TODO -> ya existe
-                    
-                    throw new semanticError(id + "cannot be added because it already exists in actual scope");
+                    //OK
+                    throw new symbolTableError(id + "cannot be added because it already exists in actual scope");
                     //throw new Exception(id + "cannot be added because it already exists in actual scope");
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -62,12 +61,12 @@ public class SymbolsTable {
         try {
             if(funDes == null){
                 //TODO
-                auxSemantic.functionNotFound();
-                throw new Exception(idFun + "function not found");
+                throw new symbolTableError(idFun + "cannot be added because it already exists in actual scope");
+               // throw new Exception(idFun + "function not found");
                 
             }
             if(funDes.getType().getType() != Type.TYPE.dfun){
-                throw new Exception(idFun + "is not a function");
+                throw new symbolTableError(idFun + "is not a function");
             }
         
             int idxe = funDes.getFirst();
@@ -79,7 +78,7 @@ public class SymbolsTable {
             }
 
             if(idxe != -1){
-                throw new Exception(idParam + "already exists");
+                throw new symbolTableError(idParam + "already exists");
             }
 
             idxe = scopeTable.get(scope);
@@ -123,11 +122,11 @@ public class SymbolsTable {
         // CHECK TYPE
         try {
             if(funDes == null){
-                throw new Exception(idFun + "function not found");
+                throw new symbolTableError(idFun + "function not found");
                 
             }
             if(funDes.getType().getType() != Type.TYPE.dfun){
-                throw new Exception(idFun + "is not a function");
+                throw new symbolTableError(idFun + "is not a function");
             }
 
             int idxe = funDes.getFirst();
@@ -149,11 +148,11 @@ public class SymbolsTable {
         // CHECK TYPE
         try {
             if(funDes == null){
-                throw new Exception(idFun + "function not found");
+                throw new symbolTableError(idFun + "function not found");
                 
             }
             if(funDes.getType().getType() != Type.TYPE.dfun){
-                throw new Exception(idFun + "is not a function");
+                throw new symbolTableError(idFun + "is not a function");
             }
 
             int idxe = funDes.getFirst();
@@ -165,7 +164,7 @@ public class SymbolsTable {
             }
 
             if(idxe == -1){
-                throw new Exception(idFun + "has" + " param at index" + index + " does not exist");
+                throw new symbolTableError(idFun + "has" + " param at index" + index + " does not exist");
             }
 
             return expansionTable.get(idxe).getType();
@@ -180,11 +179,11 @@ public class SymbolsTable {
         // CHECK TYPE
         try {
             if(funDes == null){
-                throw new Exception(idFun + "function not found");
+                throw new symbolTableError(idFun + "function not found");
                 
             }
             if(funDes.getType().getType() != Type.TYPE.dfun){
-                throw new Exception(idFun + "is not a function");
+                throw new symbolTableError(idFun + "is not a function");
             }
 
             ArrayList<Expansion> params = new ArrayList<Expansion>();
@@ -212,7 +211,7 @@ public class SymbolsTable {
     public void leaveBlock() {
         if (scope == 1){
             try {
-                throw new Exception("Compiler error : out of scope 1");
+                throw new symbolTableError("Compiler error : out of scope 1");
             } catch (Exception e) {
                 e.printStackTrace();
             }
