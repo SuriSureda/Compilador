@@ -41,7 +41,7 @@ public class SymbolsTable {
             }
             // move oldDescription to expansionTable
             int expIndex = scopeTable.get(scope);
-            scopeTable.add(scope, expIndex  + 1);
+            scopeTable.set(scope, expIndex  + 1);
             Expansion exp = new Expansion(oldDescription);
             expansionTable.add(expIndex, exp);
         }
@@ -204,12 +204,15 @@ public class SymbolsTable {
     }
 
     public void leaveBlock() {
-        if (scope == 0){
+        if (scope == 1){
             try {
-                throw new Exception("Compiler error : out of scope 0");
+                throw new Exception("Compiler error : out of scope 1");
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+        if(scope != 1){
+            this.scope --;
             // remove out of scope variables
             // iterate over hashmap
             ArrayList<String> keys = new ArrayList<String>(descriptionTable.keySet());
@@ -220,19 +223,21 @@ public class SymbolsTable {
             }
 
             // move from expanstion to description
-            int first = scopeTable.get(scope--);
+            int first = scopeTable.get(scope + 1) - 1;
             int last = scopeTable.get(scope);
 
-            for (int i = first ; i > last; i--) {
+            for (int i = first ; i >= last; i--) {
                 // not move coplex types like params
                 if(expansionTable.get(i).getScope() != -1){
                     Description des = new Description(expansionTable.remove(i));
                     descriptionTable.put(des.getId(), des);
                 }
             }
+
+            this.scopeTable.remove(this.scopeTable.size() - 1);
+            // We are decreasing the block's level and deleting data
+            saveTableInFile("LEAVE BLOCK : decrease scope");
         }
-        // We are decreasing the block's level and deleting data
-        saveTableInFile("LEAVE BLOCK : decrease scope");
     }
 
     public void reset() {
