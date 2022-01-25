@@ -4,11 +4,11 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class lexicalError extends Exception{
+public class syntaxError extends Exception{
     private static BufferedWriter out = null;
-    private final String PATH = "output\\lexicalError.txt";
+    private final String PATH = "output\\syntaxError.txt";
 
-    public lexicalError(String error){
+    public syntaxError(String error){
         super(error);
         if (out== null){
             try {

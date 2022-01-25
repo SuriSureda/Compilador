@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import Errors.*;
 
 public class SymbolsTable {
     private int scope;
@@ -34,7 +35,10 @@ public class SymbolsTable {
             if(oldDescription.getScope() == scope){
                 // llançar error
                 try {
-                    throw new Exception(id + "cannot be added because it already exists in actual scope");
+                    //TODO -> ya existe
+                    
+                    throw new semanticError(id + "cannot be added because it already exists in actual scope");
+                    //throw new Exception(id + "cannot be added because it already exists in actual scope");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -57,6 +61,8 @@ public class SymbolsTable {
         // CHECK TYPE
         try {
             if(funDes == null){
+                //TODO
+                auxSemantic.functionNotFound();
                 throw new Exception(idFun + "function not found");
                 
             }
