@@ -5,6 +5,8 @@
  */
 package SymbolsTable;
 
+import SymbolsTable.Type.TYPE;
+
 /**
  *
  * @author soyjo
@@ -39,5 +41,10 @@ public class Expansion {
 
     public int getScope() {
         return this.scope;
+    }
+
+    @Override
+    public String toString() {
+        return "ID : " + this.id + " MTYPE: " + this.type.getType() + " SUBTYPE: " + this.type.getSubType() + " SCOPE: " + this.scope;
     }
 }

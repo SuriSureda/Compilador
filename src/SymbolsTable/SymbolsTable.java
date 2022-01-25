@@ -15,15 +15,14 @@ public class SymbolsTable {
     private final String SYMBOLS_TABLE_PATH = "output\\SymbolsTableData.txt";
 
     public SymbolsTable() {
+        reset();
         try {
             out = new BufferedWriter(new FileWriter(SYMBOLS_TABLE_PATH));
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         // Before deleting the symbols table we do write one last time
-        saveTableInFile();
-        reset();
+        saveTableInFile(null);
     }
 
     public void add(String id, Type type) {
@@ -42,7 +41,7 @@ public class SymbolsTable {
             }
             // move oldDescription to expansionTable
             int expIndex = scopeTable.get(scope);
-            scopeTable.add(scope, expIndex  + 1);
+            scopeTable.set(scope, expIndex  + 1);
             Expansion exp = new Expansion(oldDescription);
             expansionTable.add(expIndex, exp);
         }
@@ -50,7 +49,7 @@ public class SymbolsTable {
         Description newDesc = new Description(id, type, scope);
         descriptionTable.put(id, newDesc);
         // We've just put data inside the table, so we are writing it
-        saveTableInFile();
+        saveTableInFile("ADD : "+id);
     }
 
     public void addParam(String idFun, String idParamBack, String idParam, Type type){
@@ -90,7 +89,7 @@ public class SymbolsTable {
                 expansionTable.set(idxep, expP);
             }
             // We've just put data inside the table, so we are writing it
-            saveTableInFile();
+            saveTableInFile("ADD PARAM: "+idParamBack+" function : "+idFun);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -201,16 +200,19 @@ public class SymbolsTable {
         scopeTable.add(scope + 1, scopeTable.get(scope));
         scope +=1;
         // We are increasing the scope lvl
-        saveTableInFile();
+        saveTableInFile("ENTER BLOCK : increase scope");
     }
 
     public void leaveBlock() {
-        if (scope == 0){
+        if (scope == 1){
             try {
-                throw new Exception("Compiler error : out of scope 0");
+                throw new Exception("Compiler error : out of scope 1");
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+        if(scope != 1){
+            this.scope --;
             // remove out of scope variables
             // iterate over hashmap
             ArrayList<String> keys = new ArrayList<String>(descriptionTable.keySet());
@@ -221,19 +223,21 @@ public class SymbolsTable {
             }
 
             // move from expanstion to description
-            int first = scopeTable.get(scope--);
+            int first = scopeTable.get(scope + 1) - 1;
             int last = scopeTable.get(scope);
 
-            for (int i = first ; i > last; i--) {
+            for (int i = first ; i >= last; i--) {
                 // not move coplex types like params
                 if(expansionTable.get(i).getScope() != -1){
                     Description des = new Description(expansionTable.remove(i));
                     descriptionTable.put(des.getId(), des);
                 }
             }
+
+            this.scopeTable.remove(this.scopeTable.size() - 1);
+            // We are decreasing the block's level and deleting data
+            saveTableInFile("LEAVE BLOCK : decrease scope");
         }
-        // We are decreasing the block's level and deleting data
-        saveTableInFile();
     }
 
     public void reset() {
@@ -245,52 +249,55 @@ public class SymbolsTable {
         scope  = 1;
     }
 
-    public void saveTableInFile() {
+    public void saveTableInFile(String action) {
         // We ensure that the .txt file is deleted every time we launch the whole compiler (?)
         // This method is called everytime something ocurres to the Symbols Table
 
         // Header
-        String result = "-----------------------------------------------\n"
-                      + "---------------- SYMBOLS TABLE DATA -----------: \n"
-                      + "-----------------------------------------------\n";
+        String result = "";
+        if(action != null){
+            result =  "-----------------------------------------------\n"
+                    + "----------------- ACTION DONE -----------------\n"
+                    + "\t" + action +"\n"
+                    + "-----------------------------------------------\n\n";
+        }
+        String header_bottom = 
+                 "-----------------------------------------------\n"
+                +"------------- SYMBOLS TABLE DATA -------------- \n"
+                +"-----------------------------------------------\n\n";
 
-        // Description table data
+        result +=header_bottom;
+        // Scope table data
         result += "-----------------------------------------------\n";
-        result += "-----------DESCRIPTION TABLE  -------------\n";
-        for(String key: this.descriptionTable.keySet()) {
-            Description desc = this.descriptionTable.get(key);
-            result += desc.toString() +"\n";
-        } 
-        result += "-----------------------------------------------\n";
-
-       // Scope table data
-        result += "-----------------------------------------------\n";
-        result += "--------SCOPE INFO : " + this.scope+ " --------\n";
-        
+        result += "--------------- SCOPE INFO : " + this.scope+ " ----------------\n";
 
         for (int i = 0; i < this.scopeTable.size(); i++) {
             result+= "scope:" + i + ", pointing at: " + scopeTable.get(i) + " value\n";
         }
+        result += "-----------------------------------------------\n\n";
+
+        // Description table data
         result += "-----------------------------------------------\n";
+        result += "-------------- DESCRIPTION TABLE --------------\n\n";
+        for(String key: this.descriptionTable.keySet()) {
+            Description desc = this.descriptionTable.get(key);
+            result += desc.toString() +"\n";
+        } 
+        result += "\n-----------------------------------------------\n\n";
 
         // Expansion table data
         result += "-----------------------------------------------\n";
-        result += "-------------EXPANSION TABLE-------------------\n";
+        result += "------------- EXPANSION TABLE -----------------\n\n";
         for (int i = 0; i < this.expansionTable.size(); i++) {
             result += this.expansionTable.get(i).toString() + "\n";
         }
-        result += "-----------------------------------------------\n";
-
-        // ENDING
-        result +="-----------------------------------------------\n";
-        result +="               All Data Shown!!!             \n";
-        result +="-----------------------------------------------\n";
+        result += "\n-----------------------------------------------\n\n";
+        result += "-------------- END SYMBOLS TABLE --------------\n\n";
 
         // Write in a file
         try {
             out.write(result);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
@@ -304,6 +311,6 @@ public class SymbolsTable {
             e.printStackTrace();
         }
     }
-    }
+}
 
 
