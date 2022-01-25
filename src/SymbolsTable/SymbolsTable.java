@@ -283,9 +283,6 @@ public class SymbolsTable {
         }
         result += "-----------------------------------------------\n\n";
 
-        // ENDING
-        result +=header_bottom;
-
         // Write in a file
         try {
             out.write(result);
