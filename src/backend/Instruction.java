@@ -90,7 +90,8 @@ public class Instruction {
                 result += this.dest + "= " + this.op1 + " "+ this.opCode +" "+ this.op2; 
                 break;
             case jump_cond : 
-                result += "if "+ this.op1 + "=" + this.op2 + " goto " + this.dest;   
+                result += "if "+ this.op1 + "=" + this.op2 + " goto " + this.dest;
+                break;   
             /* OTHER OPERATIONS*/    
             case input:
                 result += this.dest + " = " + this.opCode;
