@@ -5,6 +5,8 @@
  */
 package SymbolsTable;
 
+import SymbolsTable.Type.TYPE;
+
 /**
  *
  * @author soyjo
@@ -49,5 +51,14 @@ public class Description {
 
     public void setFirst(int first) {
         this.first = first;
+    }
+
+    @Override
+    public String toString() {
+        String result = "ID : " + this.id + " MTYPE: " + this.type.getType() + " SUBJACENT TYPE: " + this.type.getSubType() + " SCOPE: " + this.scope;
+        if(type.getType() == TYPE.dfun){
+            result +=" FIRST: "+this.first;
+        }
+        return result; 
     }
 }

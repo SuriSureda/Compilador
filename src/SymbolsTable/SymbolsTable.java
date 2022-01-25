@@ -89,7 +89,7 @@ public class SymbolsTable {
                 expansionTable.set(idxep, expP);
             }
             // We've just put data inside the table, so we are writing it
-            saveTableInFile("ADD PARAM: "+idParam+" function : "+idFun);
+            saveTableInFile("ADD PARAM: "+idParamBack+" function : "+idFun);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -249,10 +249,16 @@ public class SymbolsTable {
         // This method is called everytime something ocurres to the Symbols Table
 
         // Header
-        String result = (action != null) ? (action + "\n") : "";
+        String result = "";
+        if(action != null){
+            result =  "-----------------------------------------------\n"
+                    + "----------------- ACTION DONE -----------------\n"
+                    + "\t" + action +"\n"
+                    + "-----------------------------------------------\n\n";
+        }
         String header_bottom = 
                  "-----------------------------------------------\n"
-                +"---------------- SYMBOLS TABLE DATA ----------- \n"
+                +"------------- SYMBOLS TABLE DATA -------------- \n"
                 +"-----------------------------------------------\n\n";
 
         result +=header_bottom;
@@ -267,20 +273,21 @@ public class SymbolsTable {
 
         // Description table data
         result += "-----------------------------------------------\n";
-        result += "-------------- DESCRIPTION TABLE --------------\n";
+        result += "-------------- DESCRIPTION TABLE --------------\n\n";
         for(String key: this.descriptionTable.keySet()) {
             Description desc = this.descriptionTable.get(key);
             result += desc.toString() +"\n";
         } 
-        result += "-----------------------------------------------\n\n";
+        result += "\n-----------------------------------------------\n\n";
 
         // Expansion table data
         result += "-----------------------------------------------\n";
-        result += "------------- EXPANSION TABLE------------------\n";
+        result += "------------- EXPANSION TABLE -----------------\n\n";
         for (int i = 0; i < this.expansionTable.size(); i++) {
             result += this.expansionTable.get(i).toString() + "\n";
         }
-        result += "-----------------------------------------------\n\n";
+        result += "\n-----------------------------------------------\n\n";
+        result += "-------------- END SYMBOLS TABLE --------------\n\n";
 
         // Write in a file
         try {

@@ -28,4 +28,10 @@ public class ParamExpansion extends Expansion {
 	public String getParamId() {
 		return this.param_id;
 	}
+
+	@Override
+	public String toString() {
+		return  "ID : " + this.getId() + " MTYPE: " + this.getType().getType() + " SUBTYPE: " + this.getType().getSubType() 
+			+ " SCOPE : " + this.getScope() + " FUNCTION : "+this.func_id+" NEXT : "+this.next;
+	}
 }
