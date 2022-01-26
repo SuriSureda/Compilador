@@ -4,23 +4,21 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class semanticError extends Exception{
+public class SyntaxError extends Exception{
     private static BufferedWriter out = null;
-    private final String PATH = "output\\semanticError.txt";
+    private final String PATH = "output\\syntaxError.txt";
 
-    public semanticError(String error){
+    public SyntaxError(String error){
         super(error);
         if (out== null){
             try {
                 out = new BufferedWriter(new FileWriter(PATH));
             } catch (Exception e) {
-                //TODO: handle exception
             }
         }
         try {
             out.write(error);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }  
     }
