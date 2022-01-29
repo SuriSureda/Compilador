@@ -30,21 +30,20 @@ public class Main {
 
 	private static final String OUTPUT_DIR = "output\\";
 
+	private static final boolean COMPILE = true;
+
 	// All file data
 
 	public static void main(String[] args) {
-		generateJavaFiles();
-		// try {
-		// 	String file = ".\\examples\\example3.txt";
-		// 	if(args.length != 0){
-		// 		file = args[0];
-		// 	}
-		// 	executeCompiler(file);
-		// } catch (FileNotFoundException e) {
-		// 	e.printStackTrace();
-		// } catch (Exception e) {
-		// 	e.printStackTrace();
-		// };
+		if(!COMPILE){
+			generateJavaFiles();
+			return;
+		}
+		String file = ".\\examples\\example3.txt";
+		if(args.length != 0){
+			file = args[0];
+		}
+		executeCompiler(file);
 	}
 
 	private static void generateJavaFiles() {
@@ -62,7 +61,7 @@ public class Main {
 	}
 
 	private static void generateCupFile() throws internal_error, IOException, Exception {
-		String[] commands  = {"-dump_grammar", "-parser", "Parser",CUP_FILE};
+		String[] commands  = {/* "-dump_grammar", */ "-locations", "-parser", "Parser",CUP_FILE};
 		java_cup.Main.main(commands);
 		// generates on WorkDir folder Parser.java and ParserSym.java
 
@@ -82,19 +81,23 @@ public class Main {
 		Files.move(sym_o, sym_d);
 	}
 
-	private static void executeCompiler(String file) throws FileNotFoundException, Exception{
-		//Clean all output files
-		cleanOutputFiles();
+	private static void executeCompiler(String file){
+		try{
+			//Clean all output files
+			cleanOutputFiles();
 
-		// Here we are executing the files specified 
-		// We read the input.txt
-		Reader reader = new BufferedReader(new FileReader(file));
-		// generate intermediate code
-		LexerCup scanner = new LexerCup(reader);
-		SymbolFactory sf = new ComplexSymbolFactory();
-		Parser parser = new Parser(scanner, sf);
-		// rezamos 3 ave marias, 5 padre nuestros y le hacemos una estatua a Andreu  para que todo funcione 
-		parser.parse();
+			// Here we are executing the files specified 
+			// We read the input.txt
+			Reader reader = new BufferedReader(new FileReader(file));
+			// generate intermediate code
+			ComplexSymbolFactory sf = new ComplexSymbolFactory();
+			LexerCup scanner = new LexerCup(reader, sf);
+			Parser parser = new Parser(scanner, sf);
+			// rezamos 3 ave marias, 5 padre nuestros y le hacemos una estatua a Andreu  para que todo funcione 
+			parser.parse();
+		} catch (Exception e) {
+			e.printStackTrace();
+		};
 	}
 
 	private static void cleanOutputFiles() {

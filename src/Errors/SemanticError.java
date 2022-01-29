@@ -14,14 +14,22 @@ public class SemanticError extends Exception{
             try {
                 out = new BufferedWriter(new FileWriter(PATH));
             } catch (Exception e) {
-                //TODO: handle exception
             }
         }
         try {
             out.write(error);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }  
+    }
+
+    public static void closeFile(){
+        try {
+            if(out!=null){
+                out.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

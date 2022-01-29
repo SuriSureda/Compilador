@@ -26,21 +26,14 @@ public class SymbolsTable {
         saveTableInFile(null);
     }
 
-    public void add(String id, Type type) {
-
+    public void add(String id, Type type) throws SymbolsTableError {
         Description oldDescription = descriptionTable.get(id);
 
         // if oldDes.scope > scope can override
         if(oldDescription != null && oldDescription.getScope() <= scope){
             if(oldDescription.getScope() == scope){
                 // llançar error
-                try {
-                    //OK
-                    throw new symbolTableError(id + "cannot be added because it already exists in actual scope");
-                    //throw new Exception(id + "cannot be added because it already exists in actual scope");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                throw new SymbolsTableError(id + "cannot be added because it already exists in actual scope");
             }
             // move oldDescription to expansionTable
             int expIndex = scopeTable.get(scope);
@@ -55,52 +48,46 @@ public class SymbolsTable {
         saveTableInFile("ADD : "+id);
     }
 
-    public void addParam(String idFun, String idParamBack, String idParam, Type type){
+    public void addParam(String idFun, String idParamBack, String idParam, Type type) throws SymbolsTableError{
         Description funDes = descriptionTable.get(idFun);
         // CHECK TYPE
-        try {
-            if(funDes == null){
-                //TODO
-                throw new symbolTableError(idFun + "cannot be added because it already exists in actual scope");
-               // throw new Exception(idFun + "function not found");
-                
-            }
-            if(funDes.getType().getType() != Type.TYPE.dfun){
-                throw new symbolTableError(idFun + "is not a function");
-            }
-        
-            int idxe = funDes.getFirst();
-            int idxep = -1;
-
-            while(idxe != -1 && expansionTable.get(idxe).getId() != idParam){
-                idxep = idxe;
-                idxe = ((ParamExpansion)expansionTable.get(idxe)).getNext();
-            }
-
-            if(idxe != -1){
-                throw new symbolTableError(idParam + "already exists");
-            }
-
-            idxe = scopeTable.get(scope);
-            scopeTable.set(scope, idxe + 1);
-            ParamExpansion exp = new ParamExpansion(type, idFun, idParamBack, idParam, -1, -1);
-            expansionTable.add(idxe, exp);
-            if(idxep == -1){
-                funDes.setFirst(idxe);
-                descriptionTable.put(idFun, funDes);
-            }else {
-                ParamExpansion expP = (ParamExpansion)expansionTable.get(idxep);
-                expP.setNext(idxe);
-                expansionTable.set(idxep, expP);
-            }
-            // We've just put data inside the table, so we are writing it
-            saveTableInFile("ADD PARAM: "+idParamBack+" function : "+idFun);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if(funDes == null){
+            throw new SymbolsTableError(idFun + "cannot be added because it already exists in actual scope");
+            
         }
+        if(funDes.getType().getType() != Type.TYPE.dfun){
+            throw new SymbolsTableError(idFun + "is not a function");
+        }
+    
+        int idxe = funDes.getFirst();
+        int idxep = -1;
+
+        while(idxe != -1 && expansionTable.get(idxe).getId() != idParam){
+            idxep = idxe;
+            idxe = ((ParamExpansion)expansionTable.get(idxe)).getNext();
+        }
+
+        if(idxe != -1){
+            throw new SymbolsTableError(idParam + "already exists");
+        }
+
+        idxe = scopeTable.get(scope);
+        scopeTable.set(scope, idxe + 1);
+        ParamExpansion exp = new ParamExpansion(type, idFun, idParamBack, idParam, -1, -1);
+        expansionTable.add(idxe, exp);
+        if(idxep == -1){
+            funDes.setFirst(idxe);
+            descriptionTable.put(idFun, funDes);
+        }else {
+            ParamExpansion expP = (ParamExpansion)expansionTable.get(idxep);
+            expP.setNext(idxe);
+            expansionTable.set(idxep, expP);
+        }
+        // We've just put data inside the table, so we are writing it
+        saveTableInFile("ADD PARAM: "+idParamBack+" function : "+idFun);
     }
 
-    public Type get(String id) {
+    public Type get(String id) throws SymbolsTableError {
         if(!descriptionTable.containsKey(id)){
             //first check if is param inside expansion
             for(Expansion expansion : expansionTable){
@@ -111,94 +98,79 @@ public class SymbolsTable {
                     }
                 }
             }
-            return null;
+            throw new SymbolsTableError("Unknown id: "+id);
         }
         return descriptionTable.get(id).getType();
     }
 
-    public int getNumParams(String idFun){
+    public int getNumParams(String idFun) throws SymbolsTableError{
         Description funDes = descriptionTable.get(idFun);
         int count = 0;
         // CHECK TYPE
-        try {
-            if(funDes == null){
-                throw new symbolTableError(idFun + "function not found");
-                
-            }
-            if(funDes.getType().getType() != Type.TYPE.dfun){
-                throw new symbolTableError(idFun + "is not a function");
-            }
-
-            int idxe = funDes.getFirst();
-
-            while(idxe != -1){
-                count++;
-                idxe = ((ParamExpansion)expansionTable.get(idxe)).getNext();
-            }
-
-            return count;
-        }catch(Exception e){
-            // 
+        if(funDes == null){
+            throw new SymbolsTableError(idFun + "function not found");
+            
         }
-        return -1;
+        if(funDes.getType().getType() != Type.TYPE.dfun){
+            throw new SymbolsTableError(idFun + "is not a function");
+        }
+
+        int idxe = funDes.getFirst();
+
+        while(idxe != -1){
+            count++;
+            idxe = ((ParamExpansion)expansionTable.get(idxe)).getNext();
+        }
+
+        return count;
     }
 
-    public Type getParam(String idFun, int index){
+    public Type getParam(String idFun, int index) throws SymbolsTableError{
         Description funDes = descriptionTable.get(idFun);
         // CHECK TYPE
-        try {
-            if(funDes == null){
-                throw new symbolTableError(idFun + "function not found");
-                
-            }
-            if(funDes.getType().getType() != Type.TYPE.dfun){
-                throw new symbolTableError(idFun + "is not a function");
-            }
-
-            int idxe = funDes.getFirst();
-            int pos = index;
-
-            while(idxe != -1 && pos > 0){
-                idxe = ((ParamExpansion)expansionTable.get(idxe)).getNext();
-                pos--;
-            }
-
-            if(idxe == -1){
-                throw new symbolTableError(idFun + "has" + " param at index" + index + " does not exist");
-            }
-
-            return expansionTable.get(idxe).getType();
-        }catch(Exception e){
-            // 
+        if(funDes == null){
+            throw new SymbolsTableError(idFun + "function not found");
+            
         }
-        return null;
+        if(funDes.getType().getType() != Type.TYPE.dfun){
+            throw new SymbolsTableError(idFun + "is not a function");
+        }
+
+        int idxe = funDes.getFirst();
+        int pos = index;
+
+        while(idxe != -1 && pos > 0){
+            idxe = ((ParamExpansion)expansionTable.get(idxe)).getNext();
+            pos--;
+        }
+
+        if(idxe == -1){
+            throw new SymbolsTableError(idFun + "has" + " param at index" + index + " does not exist");
+        }
+
+        return expansionTable.get(idxe).getType();
     }
 
-    public ArrayList<Expansion> getParams(String idFun) {
+    public ArrayList<Expansion> getParams(String idFun) throws SymbolsTableError {
         Description funDes = descriptionTable.get(idFun);
         // CHECK TYPE
-        try {
-            if(funDes == null){
-                throw new symbolTableError(idFun + "function not found");
-                
-            }
-            if(funDes.getType().getType() != Type.TYPE.dfun){
-                throw new symbolTableError(idFun + "is not a function");
-            }
-
-            ArrayList<Expansion> params = new ArrayList<Expansion>();
-            int idxe = funDes.getFirst();
-
-            while(idxe != -1){
-                params.add(expansionTable.get(idxe));
-                idxe = ((ParamExpansion)expansionTable.get(idxe)).getNext();
-            }
-
-            return params;
-        }catch(Exception e){
-            // 
+        if(funDes == null){
+            throw new SymbolsTableError(idFun + "function not found");
+            
         }
-        return null;
+        if(funDes.getType().getType() != Type.TYPE.dfun){
+            throw new SymbolsTableError(idFun + "is not a function");
+        }
+
+        ArrayList<Expansion> params = new ArrayList<Expansion>();
+        int idxe = funDes.getFirst();
+
+        while(idxe != -1){
+            params.add(expansionTable.get(idxe));
+            idxe = ((ParamExpansion)expansionTable.get(idxe)).getNext();
+        }
+
+        return params;
     }
 
     public void enterBlock() {
@@ -208,13 +180,9 @@ public class SymbolsTable {
         saveTableInFile("ENTER BLOCK : increase scope");
     }
 
-    public void leaveBlock() {
+    public void leaveBlock() throws SymbolsTableError {
         if (scope == 1){
-            try {
-                throw new symbolTableError("Compiler error : out of scope 1");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            throw new SymbolsTableError("Compiler error : out of scope 1");
         }
         if(scope != 1){
             this.scope --;

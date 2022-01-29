@@ -4,6 +4,8 @@
 */
 
 package Lex;                         // PAQUETE AL QUE PERTENECE
+import java_cup.runtime.ComplexSymbolFactory;
+import java_cup.runtime.ComplexSymbolFactory.Location;
 import java_cup.runtime.Symbol;      // CLASE SYMBOL PARA LOS TOKENS DE CUP
 import Sin.ParserSym;
 import Lex.Token.*;
@@ -36,18 +38,25 @@ import Errors.*;
 %init}
 
 %{
+    public LexerCup(java.io.Reader in, ComplexSymbolFactory sf) {
+      this(in);
+      this.symbolFactory = sf;
+    }
+
     public static final String TOKENS_PATH = "output\\Tokens.txt";
 
     public static final String TOKENS_ERROR_PATH = "output\\Error_Tokens.txt";
 
     private static BufferedWriter out;
+
+    private ComplexSymbolFactory symbolFactory;
     
     /**
     * closes tokesn file for a syntax error
     */
     public void closeTokensFile(int line, int column){
         try{
-            out.write("Stopped processing tokens due to a syntax error on line : " + line + " and column : "+ column);
+            out.write("Stopped processing tokens due to a syntax or semantic error on line : " + line + " and column : "+ column);
             out.close();
         }catch(Exception e){
             System.out.println("Error closing Tokens file : " + e);
@@ -72,12 +81,12 @@ import Errors.*;
         }
     }
 
-    private Symbol symbol(int type){
-        return new Symbol(type,yyline,yycolumn);
+    private Symbol symbol(String plainname,int type){
+        return symbolFactory.newSymbol(plainname, type, new Location(yyline+1, yycolumn +1), new Location(yyline+1,yycolumn+yylength()));
     }
 
-    private Symbol symbol(int type, Object value){
-        return new Symbol(type,yyline,yycolumn,value);
+    private Symbol symbol(String plainname, int type, String lexeme){
+        return symbolFactory.newSymbol(plainname, type, new Location(yyline+1, yycolumn +1), new Location(yyline+1,yycolumn+yylength()), lexeme);
     }
 %}
 
@@ -93,7 +102,7 @@ import Errors.*;
 %eof}
 
 %eofval{
-  return symbol(ParserSym.EOF);
+  return symbol(Token.Tokens.EOF.toString(),ParserSym.EOF);
 %eofval}
 
 // A CONTINUACIÓN DEFINIMOS LAS EXPRESIONES REGULARES DEL LENGUAJE
@@ -176,23 +185,23 @@ TWO_POINTS       = (":")     //ok
 {INST_IF}            {
                         Token token = new Token(Token.Tokens.INST_IF,yyline,yycolumn, yytext());
                         writeToken(token);
-                        return symbol(ParserSym.inst_if, yytext());
+                        return symbol(Token.Tokens.INST_IF.toString(), ParserSym.inst_if);
                      }
 {INST_ELSE}          {
                         Token token = new Token(Token.Tokens.INST_ELSE,yyline,yycolumn, yytext());
                         writeToken(token);
-                        return symbol(ParserSym.inst_else, yytext());
+                        return symbol(Token.Tokens.INST_ELSE.toString(), ParserSym.inst_else);
                      }
 {INST_ELIF}          {
                         Token token = new Token(Token.Tokens.INST_ELSE,yyline,yycolumn, yytext());
                         writeToken(token);
-                        return symbol(ParserSym.inst_elif, yytext());
+                        return symbol(Token.Tokens.INST_ELSE.toString(),ParserSym.inst_elif);
                     }   
 
 {INST_WHILE}         {
                         Token token = new Token(Token.Tokens.INST_WHILE,yyline,yycolumn, yytext());
                         writeToken(token);
-                        return symbol(ParserSym.inst_while, yytext());
+                        return symbol(Token.Tokens.INST_WHILE.toString(),ParserSym.inst_while);
                      }
 /*                     
 {INST_FOR}           {
@@ -226,122 +235,122 @@ TWO_POINTS       = (":")     //ok
 {INST_FUNCTION}      {
                      Token token = new Token(Token.Tokens.INST_FUNCTION,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.inst_function, yytext());
+                     return symbol(Token.Tokens.INST_FUNCTION.toString(),ParserSym.inst_function);
                      }
 {INST_RETURN}        {
                      Token token = new Token(Token.Tokens.INST_RETURN,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.inst_return, yytext());
+                     return symbol(Token.Tokens.INST_RETURN.toString(),ParserSym.inst_return);
                      }
 {INST_MAIN}          {
                      Token token = new Token(Token.Tokens.INST_MAIN,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.inst_main, yytext());
+                     return symbol(Token.Tokens.INST_MAIN.toString(),ParserSym.inst_main);
                      }     
 //==============================================================================
 {INSTR_IN}           {
                      Token token = new Token(Token.Tokens.INSTR_IN,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.instr_in, yytext());
+                     return symbol(Token.Tokens.INSTR_IN.toString(),ParserSym.instr_in);
                      }
 {INSTR_OUT}          {
                      Token token = new Token(Token.Tokens.INSTR_OUT,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.instr_out, yytext());
+                     return symbol(Token.Tokens.INSTR_OUT.toString(),ParserSym.instr_out);
                      }
 //==============================================================================
 {LPAREN}             {
                      Token token = new Token(Token.Tokens.LPAREN,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.lparen, yytext());
+                     return symbol(Token.Tokens.LPAREN.toString(),ParserSym.lparen);
                      }
 {RPAREN}             {
                      Token token = new Token(Token.Tokens.RPAREN,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.rparen, yytext());
+                     return symbol(Token.Tokens.RPAREN.toString(),ParserSym.rparen);
                      }    
 {LBRACKET}           {
                      Token token = new Token(Token.Tokens.LBRACKET,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.lbracket, yytext());
+                     return symbol(Token.Tokens.LBRACKET.toString(),ParserSym.lbracket);
                      }
 {RBRACKET}           {
                      Token token = new Token(Token.Tokens.RBRACKET,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.rbracket, yytext());
+                     return symbol(Token.Tokens.RBRACKET.toString(),ParserSym.rbracket);
                      }
 {NEXTINTR}           {
                      Token token = new Token(Token.Tokens.NEXTINSTR,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.nextinstr, yytext());
+                     return symbol(Token.Tokens.NEXTINSTR.toString(),ParserSym.nextinstr);
                      }
 {SEPARATOR}          {
                      Token token = new Token(Token.Tokens.SEPARATOR,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.separator, yytext());
+                     return symbol(Token.Tokens.SEPARATOR.toString(),ParserSym.separator);
                      }
 {TWO_POINTS}          {
                      Token token = new Token(Token.Tokens.TWO_POINTS,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.two_points, yytext());
+                     return symbol(Token.Tokens.TWO_POINTS.toString(),ParserSym.two_points);
                      }
 //==============================================================================
 {OP_ARITHMETICAL_B}    {
                         Token token = new Token(Token.Tokens.OP_ARITHMETICAL_B,yyline,yycolumn, yytext());
                         writeToken(token);
-                        return symbol(ParserSym.op_arithmetical_b, yytext());
+                        return symbol(Token.Tokens.OP_ARITHMETICAL_B.toString(),ParserSym.op_arithmetical_b, yytext());
                      }
 {OP_ARITHMETICAL_C} {
                         Token token = new Token(Token.Tokens.OP_ARITHMETICAL_C,yyline,yycolumn, yytext());
                         writeToken(token);
-                        return symbol(ParserSym.op_arithmetical_c, yytext());
+                        return symbol(Token.Tokens.OP_ARITHMETICAL_C.toString(),ParserSym.op_arithmetical_c, yytext());
                     }
 {OP_RELATIONAL}      {
                      Token token = new Token(Token.Tokens.OP_RELATIONAL,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.op_relational, yytext());
+                     return symbol(Token.Tokens.OP_RELATIONAL.toString(),ParserSym.op_relational, yytext());
                      }
 {OP_LOGICAL}         {
                      Token token = new Token(Token.Tokens.OP_LOGICAL,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.op_logical, yytext());
+                     return symbol(Token.Tokens.OP_LOGICAL.toString(),ParserSym.op_logical, yytext());
                      }
 {OP_LOGICAL_NOT}         {
                      Token token = new Token(Token.Tokens.OP_LOGICAL_NOT,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.op_logical_not, yytext());
+                     return symbol(Token.Tokens.OP_LOGICAL_NOT.toString(),ParserSym.op_logical_not, yytext());
                      }
 {OP_ASSIG}           {
                      Token token = new Token(Token.Tokens.OP_ASSIG,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.op_assig, yytext());
+                     return symbol(Token.Tokens.OP_ASSIG.toString(),ParserSym.op_assig, yytext());
                      }
 //==============================================================================
 {BOOL}               {
                      Token token = new Token(Token.Tokens.BOOL,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.bool, yytext());
+                     return symbol(Token.Tokens.BOOL.toString(),ParserSym.bool, yytext());
                      }
 {DCONST}             {
                      Token token = new Token(Token.Tokens.DCONST,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.dconst, yytext());
+                     return symbol(Token.Tokens.DCONST.toString(),ParserSym.dconst, yytext());
                      }
 //==============================================================================
 {ID}                 {
                      Token token = new Token(Token.Tokens.ID,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.id, yytext());
+                     return symbol(Token.Tokens.ID.toString(),ParserSym.id, yytext());
                      }
 {NUMBER}             {
                      Token token = new Token(Token.Tokens.NUMBER,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.number, yytext());
+                     return symbol(Token.Tokens.NUMBER.toString(),ParserSym.number, yytext());
                      }
 {STRING}             {
                         Token token = new Token(Token.Tokens.STRING,yyline,yycolumn, yytext());
                         writeToken(token);
-                        return symbol(ParserSym.string, yytext());
+                        return symbol(Token.Tokens.STRING.toString(),ParserSym.string, yytext());
                      }
 //==============================================================================
 //==============================================================================
@@ -385,12 +394,12 @@ TWO_POINTS       = (":")     //ok
                         Token token = new Token(Token.Tokens.ERROR,yyline,yycolumn, yytext());
                         writeToken(token);
                         try{
-                            throw new lexicalError("[Lexical error]:" + "[" + getLine() + ":" + getColumn() + "]" + " Unkown symbol: "+"'"+this.yytext()+"'");
-                        } catch (DoesNotExistException ex) {
+                            throw new LexicalError("[Lexical error]:" + "[" + getLine() + ":" + getColumn() + "]" + " Unkown symbol: "+"'"+this.yytext()+"'");
+                        } catch (LexicalError ex) {
                             System.err.println("ERROR: " + ex.getMessage());
                         }
                         
-                        return symbol(ParserSym.error);
+                        return symbol(Token.Tokens.ERROR.toString(), ParserSym.error);
                      }
 //==============================================================================
 

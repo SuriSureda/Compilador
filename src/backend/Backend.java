@@ -5,6 +5,7 @@
  */
 package backend;
 
+import SymbolsTable.SymbolsTable;
 import SymbolsTable.Type;
 import SymbolsTable.Type.SUBJACENTTYPE;
 import java.io.BufferedWriter;
@@ -20,7 +21,10 @@ import java.util.logging.Logger;
  * @author 34630
  */
 public class Backend {
-    private static final String PATH = "output\\Backend_Tables.txt";
+    
+    private SymbolsTable symbolsTable;
+
+    private final String PATH = "output\\Backend_Tables.txt";
     // TV
     private ArrayList<Variable> varTable;
     // TP
@@ -35,7 +39,8 @@ public class Backend {
     
     private static int tmp_n = 0;
 
-    public Backend() {
+    public Backend(/* SymbolsTable table */) {
+        // this.symbolsTable = table;
         this.varTable = new ArrayList<>();
         this.procTable = new ArrayList<>();
         this.labelTable = new ArrayList<>();

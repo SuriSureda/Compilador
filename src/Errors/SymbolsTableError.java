@@ -23,6 +23,16 @@ public class SymbolsTableError extends Exception{
             e.printStackTrace();
         }  
     }
+
+    public static void closeFile(){
+        try {
+            if(out!=null){
+                out.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
 
 

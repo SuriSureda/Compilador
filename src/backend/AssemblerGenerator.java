@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import Errors.SymbolsTableError;
+
 /**
  *
  * @author soyjo
@@ -419,32 +421,36 @@ public class AssemblerGenerator {
     }
 
     private void pmbInstruction(Instruction instruction) {
-       if (!lastProcedure(instruction.getDest())) {
-           writeLine("push %rbp        # Guardem el registre que utilitzarem com a apuntador de la pila.");
-           writeLine("mov %rsp, %rbp");
-       }
+        try{
+            if (!lastProcedure(instruction.getDest())) {
+                writeLine("push %rbp        # Guardem el registre que utilitzarem com a apuntador de la pila.");
+                writeLine("mov %rsp, %rbp");
+            }
 
-       //Declarar parametros del procedimiento como variables.
-       String backFunId = instruction.getDest();
-       String funId = backFunId.replace("PROC_", "");
-       Type type = symbolsTable.get(funId);
+            //Declarar parametros del procedimiento como variables.
+            String backFunId = instruction.getDest();
+            String funId = backFunId.replace("PROC_", "");
+            Type type = symbolsTable.get(funId);
 
-        if (type == null || type.getType() != TYPE.dfun) {
-            throw new Error("Invalid function");  
-        }
+            if (type == null || type.getType() != TYPE.dfun) {
+                throw new Error("Invalid function");  
+            }
 
-        ArrayList<Expansion> params = symbolsTable.getParams(funId);
+            ArrayList<Expansion> params = symbolsTable.getParams(funId);
 
-        for(Expansion param : params) {
-            newIntegerGlobalVariable(param.getId(), "0");
-        }
+            for(Expansion param : params) {
+                newIntegerGlobalVariable(param.getId(), "0");
+            }
 
-        int index = params.size() - 1;
-        writeLine("# Restaurar paràmetres");
-        for (int i = 0; i < params.size() * 8; i += 8) {
-            writeLine("mov " + (i + 16) + "(%rbp), %rax");
-            writeLine("mov %rax, " + params.get(index).getId());
-            index--;
+            int index = params.size() - 1;
+            writeLine("# Restaurar paràmetres");
+            for (int i = 0; i < params.size() * 8; i += 8) {
+                writeLine("mov " + (i + 16) + "(%rbp), %rax");
+                writeLine("mov %rax, " + params.get(index).getId());
+                index--;
+            }
+        }catch(SymbolsTableError e){
+            //AQUI MAU S'HAURIA D'ARRIBAR JA QUE SINTÀTIC JA S'ENCARREGA DE COMPROVAR
         }
     }
 

@@ -7,8 +7,8 @@ package Symbols;
 
 
 
-// import java_cup.runtime.ComplexSymbolFactory.ComplexSymbol;
-import java_cup.runtime.Symbol;
+import java_cup.runtime.ComplexSymbolFactory.ComplexSymbol;
+// import java_cup.runtime.Symbol;
 /**
  * Classe que implementa la classe base a partir de la que s'implementen totes
  * les varaibles de la gramàtica.
@@ -17,10 +17,10 @@ import java_cup.runtime.Symbol;
  * 
  * @author Jose
  */
-public class SymbolBase extends Symbol {
+public class SymbolBase extends ComplexSymbol {
     
     public SymbolBase(String variable, Integer valor) {
-        super(valor, variable);
+        super(variable, valor);
     }
 
 }
