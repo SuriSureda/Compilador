@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import Errors.*;
+import SymbolsTable.Type.TYPE;
 
 public class SymbolsTable {
     private int scope;
@@ -34,6 +35,12 @@ public class SymbolsTable {
             if(oldDescription.getScope() == scope){
                 // llançar error
                 throw new SymbolsTableError(id + "cannot be added because it already exists in actual scope");
+            }
+            if(oldDescription.getType().getType() == TYPE.dfun){
+                throw new SymbolsTableError(id + "cannot be added because it is function name");
+            }
+            if(oldDescription.getType().getType() == TYPE.dtype){
+                throw new SymbolsTableError(id + "cannot be added because it is a reserved word");
             }
             // move oldDescription to expansionTable
             int expIndex = scopeTable.get(scope);
@@ -186,7 +193,7 @@ public class SymbolsTable {
         }
         if(scope != 1){
             this.scope --;
-            // remove out of scope variables
+            // remove out of scope variables, or 
             // iterate over hashmap
             ArrayList<String> keys = new ArrayList<String>(descriptionTable.keySet());
             for(String key : keys){
@@ -194,7 +201,6 @@ public class SymbolsTable {
                     descriptionTable.remove(key);
                 }
             }
-
             // move from expanstion to description
             int first = scopeTable.get(scope + 1) - 1;
             int last = scopeTable.get(scope);
@@ -275,6 +281,9 @@ public class SymbolsTable {
         }
     }
     
+    public int getActualScope(){
+        return this.scope;
+    }
     // This method is called at the very end to close the link between the compiler
     // and the .txt file
     public void closeSymbolsTableFiles(){

@@ -39,8 +39,8 @@ public class Backend {
     
     private static int tmp_n = 0;
 
-    public Backend(/* SymbolsTable table */) {
-        // this.symbolsTable = table;
+    public Backend(SymbolsTable table) {
+        this.symbolsTable = table;
         this.varTable = new ArrayList<>();
         this.procTable = new ArrayList<>();
         this.labelTable = new ArrayList<>();

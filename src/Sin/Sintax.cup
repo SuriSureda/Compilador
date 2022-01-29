@@ -33,7 +33,7 @@ parser code
     super(scanner, sf);
     this.scanner = scanner;
     this.symbolsTable = new SymbolsTable();
-    this.backend = new Backend();
+    this.backend = new Backend(symbolsTable);
     this.c3a_g = new C3a_generator(backend);
     this.assembler = new AssemblerGenerator(symbolsTable, backend, c3a_g);
     this.labelTrueStack = new Stack<String>();
