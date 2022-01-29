@@ -37,7 +37,7 @@ public class SymbolsTable {
                 throw new SymbolsTableError(id + "cannot be added because it already exists in actual scope");
             }
             if(oldDescription.getType().getType() == TYPE.dfun){
-                throw new SymbolsTableError(id + "cannot be added because it is function name");
+                throw new SymbolsTableError(id + "cannot be added because it already exists and is a function");
             }
             if(oldDescription.getType().getType() == TYPE.dtype){
                 throw new SymbolsTableError(id + "cannot be added because it is a reserved word");
