@@ -286,7 +286,7 @@ BLOCK_OUT                   ::=
                                 symbolsTable.leaveBlock();
                                 RESULT = new SymbolBlockOut();
                               }catch(SymbolsTableError e){
-                                
+                                throw new SemanticError(e.getMessage());
                               }
                             :};                            
 
@@ -317,7 +317,8 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
                                   RESULT = declarations;
 
                               }catch(SymbolsTableError e){
-                                System.out.print(e.getMessage() + var_idxleft + " " + var_idxright); 
+                                throw new SemanticError(e.getMessage());
+                                //System.out.print(e.getMessage() + var_idxleft + " " + var_idxright); 
                               }
                             :}
                             | id:id_var CONSTANT:constant two_points id:type_id op_assig VALUE:value  
@@ -392,7 +393,8 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
 
                                 RESULT = symDcls;
                               }catch(SymbolsTableError e){
-                                System.out.print(e.getMessage() + id_varxleft + " " + id_varxright); 
+                                throw new SemanticError(e.getMessage());
+                                //System.out.print(e.getMessage() + id_varxleft + " " + id_varxright); 
                               }
                             :};
 
@@ -433,7 +435,7 @@ OPERATOR_ASSIG              ::= id:var_id op_assig VALUE:value
 
                                 RESULT = new SymbolOperatorAssignation();
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             :};    
 
@@ -517,7 +519,7 @@ ARITHMETICAL_OPERATION      ::= ARITHMETICAL_VALUE:arith_val1 ARITH_OP:op ARITHM
                                 
                                 RESULT = sym;
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             :}
                             | op_arithmetical_b:op lparen ARITHMETICAL_OPERATION:arith_op rparen
@@ -545,7 +547,7 @@ ARITHMETICAL_OPERATION      ::= ARITHMETICAL_VALUE:arith_val1 ARITH_OP:op ARITHM
 
                                 RESULT = sym;
                               }catch(SymbolsTableError e){
-                                
+                                throw new SemanticError(e.getMessage());
                               }
                             :}
                             | lparen ARITHMETICAL_OPERATION:arith_op rparen
@@ -591,7 +593,7 @@ ARITHMETICAL_VALUE         ::= NUMBER_VALUE:n_val
 
                               RESULT = new SymbolArithValue(var_id, value);
                             }catch(SymbolsTableError e){
-
+                              throw new SemanticError(e.getMessage());
                             }
                           :}
                           | ID_VALUE:id_val
@@ -621,7 +623,7 @@ ARITHMETICAL_VALUE         ::= NUMBER_VALUE:n_val
 
                               RESULT = sym;
                             }catch(SymbolsTableError e){
-
+                              throw new SemanticError(e.getMessage());
                             }
                           :}
                           | ARITHMETICAL_OPERATION:arith_op
@@ -656,7 +658,7 @@ ARITHMETICAL_VALUE         ::= NUMBER_VALUE:n_val
 
                               RESULT = new SymbolArithValue(var_id);
                             }catch(SymbolsTableError e){
-
+                              throw new SemanticError(e.getMessage());
                             }
                           :}
                           | op_arithmetical_b:op CALL_FUNCTION:call_fn
@@ -689,7 +691,7 @@ ARITHMETICAL_VALUE         ::= NUMBER_VALUE:n_val
 
                               RESULT = new SymbolArithValue(var_id);
                             }catch(SymbolsTableError e){
-
+                              throw new SemanticError(e.getMessage());
                             }
                           :};
 
@@ -705,7 +707,7 @@ ID_VALUE                    ::= id:id_val
 
                                 RESULT = sym;
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             :}
                             | lparen ID_VALUE:id_val rparen
@@ -743,7 +745,7 @@ ID_VALUE                    ::= id:id_val
                                 
                                 RESULT = sym;
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             :}
                             | op_arithmetical_b:op ID_VALUE:id_val
@@ -778,7 +780,7 @@ ID_VALUE                    ::= id:id_val
 
                                 RESULT = sym;
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             :};
 
@@ -823,7 +825,7 @@ VALUE                       ::= ID_VALUE:id_val
 
                                 RESULT = sym;
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             :}
                             | BOOLEAN_VALUE:bool_val
@@ -843,7 +845,7 @@ VALUE                       ::= ID_VALUE:id_val
 
                                 RESULT = new SymbolValue(var_id, SUBJACENTTYPE.st_boolean, value);
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             :}
                             | NUMBER_VALUE:n_val
@@ -864,7 +866,7 @@ VALUE                       ::= ID_VALUE:id_val
 
                                 RESULT = new SymbolValue(var_id, SUBJACENTTYPE.st_number, value);
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             :}
                             | VALUE_COMPARISON:comp_val
@@ -905,7 +907,7 @@ VALUE                       ::= ID_VALUE:id_val
 
                                 RESULT = sym;
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             :}
                             | ARITHMETICAL_OPERATION:arith_op
@@ -953,7 +955,7 @@ VALUE                       ::= ID_VALUE:id_val
 
                                 RESULT = new SymbolValue(var_id, TYPE.dfun, fn_type.getTypeName());
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             :}
                             | instr_in lparen rparen
@@ -971,7 +973,7 @@ VALUE                       ::= ID_VALUE:id_val
 
                                 RESULT = new SymbolValue(var_id, number_type.getSubType());
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             :};
 
@@ -1028,7 +1030,7 @@ BOOLEAN_OPERATION           ::= BOOLEAN_OP_VALUE:bool_val1 op_logical:op BOOLEAN
 
                                 RESULT = sym;
                               }catch(SymbolsTableError e){
-                                
+                                throw new SemanticError(e.getMessage());
                               }
                             :}
                             | lparen BOOLEAN_OPERATION:bool_op rparen
@@ -1058,7 +1060,7 @@ BOOLEAN_OPERATION           ::= BOOLEAN_OP_VALUE:bool_val1 op_logical:op BOOLEAN
 
                                 RESULT = sym;
                               }catch(SymbolsTableError e){
-                                
+                                throw new SemanticError(e.getMessage());
                               }
                             :};
 
@@ -1079,7 +1081,7 @@ BOOLEAN_OP_VALUE            ::= BOOLEAN_VALUE:bool_val
 
                                 RESULT = new SymbolBoolOpValue(var_id, value);
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             :}
                             | ID_VALUE:id_val
@@ -1108,7 +1110,7 @@ BOOLEAN_OP_VALUE            ::= BOOLEAN_VALUE:bool_val
 
                                 RESULT = sym;
                               }catch(SymbolsTableError e){
-                                
+                                throw new SemanticError(e.getMessage());
                               }
                             :}
                             | BOOLEAN_OPERATION:bool_op
@@ -1155,7 +1157,7 @@ BOOLEAN_OP_VALUE            ::= BOOLEAN_VALUE:bool_val
                                 }
                                 RESULT = sym;
                               }catch(SymbolsTableError e){
-                                
+                                throw new SemanticError(e.getMessage());
                               }
                             :}
                             | CALL_FUNCTION:call_fn
@@ -1179,7 +1181,7 @@ BOOLEAN_OP_VALUE            ::= BOOLEAN_VALUE:bool_val
 
                                 RESULT = new SymbolBoolOpValue(var_id);
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             :}
                             | op_logical_not:op CALL_FUNCTION:call_fn
@@ -1210,7 +1212,7 @@ BOOLEAN_OP_VALUE            ::= BOOLEAN_VALUE:bool_val
 
                                 RESULT = new SymbolBoolOpValue(var_id);
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             :}
                             ;
@@ -1355,7 +1357,7 @@ VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rp
 
                                 RESULT = sym;
                               }catch(SymbolsTableError e){
-                                
+                                throw new SemanticError(e.getMessage());
                               }
                             :}
                             | lparen VALUE_COMPARISON:cmp_val rparen
@@ -1529,7 +1531,7 @@ CALL_FUNCTION               ::= id:fun_id lparen rparen
 
                                 RESULT = new SymbolCallFunction(fun_id, backId);
                               }catch(SymbolsTableError e){
-                                
+                                throw new SemanticError(e.getMessage());
                               }
                             :}
                             | CALL_BODY:body rparen
@@ -1553,7 +1555,7 @@ CALL_FUNCTION               ::= id:fun_id lparen rparen
 
                                 RESULT = new SymbolCallFunction(fun_id, fun_backId);
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             :};
 
@@ -1593,7 +1595,7 @@ CALL_BODY                   ::= CALL_BODY:body separator VALUE:value
 
                                 RESULT = new SymbolCallBody(fun_id, fun_back_id, num_params+1);
                               }catch(SymbolsTableError e){
-                                
+                                throw new SemanticError(e.getMessage());
                               }
                             :}
                             | id:fun_id lparen VALUE:value
@@ -1632,7 +1634,7 @@ CALL_BODY                   ::= CALL_BODY:body separator VALUE:value
 
                                 RESULT = new SymbolCallBody(fun_id, fun_back_id, 0+1);
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             :};
 
@@ -1667,7 +1669,7 @@ INSTRUCTION_OUT             ::= instr_out lparen VALUE:value rparen
                                 }
                                 RESULT = new SymbolInstructionOut();
                               }catch(SymbolsTableError e){
-                                
+                                throw new SemanticError(e.getMessage());
                               }
                             :};
 
@@ -1746,7 +1748,7 @@ FUNCTION_INIT               ::= inst_function id:fun_id FUNCTION_PARAMS:fun_para
 
                                 RESULT = new SymbolFunInit(backId, subType);
                               }catch(SymbolsTableError e){
-                                
+                                throw new SemanticError(e.getMessage());
                               }
                             :};
 
@@ -1774,7 +1776,7 @@ FUNCTION_W_PARAMS           ::= FUNCTION_W_PARAMS:prev_params separator id:id tw
 
                                 RESULT = new SymbolFunWParams(param, prev_params);
                               }catch(SymbolsTableError e){
-                                
+                                throw new SemanticError(e.getMessage());
                               }
                             :}
                             | lparen id:id two_points id:type_id
@@ -1792,7 +1794,7 @@ FUNCTION_W_PARAMS           ::= FUNCTION_W_PARAMS:prev_params separator id:id tw
 
                                 RESULT = new SymbolFunWParams(param);
                               }catch(SymbolsTableError e){
-                                
+                                throw new SemanticError(e.getMessage());
                               }
                             :};
 
@@ -1822,7 +1824,7 @@ FUNCTION_RETURN             ::= inst_return VALUE:value nextinstr
 
                                 RESULT = new SymbolFunReturn(value.getVarId(), subType);
                               }catch(SymbolsTableError e){
-                                
+                                throw new SemanticError(e.getMessage());
                               }
                             :}
                             // | inst_return
