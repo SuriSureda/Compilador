@@ -3,10 +3,10 @@
 * Fecha: 02/11
 */
 
-package Lex;                         // PAQUETE AL QUE PERTENECE
+package Lex;                         
 import java_cup.runtime.ComplexSymbolFactory;
 import java_cup.runtime.ComplexSymbolFactory.Location;
-import java_cup.runtime.Symbol;      // CLASE SYMBOL PARA LOS TOKENS DE CUP
+import java_cup.runtime.Symbol;     
 import Sin.ParserSym;
 import Lex.Token.*;
 import java.io.BufferedWriter;
@@ -18,14 +18,14 @@ import java.util.ArrayList;
 import java.io.IOException;
 import Errors.*;
 
-%%                              //INICIO DE OPCIONES
+%%                              //Options init
          
-%class LexerCup   
-%cup               
-%public                         
-%line                           
-%column      
-%full      
+%class LexerCup   // class name
+%cup       // syntax analyzer        
+%public    // public class                     
+%line      // line location                     
+%column    // column location
+%full      // 8 Bit input character
 
 %init{
     try{
@@ -105,7 +105,7 @@ import Errors.*;
   return symbol(Token.Tokens.EOF.toString(),ParserSym.EOF);
 %eofval}
 
-// A CONTINUACIÓN DEFINIMOS LAS EXPRESIONES REGULARES DEL LENGUAJE
+// We are defining the regular expressions of our language
 
 DIGIT           = [0-9]     //ok
 LETTER          = [a-zA-Z]  //ok
@@ -118,12 +118,11 @@ NUMBER          = ("0" | [1-9]{DIGIT}*)                     // ok
 STRING          = \" [^\"]* \"                              // ok
 BOOL            = ("true" | "false")                        // ok
 
-// PALABRAS RESERVADAS
 
-// Declaraciones
+// Declarations
 DCONST          = ("const")     //ok
 
-// Operadores
+// Operators
 
 OP_ARITHMETICAL_B = ("+"|"-")
 OP_ARITHMETICAL_C = ("*"|"/"|"%")
@@ -132,43 +131,26 @@ OP_LOGICAL      = ("&&"|"||")   //ok
 OP_LOGICAL_NOT  = ("!")
 OP_ASSIG        = ("=")            //ok
 
-// Operaciones
+// Operations
 
 INST_IF         = ("if")    //ok
 INST_ELSE       = ("else")  //ok
 INST_ELIF       = ("elif")  //ok
     
 INST_WHILE      = ("while") //ok
-/*
-INST_FOR        = ("for")   //ok
 
-INST_SWITCH     = ("switch") //ok
-INST_CASE       = ("case")  //ok
-INST_BREAK      = ("break") //ok
-INST_DEFAULT    = ("default") //ok
-*/
 
 INST_FUNCTION   = ("function") //ok
 INST_RETURN     = ("return")    //ok
-INST_MAIN       = ("main")      //ok    //*
+INST_MAIN       = ("main")      //ok    
 
-// Entrada/salida
+// Input/Output
 
 INSTR_IN        = ("read") //ok
 INSTR_OUT       = ("print") //ok
 
-// Operadores especiales
 
-/*
-SPC_INC         = ("++")     //ok   //SPC = special INC= increase
-SPC_DEC         = ("--")     //ok
-SPC_ASGINC      = ("+=")    //ok
-SPC_ASGDEC      = ("-=")    //ok
-SPC_ASGDIV      = ("/=")    //ok
-SPC_ASGMUL      = ("*=")    //ok
-*/
-
-// Caracteres especiales
+// Reserved words
 
 LPAREN          = ("(")     //ok
 RPAREN          = (")")     //ok
@@ -203,34 +185,7 @@ TWO_POINTS       = (":")     //ok
                         writeToken(token);
                         return symbol(Token.Tokens.INST_WHILE.toString(),ParserSym.inst_while);
                      }
-/*                     
-{INST_FOR}           {
-                        Token token = new Token(Token.Tokens.INST_FOR,yyline,yycolumn, yytext());
-                        writeToken(token);
-                        return symbol(ParserSym.inst_for, yytext());
-                    }
 
-{INST_SWITCH}        {
-                      Token token = new Token(Token.Tokens.INST_SWITCH,yyline,yycolumn, yytext());
-                      writeToken(token);
-                      return symbol(ParserSym.inst_switch, yytext());
-                      }
-{INST_CASE}          {
-                      Token token = new Token(Token.Tokens.INST_CASE,yyline,yycolumn, yytext());
-                      writeToken(token);
-                      return symbol(ParserSym.inst_case, yytext());
-                      }
-{INST_BREAK}         {
-                      Token token = new Token(Token.Tokens.INST_BREAK,yyline,yycolumn, yytext());
-                      writeToken(token);
-                      return symbol(ParserSym.inst_break, yytext());
-                      }
-{INST_DEFAULT}       {
-                      Token token = new Token(Token.Tokens.INST_DEFAULT,yyline,yycolumn, yytext());
-                      writeToken(token);
-                      return symbol(ParserSym.inst_default, yytext());
-                      }
-*/
 
 {INST_FUNCTION}      {
                      Token token = new Token(Token.Tokens.INST_FUNCTION,yyline,yycolumn, yytext());
@@ -353,42 +308,7 @@ TWO_POINTS       = (":")     //ok
                         return symbol(Token.Tokens.STRING.toString(),ParserSym.string, yytext());
                      }
 //==============================================================================
-//==============================================================================
 
-/*
-{SPC_INC}            {
-                        Token token = new Token(Token.Tokens.SPC_INC,yyline,yycolumn, yytext());
-                        writeToken(token);
-                        return symbol(ParserSym.spc_inc);
-                     }
-{SPC_DEC}            {
-                     Token token = new Token(Token.Tokens.SPC_DEC,yyline,yycolumn, yytext());
-                     writeToken(token);
-                     return symbol(ParserSym.spc_dec);
-                     }
-                     
-                     
-{SPC_ASGINC}         {
-                     Token token = new Token(Token.Tokens.SPC_ASGINC,yyline,yycolumn, yytext());
-                     writeToken(token);
-                     return symbol(ParserSym.spc_asginc);
-                     }
-{SPC_ASGDEC}         {
-                     Token token = new Token(Token.Tokens.SPC_ASGDEC,yyline,yycolumn, yytext());
-                     writeToken(token);
-                     return symbol(ParserSym.spc_asgdec);
-                     }
-{SPC_ASGDIV}         {
-                     Token token = new Token(Token.Tokens.SPC_ASGDIV,yyline,yycolumn, yytext());
-                     writeToken(token);
-                     return symbol(ParserSym.spc_asgdiv);
-                     }
-{SPC_ASGMUL}         {
-                     Token token = new Token(Token.Tokens.SPC_ASGMUL,yyline,yycolumn, yytext());
-                     writeToken(token);
-                     return symbol(ParserSym.spc_asgmul);
-                     }
-*/
 //==============================================================================
 [^]                  {
                         Token token = new Token(Token.Tokens.ERROR,yyline,yycolumn, yytext());
