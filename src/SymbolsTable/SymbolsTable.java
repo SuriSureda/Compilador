@@ -59,7 +59,7 @@ public class SymbolsTable {
         Description funDes = descriptionTable.get(idFun);
         // CHECK TYPE
         if(funDes == null){
-            throw new SymbolsTableError(idFun + "cannot be added because it already exists in actual scope");
+            throw new SymbolsTableError(idFun + "does not exist.");
             
         }
         if(funDes.getType().getType() != Type.TYPE.dfun){
@@ -75,7 +75,7 @@ public class SymbolsTable {
         }
 
         if(idxe != -1){
-            throw new SymbolsTableError(idParam + "already exists");
+            throw new SymbolsTableError(idParam + "already exists as function param");
         }
 
         idxe = scopeTable.get(scope);
