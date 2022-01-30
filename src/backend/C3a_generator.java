@@ -28,19 +28,9 @@ public class C3a_generator {
 
     // other variables used
     private int variableNumber;
-//    private int labelNumber;
-//
-//    private String temporalID = null;
-//
-//    private ArrayList<String> operands = new ArrayList<>();
     private ArrayList<Instruction> instructions;
 
-//    private String currentSubprogram;
-//    private String currentType = "";
-//    private int offset = 0;
-//    private boolean function = false;
-
-    private Optimizer optimizer;
+    // private Optimizer optimizer; NOT IMPLEMENTED 
 
     // Writer to save information
     private BufferedWriter writer;
@@ -50,10 +40,11 @@ public class C3a_generator {
         this.instructions = new ArrayList<Instruction>();
     }
 
-    public void optimize() {
-        optimizer = new Optimizer(instructions);
-        this.instructions = optimizer.optimize();
-    }
+    /* NOT IMPLEMENTED 
+      public void optimize() {
+        // optimizer = new Optimizer(instructions);
+        // this.instructions = optimizer.optimize();
+    } */
 
     // Add a new instruction
     public void generateC3aInstr(Code opCode, String op1, String op2, String dest) {
@@ -62,9 +53,9 @@ public class C3a_generator {
         instructions.add(inst);
     }
 
-    public void generateC3aInstr(int index, Code opCode, String op1, String op2, String dest) {
-        instructions.add(index, new Instruction(opCode, op1, op2, dest));
-    }
+    // public void generateC3aInstr(int index, Code opCode, String op1, String op2, String dest) {
+    //     instructions.add(index, new Instruction(opCode, op1, op2, dest));
+    // }
 
     public void savec3aInFile(boolean optimized) {
         String result = "-----------------------------------------------\n"
