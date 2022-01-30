@@ -102,7 +102,7 @@ public class AssemblerGenerator {
     private void writeHead() {
         writeLine(".global main");
         /* C functions declaration */
-        writeLine(".extern printf, scanf, exit");
+        writeLine(".extern printf, scanf");
         writeLine(".data");
         declareStringVariables();
         writeLine(".text");
@@ -120,7 +120,6 @@ public class AssemblerGenerator {
         writeLine("format_int: .asciz \"%d\"");
         writeLine("true_label : .asciz \"true\"");
         writeLine("false_label : .asciz \"false\"");
-
     }
 
     private void writePrintBoolFunction() {
@@ -166,7 +165,7 @@ public class AssemblerGenerator {
                 break;
             // Modul
             case mod:
-                calculateDivision(instruction, "idiv", 1);
+                calculateDivision(instruction, "idiv", 2);
                 break;
             // Product
             case prod:
@@ -174,7 +173,7 @@ public class AssemblerGenerator {
                 break;
             // Division
             case div:
-                calculateDivision(instruction, "idiv", 2);
+                calculateDivision(instruction, "idiv", 1);
                 break;
             // Funtion related expressions
             case call:
@@ -285,7 +284,6 @@ public class AssemblerGenerator {
             writeLine("movw "+getVarAssembler(instruction.getDest())+", %di");
             writeLine("call print_bool");
         }
-        
     }
     
     // Auxiliar method for the skip Instruction
@@ -327,7 +325,7 @@ public class AssemblerGenerator {
         writeLine("movl " + op2 + ", %eax");
         writeLine(type+"l" + " %eax, %edi");
         writeLine("movl %edi, " + getVarAssembler(instruction.getDest()));
-    }
+    }                               
 
     // Auxiliar method which will help with the / and % operations
     private void calculateDivision(Instruction instruction, String type, int code) {
@@ -336,8 +334,9 @@ public class AssemblerGenerator {
         String op1 = op1Lit ? "$"+instruction.getOp1() : getVarAssembler(instruction.getOp1());
         String op2 = op2Lit ? "$"+instruction.getOp2() : getVarAssembler(instruction.getOp2());
 
-        writeLine("movl " + op1 + ", " + "%edi");
-        writeLine("movl " + op2 + ", " + "%eax");
+        writeLine("movl " + op1 + ", %eax");
+        writeLine("cdq");
+        writeLine("movl " + op2 + ", %edi");
         writeLine(type+"l" + " %edi");
         checkDivisionStatus(instruction, code);
     }
@@ -565,7 +564,7 @@ public class AssemblerGenerator {
         writeLine("# boolean value assignation GT");
         writeLine("CMP_GT :");
         writeLine("\tcmp %edi, %esi");
-        writeLine("\tjl CMP_GT_LE");
+        writeLine("\tjle CMP_GT_LE");
         writeLine("\tmov $1, %ax");
         writeLine("\tret");
         writeLine("CMP_GT_LE :");
@@ -576,7 +575,7 @@ public class AssemblerGenerator {
     private void writeNE() {
         writeLine("# boolean value assignation NE");
         writeLine("CMP_NE :");
-        writeLine("\tcmp %rdi, %rsi");
+        writeLine("\tcmp %di, %si");
         writeLine("\tje CMP_NE_E");
         writeLine("\tmov $1, %rax");
         writeLine("\tret");
@@ -588,7 +587,7 @@ public class AssemblerGenerator {
     private void writeEQ() {
         writeLine("# boolean value assignation EQ");
         writeLine("CMP_EQ :");
-        writeLine("\tcmp %rdi, %rsi");
+        writeLine("\tcmp %di, %si");
         writeLine("\tjne CMP_EQ_NE");
         writeLine("\tmov $1, %rax");
         writeLine("\tret");
