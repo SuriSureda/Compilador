@@ -1,4 +1,4 @@
-package compilador;
+package compiler;
 
 import java.io.File;
 import java.io.FileReader;
@@ -12,6 +12,7 @@ import Sin.Parser;
 
 import java.io.IOException;
 import java.io.Reader;
+
 
 import java_cup.internal_error;
 import java_cup.runtime.ComplexSymbolFactory;
@@ -37,7 +38,7 @@ public class Main {
 			generateJavaFiles();
 			return;
 		}
-		String file = ".\\examples\\example3.txt";
+		String file = ".\\src\\compiler\\example3.txt";
 		if(args.length != 0){
 			file = args[0];
 		}
