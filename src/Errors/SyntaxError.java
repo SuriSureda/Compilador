@@ -12,13 +12,16 @@ public class SyntaxError extends Exception{
     private final String PATH = "output\\syntaxError.txt";
 
     public SyntaxError(ComplexSymbol s, ArrayList<String> expectedName, boolean recovered){
-        String error = "Syntax Error: "+ s.value+ "found in position ("+ s.left+1+":"+ s.right+1+")";
-        if (expectedName != null){
-            error += "\n Token Expected: ";
+        String from = s.xleft.getLine() + ":" + s.xleft.getColumn();
+        String to = s.xright.getLine() + ":" + s.xright.getColumn();
+        String error = "Syntax Error: "+ (s.value != null ? s.value : "") + "spanning from "+from+" to "+to;
+        if (expectedName != null && expectedName.size() > 0){
+            error += "\t\n Token/s Expected: ";
             for (String token: expectedName){
                 error += token + " ";
             }
         }
+        error += "\n";
         System.out.print(error);
 
         if (out== null){

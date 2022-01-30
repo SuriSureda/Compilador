@@ -9,7 +9,7 @@ public class SemanticError extends Exception{
     private final String PATH = "output\\semanticError.txt";
 
     public SemanticError(String error){
-        super(error);
+        super(error+"\n");
         if (out== null){
             try {
                 out = new BufferedWriter(new FileWriter(PATH));
@@ -17,7 +17,7 @@ public class SemanticError extends Exception{
             }
         }
         try {
-            out.write(error);
+            out.write(error+"\n");
         } catch (IOException e) {
             e.printStackTrace();
         }  

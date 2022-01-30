@@ -47,7 +47,7 @@ parser code
     LexicalError.closeFile();
   }
 
-  public void syntax_error(ComplexSymbol s) {
+  public void syntax_error(Symbol s) {
     try {
       ArrayList<Integer> expected = new ArrayList<Integer>(expected_token_ids());
       ArrayList<String> expected_names = new ArrayList<String>();
@@ -56,12 +56,12 @@ parser code
         expected_names.add(symbl_name_from_id(i));
       }
 
-      throw new SyntaxError(s, expected_names, true);
+      throw new SyntaxError((ComplexSymbol) s, expected_names, true);
     } catch (Exception e) {
 		};
   }
 
-  public void unrecovered_syntax_error(ComplexSymbol s){
+  public void unrecovered_syntax_error(Symbol s){
     try {
       ArrayList<Integer> expected = new ArrayList<Integer>(expected_token_ids());
       ArrayList<String> expected_names = new ArrayList<String>();
@@ -72,7 +72,7 @@ parser code
 
       scanner.closeTokensFile((s.left+1), (s.right+1));
       
-      throw new SyntaxError(s, expected_names, false);
+      throw new SyntaxError((ComplexSymbol) s, expected_names, false);
     } catch (Exception e) {
       closeErrorFiles();
 		};
@@ -344,8 +344,10 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
                                   RESULT = declarations;
 
                               }catch(SymbolsTableError e){
-                                throw new SemanticError(e.getMessage());
-                                //System.out.print(e.getMessage() + var_idxleft + " " + var_idxright); 
+                                String from = var_idxleft.getLine() + ":" + var_idxleft.getColumn();
+                                String to = var_idxright.getLine() + ":" + var_idxright.getColumn();
+                                String message = e.getMessage() + " from "+from+" to "+to;
+                                throw new SemanticError(message);
                               }
                             :}
                             | id:id_var CONSTANT:constant two_points id:type_id op_assig VALUE:value  
@@ -356,23 +358,35 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
 
                                 Type type = symbolsTable.get(type_id);
 
-                                if(type.getType() != TYPE.dtype){
-                                  throw new SemanticError("Type not valid");
+                                if(type == null || type.getType() != TYPE.dtype){
+                                  String from = type_idxleft.getLine() + ":" + type_idxleft.getColumn();
+                                  String to = type_idxright.getLine() + ":" + type_idxright.getColumn();
+                                  String message = "Invalid type" + " from "+from+" to "+to;
+                                  throw new SemanticError(message);
                                 }
 
                                 if(type.getSubType() != SUBJACENTTYPE.st_boolean
                                   && type.getSubType() != SUBJACENTTYPE.st_number
                                   && type.getSubType() != SUBJACENTTYPE.st_string ){
-                                    throw new SemanticError("Invalid subjacent type");
+                                    String from = type_idxleft.getLine() + ":" + type_idxleft.getColumn();
+                                    String to = type_idxright.getLine() + ":" + type_idxright.getColumn();
+                                    String message = "Invalid subjacent type" + " from "+from+" to "+to;
+                                    throw new SemanticError(message);
                                 }
 
                                 //IF LITERALL (type = null) CHECK SUBJACENT TYPE
                                 if(value.getType() == TYPE.dnull && type.getSubType() != value.getSubType()){
-                                  throw new SemanticError("Value and type must have same subjacent type");
+                                  String from = type_idxleft.getLine() + ":" + type_idxleft.getColumn();
+                                  String to = type_idxright.getLine() + ":" + type_idxright.getColumn();
+                                  String message = "Value and type must have same subjacent type" + " from "+from+" to "+to;
+                                  throw new SemanticError(message);
                                 }
                                 
                                 if(value.getType() != TYPE.dnull && !value.getTypeName().equals(type_id)){
-                                  throw new SemanticError("Value must have the same type");
+                                  String from = type_idxleft.getLine() + ":" + type_idxleft.getColumn();
+                                  String to = type_idxright.getLine() + ":" + type_idxright.getColumn();
+                                  String message = "Value and type must have same subjacent type" + " from "+from+" to "+to;
+                                  throw new SemanticError(message);
                                 }
 
                                 Type var_type;
@@ -420,8 +434,10 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
 
                                 RESULT = symDcls;
                               }catch(SymbolsTableError e){
-                                throw new SemanticError(e.getMessage());
-                                //System.out.print(e.getMessage() + id_varxleft + " " + id_varxright); 
+                                String from = id_varxleft.getLine() + ":" + id_varxleft.getColumn();
+                                String to = id_varxright.getLine() + ":" + id_varxright.getColumn();
+                                String message = e.getMessage() + " from "+from+" to "+to;
+                                throw new SemanticError(message);
                               }
                             :};
 
@@ -441,16 +457,25 @@ OPERATOR_ASSIG              ::= id:var_id op_assig VALUE:value
                                 String type_id = varType.getTypeName();
 
                                 if(varType.getType() == TYPE.dconst){
-                                  throw new SemanticError("Cant assign value to constant");
+                                  String from = var_idxleft.getLine() + ":" + var_idxleft.getColumn();
+                                  String to = valuexright.getLine() + ":" + valuexright.getColumn();
+                                  String message = "Cant assign value to constant" + " from "+from+" to "+to;
+                                  throw new SemanticError(message);
                                 }
 
                                 //IF LITERALL (type = null) CHECK SUBJACENT TYPE
                                 if(value.getType() == TYPE.dnull && varType.getSubType() == value.getSubType()){
-                                  throw new SemanticError("Value and type must have same subjacent type");
+                                  String from = var_idxleft.getLine() + ":" + var_idxleft.getColumn();
+                                  String to = valuexright.getLine() + ":" + valuexright.getColumn();
+                                  String message = "Value and type must have same subjacent type" + " from "+from+" to "+to;
+                                  throw new SemanticError(message);
                                 }
                                 
                                 if(value.getType() != TYPE.dnull && value.getTypeName() != type_id){
-                                  throw new SemanticError("Value must have the same type");
+                                  String from = var_idxleft.getLine() + ":" + var_idxleft.getColumn();
+                                  String to = valuexright.getLine() + ":" + valuexright.getColumn();
+                                  String message = "Value and type must have same subjacent type" + " from "+from+" to "+to;
+                                  throw new SemanticError(message);
                                 }
 
                                 c3a_g.generateC3aInstr(
@@ -462,7 +487,10 @@ OPERATOR_ASSIG              ::= id:var_id op_assig VALUE:value
 
                                 RESULT = new SymbolOperatorAssignation();
                               }catch(SymbolsTableError e){
-                                throw new SemanticError(e.getMessage());
+                                String from = var_idxleft.getLine() + ":" + var_idxleft.getColumn();
+                                String to = var_idxright.getLine() + ":" + var_idxright.getColumn();
+                                String message = e.getMessage() + " from "+from+" to "+to;
+                                throw new SemanticError(message);
                               }
                             :};    
 
@@ -496,7 +524,10 @@ ARITHMETICAL_OPERATION      ::= ARITHMETICAL_VALUE:arith_val1 ARITH_OP:op ARITHM
                                     op_code = Code.mod;
                                     break;
                                   default : 
-                                    throw new SemanticError("Invalid arithmetical operator");
+                                    String from = opxleft.getLine() + ":" + opxleft.getColumn();
+                                    String to = opxright.getLine() + ":" + opxright.getColumn();
+                                    String message = "Invalid arithmetic operator from "+from+" to "+to;
+                                    throw new SemanticError(message);
                                 }
 
                                 Integer value = null;
@@ -516,7 +547,10 @@ ARITHMETICAL_OPERATION      ::= ARITHMETICAL_VALUE:arith_val1 ARITH_OP:op ARITHM
                                       break;
                                     case "/" : 
                                       if(val2 == 0){
-                                        throw new SemanticError("Cannot divide by zero");
+                                        String from = arith_val2xleft.getLine() + ":" + arith_val2xleft.getColumn();
+                                        String to = arith_val2xright.getLine() + ":" + arith_val2xright.getColumn();
+                                        String message = "Can not divide by zero (0)" + " from "+from+" to "+to;
+                                        throw new SemanticError(message);
                                       }
                                       value = val1 / val2;
                                       break;
@@ -629,13 +663,19 @@ ARITHMETICAL_VALUE         ::= NUMBER_VALUE:n_val
                               TYPE main_var_type = id_val.getType();
 
                               if(main_var_type != TYPE.darg && main_var_type != TYPE.dconst && main_var_type != TYPE.dvar){
-                                throw new SemanticError("Invalid arithmetic value type");
+                                String from = id_valxleft.getLine() + ":" + id_valxleft.getColumn();
+                                String to = id_valxright.getLine() + ":" + id_valxright.getColumn();
+                                String message = "Invalid arithmetic value type" + " from "+from+" to "+to;
+                                throw new SemanticError(message);
                               }
 
                               Type var_dtype = symbolsTable.get(id_val.getTypeName());
 
                               if(var_dtype.getSubType() != SUBJACENTTYPE.st_number){
-                                throw new SemanticError("Invalid subjacent type");
+                                String from = id_valxleft.getLine() + ":" + id_valxleft.getColumn();
+                                String to = id_valxright.getLine() + ":" + id_valxright.getColumn();
+                                String message = "Invalid subjacent type" + " from "+from+" to "+to;
+                                throw new SemanticError(message);
                               }
 
                               SymbolArithValue sym;
@@ -671,7 +711,10 @@ ARITHMETICAL_VALUE         ::= NUMBER_VALUE:n_val
                               Type dfn_type = symbolsTable.get(fn_type.getTypeName());
                               
                               if(dfn_type.getSubType() != SUBJACENTTYPE.st_number){
-                                throw new SemanticError("Invalid function call "+call_fn.getFunctionId() + " with return type "+ dfn_type.getSubType() +". Expected :"+SUBJACENTTYPE.st_number);
+                                String from = call_fnxleft.getLine() + ":" + call_fnxleft.getColumn();
+                                String to = call_fnxright.getLine() + ":" + call_fnxright.getColumn();
+                                String message = "Invalid function call "+call_fn.getFunctionId() + " with return type "+ dfn_type.getSubType() +". Expected :"+SUBJACENTTYPE.st_number + " from "+from+" to "+to;
+                                throw new SemanticError(message);
                               }
                               
                               String var_id = backend.addTempVar(dfn_type.getSize(), dfn_type.getSubType());
@@ -685,7 +728,10 @@ ARITHMETICAL_VALUE         ::= NUMBER_VALUE:n_val
 
                               RESULT = new SymbolArithValue(var_id);
                             }catch(SymbolsTableError e){
-                              throw new SemanticError(e.getMessage());
+                              String from = call_fnxleft.getLine() + ":" + call_fnxleft.getColumn();
+                              String to = call_fnxright.getLine() + ":" + call_fnxright.getColumn();
+                              String message = e.getMessage() + " from "+from+" to "+to;
+                              throw new SemanticError(message);
                             }
                           :}
                           | op_arithmetical_b:op CALL_FUNCTION:call_fn
@@ -695,7 +741,10 @@ ARITHMETICAL_VALUE         ::= NUMBER_VALUE:n_val
                               Type dfn_type = symbolsTable.get(fn_type.getTypeName());
                               
                               if(dfn_type.getSubType() != SUBJACENTTYPE.st_number){
-                                throw new SemanticError("Invalid function call "+call_fn.getFunctionId() + " with return type "+ dfn_type.getSubType() +". Expected :"+SUBJACENTTYPE.st_number);
+                                String from = call_fnxleft.getLine() + ":" + call_fnxleft.getColumn();
+                                String to = call_fnxright.getLine() + ":" + call_fnxright.getColumn();
+                                String message = "Invalid function call "+call_fn.getFunctionId() + " with return type "+ dfn_type.getSubType() +". Expected :"+SUBJACENTTYPE.st_number + " from "+from+" to "+to;
+                                throw new SemanticError(message);
                               }
                               
                               String var_id = backend.addTempVar(dfn_type.getSize(), dfn_type.getSubType());
@@ -718,7 +767,10 @@ ARITHMETICAL_VALUE         ::= NUMBER_VALUE:n_val
 
                               RESULT = new SymbolArithValue(var_id);
                             }catch(SymbolsTableError e){
-                              throw new SemanticError(e.getMessage());
+                              String from = call_fnxleft.getLine() + ":" + call_fnxleft.getColumn();
+                              String to = call_fnxright.getLine() + ":" + call_fnxright.getColumn();
+                              String message = e.getMessage() + " from "+from+" to "+to;
+                              throw new SemanticError(message);
                             }
                           :};
 
@@ -734,7 +786,10 @@ ID_VALUE                    ::= id:id_val
 
                                 RESULT = sym;
                               }catch(SymbolsTableError e){
-                                throw new SemanticError(e.getMessage());
+                                String from = id_valxleft.getLine() + ":" + id_valxleft.getColumn();
+                                String to = id_valxright.getLine() + ":" + id_valxright.getColumn();
+                                String message = e.getMessage() + " from "+from+" to "+to;
+                                throw new SemanticError(message);
                               }
                             :}
                             | lparen ID_VALUE:id_val rparen
@@ -750,7 +805,10 @@ ID_VALUE                    ::= id:id_val
                                 SUBJACENTTYPE subType = symbolsTable.get(id_val.getTypeName()).getSubType();
 
                                 if(subType != SUBJACENTTYPE.st_boolean) {
-                                  throw new SemanticError("Invalid unary operator " + op + " for type " + subType);
+                                  String from = opxleft.getLine() + ":" + opxleft.getColumn();
+                                  String to = opxright.getLine() + ":" + opxright.getColumn();
+                                  String message = "Invalid unary operator " + op + " for type " + subType + " from "+from+" to "+to;
+                                  throw new SemanticError(message);
                                 }
 
                                 Type type_boolean = symbolsTable.get("boolean");
@@ -783,7 +841,10 @@ ID_VALUE                    ::= id:id_val
                                 SUBJACENTTYPE subType = symbolsTable.get(id_val.getTypeName()).getSubType();
 
                                 if(subType != SUBJACENTTYPE.st_boolean) {
-                                  throw new SemanticError("Invalid unary operator " + op + " for type " + subType);
+                                  String from = opxleft.getLine() + ":" + opxleft.getColumn();
+                                  String to = opxright.getLine() + ":" + opxright.getColumn();
+                                  String message = "Invalid unary operator " + op + " for type " + subType + " from "+from+" to "+to;
+                                  throw new SemanticError(message);
                                 }
 
                                 if(op.equals("-")){
@@ -842,7 +903,10 @@ VALUE                       ::= ID_VALUE:id_val
                                 Type type_string = symbolsTable.get("string");
 
                                 if (value.length() > 1000){
-                                  throw new SemanticError("String must be shorter than 1000 characters.");
+                                  String from = str_valuexleft.getLine() + ":" + str_valuexleft.getColumn();
+                                  String to = str_valuexright.getLine() + ":" + str_valuexright.getColumn();
+                                  String message = "String must be shorter than 1000 characters " + " from "+from+" to "+to;
+                                  throw new SemanticError(message);
                                 }
                                 
                                 // string size in bytes
@@ -968,7 +1032,10 @@ VALUE                       ::= ID_VALUE:id_val
                                 Type dfn_type = symbolsTable.get(fn_type.getTypeName());
                                 
                                 if(dfn_type.getSubType() == SUBJACENTTYPE.st_null){
-                                  throw new SemanticError("Function call : "+call_fn.getFunctionId() + " does not return any value");
+                                  String from = call_fnxleft.getLine() + ":" +call_fnxleft.getColumn();
+                                  String to = call_fnxright.getLine() + ":" + call_fnxright.getColumn();
+                                  String message = "Function call : "+call_fn.getFunctionId() + " does not return any value" + " from "+from+" to "+to;
+                                  throw new SemanticError(message);
                                 }
                                 
                                 String var_id = backend.addTempVar(dfn_type.getSize(), dfn_type.getSubType());
@@ -1018,7 +1085,10 @@ BOOLEAN_OPERATION           ::= BOOLEAN_OP_VALUE:bool_val1 op_logical:op BOOLEAN
                                     op_code = Code.or;
                                     break;
                                   default : 
-                                    throw new SemanticError("Invalid boolean operator");
+                                    String from = opxleft.getLine() + ":" + opxleft.getColumn();
+                                    String to = opxright.getLine() + ":" + opxright.getColumn();
+                                    String message = "Invalid boolean operator" + " from "+from+" to "+to;
+                                    throw new SemanticError(message);
                                 }
 
                                 boolean allConst = bool_val1.getIsConst() && bool_val2.getIsConst();
@@ -1116,13 +1186,19 @@ BOOLEAN_OP_VALUE            ::= BOOLEAN_VALUE:bool_val
                               try{
                                 TYPE main_var_type = id_val.getType();
                                 if(main_var_type != TYPE.darg && main_var_type != TYPE.dconst && main_var_type != TYPE.dvar){
-                                  throw new SemanticError("Invalid arithmetic value type");
+                                  String from = id_valxleft.getLine() + ":" + id_valxleft.getColumn();
+                                  String to = id_valxright.getLine() + ":" + id_valxright.getColumn();
+                                  String message = "Invalid arithmetic value type" + " from "+from+" to "+to;
+                                  throw new SemanticError(message);
                                 }
 
                                 Type var_dtype = symbolsTable.get(id_val.getTypeName());
 
                                 if(var_dtype.getSubType() != SUBJACENTTYPE.st_boolean){
-                                  throw new SemanticError("Invalid subjacent type");
+                                  String from = id_valxleft.getLine() + ":" + id_valxleft.getColumn();
+                                  String to = id_valxright.getLine() + ":" + id_valxright.getColumn();
+                                  String message = "Invalid subjacent type" + " from "+from+" to "+to;
+                                  throw new SemanticError(message);
                                 }
 
                                 SymbolBoolOpValue sym;
@@ -1194,7 +1270,10 @@ BOOLEAN_OP_VALUE            ::= BOOLEAN_VALUE:bool_val
                                 Type dfn_type = symbolsTable.get(fn_type.getTypeName());
                                 
                                 if(dfn_type.getSubType() != SUBJACENTTYPE.st_boolean){
-                                  throw new SemanticError("Invalid function call "+call_fn.getFunctionId() + " with return type "+ dfn_type.getSubType() +". Expected :"+SUBJACENTTYPE.st_boolean);
+                                  String from = call_fnxleft.getLine() + ":" + call_fnxleft.getColumn();
+                                  String to = call_fnxright.getLine() + ":" + call_fnxright.getColumn();
+                                  String message = "Invalid function call "+call_fn.getFunctionId() + " with return type "+ dfn_type.getSubType() +". Expected :"+SUBJACENTTYPE.st_boolean + " from "+from+" to "+to;
+                                  throw new SemanticError(message);
                                 }
                                 
                                 String var_id = backend.addTempVar(dfn_type.getSize(), dfn_type.getSubType());
@@ -1218,7 +1297,10 @@ BOOLEAN_OP_VALUE            ::= BOOLEAN_VALUE:bool_val
                                 Type dfn_type = symbolsTable.get(fn_type.getTypeName());
                                 
                                 if(dfn_type.getSubType() != SUBJACENTTYPE.st_number){
-                                  throw new SemanticError("Invalid function call "+call_fn.getFunctionId() + " with return type "+ dfn_type.getSubType() +". Expected :"+SUBJACENTTYPE.st_number);
+                                  String from = call_fnxleft.getLine() + ":" + call_fnxleft.getColumn();
+                                  String to = call_fnxright.getLine() + ":" + call_fnxright.getColumn();
+                                  String message = "Invalid function call "+call_fn.getFunctionId() + " with return type "+ dfn_type.getSubType() +". Expected :"+SUBJACENTTYPE.st_number + " from "+from+" to "+to;
+                                  throw new SemanticError(message);
                                 }
                                 
                                 String var_id = backend.addTempVar(dfn_type.getSize(), dfn_type.getSubType());
@@ -1272,7 +1354,10 @@ VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rp
                                   subType1 = val1.getSubType();
                                 }else{
                                   if(type1 != TYPE.dvar && type1 != TYPE.dconst && type1 != TYPE.darg && type1 != TYPE.dfun) {
-                                    throw new SemanticError("Value 1 of comparison wrong type");
+                                    String from = val1xleft.getLine() + ":" + val1xleft.getColumn();
+                                    String to = val1xright.getLine() + ":" + val1xright.getColumn();
+                                    String message = "Value 1 of comparison wrong type" + " from "+from+" to "+to;
+                                    throw new SemanticError(message);
                                   }
                                   Type dtype_type = symbolsTable.get(val1.getTypeName());
                                   subType1 = dtype_type.getSubType();
@@ -1285,7 +1370,10 @@ VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rp
                                   subType2 = val2.getSubType();
                                 }else{
                                   if(type2 != TYPE.dvar && type2 != TYPE.dconst && type2 != TYPE.darg && type2 != TYPE.dfun) {
-                                    throw new SemanticError("Value 2 of comparison wrong type");
+                                    String from = val2xleft.getLine() + ":" + val2xleft.getColumn();
+                                    String to = val2xright.getLine() + ":" + val2xright.getColumn();
+                                    String message = "Value 2 of comparison wrong type" + " from "+from+" to "+to;
+                                    throw new SemanticError(message);
                                   }
                                   Type dtype_type = symbolsTable.get(val2.getTypeName());
                                   subType2 = dtype_type.getSubType();
@@ -1293,7 +1381,10 @@ VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rp
 
                                 //Check same subtype
                                 if(subType1 != subType2) {
-                                  throw new SemanticError("Value 1 subtype is different from value 2");
+                                  String from = val2xleft.getLine() + ":" + val2xleft.getColumn();
+                                  String to = val2xright.getLine() + ":" + val2xright.getColumn();
+                                  String message = "Value 1 subtype is different from value 2" + " from "+from+" to "+to;
+                                  throw new SemanticError(message);
                                 }
 
                                 Code op_code = Code.EQ;
@@ -1305,19 +1396,39 @@ VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rp
                                     op_code = Code.NE;
                                     break;
                                   case "<": 
-                                    if(subType1 != SUBJACENTTYPE.st_number) throw new SemanticError("This operator ("+op+") only works with integer subtypes");
+                                    if(subType1 != SUBJACENTTYPE.st_number) {
+                                      String from = opxleft.getLine() + ":" + opxleft.getColumn();
+                                      String to = opxright.getLine() + ":" + opxright.getColumn();
+                                      String message = "This operator ("+op+") only works with integer subtypes" + " from "+from+" to "+to;
+                                      throw new SemanticError(message);
+                                    }
                                     op_code = Code.LT;
                                     break;
                                   case "<=":
-                                    if(subType1 != SUBJACENTTYPE.st_number) throw new SemanticError("This operator ("+op+") only works with integer subtypes");
+                                    if(subType1 != SUBJACENTTYPE.st_number) {
+                                      String from = opxleft.getLine() + ":" + opxleft.getColumn();
+                                      String to = opxright.getLine() + ":" + opxright.getColumn();
+                                      String message = "This operator ("+op+") only works with integer subtypes" + " from "+from+" to "+to;
+                                      throw new SemanticError(message);
+                                    }
                                     op_code = Code.LE;
                                     break;
                                   case ">": 
-                                    if(subType1 != SUBJACENTTYPE.st_number) throw new SemanticError("This operator ("+op+") only works with integer subtypes");
+                                    if(subType1 != SUBJACENTTYPE.st_number) {
+                                      String from = opxleft.getLine() + ":" + opxleft.getColumn();
+                                      String to = opxright.getLine() + ":" + opxright.getColumn();
+                                      String message = "This operator ("+op+") only works with integer subtypes" + " from "+from+" to "+to;
+                                      throw new SemanticError(message);
+                                    }
                                     op_code = Code.GT;
                                     break;
                                   case ">=":
-                                    if(subType1 != SUBJACENTTYPE.st_number) throw new SemanticError("This operator ("+op+") only works with integer subtypes");
+                                    if(subType1 != SUBJACENTTYPE.st_number) {
+                                      String from = opxleft.getLine() + ":" + opxleft.getColumn();
+                                      String to = opxright.getLine() + ":" + opxright.getColumn();
+                                      String message = "This operator ("+op+") only works with integer subtypes" + " from "+from+" to "+to;
+                                      throw new SemanticError(message);
+                                    }
                                     op_code = Code.GE;
                                     break;
                                 }
@@ -1538,13 +1649,16 @@ INSTRUCTION_WHILE           ::= inst_while M_WHILE:mwhile COND lbracket BLOCK_IN
                               RESULT = new SymbolInstructionWhile();
                             :};
 
-CALL_FUNCTION               ::= id:fun_id lparen rparen
+CALL_FUNCTION               ::= id:fun_id lparen:lp rparen:rp
                             {:
                               try{
                                 // Check if function and has params 
                                 int num_params = symbolsTable.getNumParams(fun_id);
                                 if(num_params > 0 ){
-                                  throw new SemanticError("Missing parameters. Function " + fun_id + " has " + num_params + " parameters.");
+                                  String from = lpxleft.getLine() + ":" + lpxleft.getColumn();
+                                  String to = rpxright.getLine() + ":" + rpxright.getColumn();
+                                  String message = "Missing parameters. Function " + fun_id + " has " + num_params + " parameters" + " from "+from+" to "+to;
+                                  throw new SemanticError(message);
                                 }
 
                                 Type fun_type = symbolsTable.get(fun_id);
@@ -1558,10 +1672,13 @@ CALL_FUNCTION               ::= id:fun_id lparen rparen
 
                                 RESULT = new SymbolCallFunction(fun_id, backId);
                               }catch(SymbolsTableError e){
-                                throw new SemanticError(e.getMessage());
+                                String from = fun_idxleft.getLine() + ":" + fun_idxleft.getColumn();
+                                String to = fun_idxright.getLine() + ":" + fun_idxright.getColumn();
+                                String message = e.getMessage() + " from "+from+" to "+to;
+                                throw new SemanticError(message);
                               }
                             :}
-                            | CALL_BODY:body rparen
+                            | CALL_BODY:body rparen:rp
                             {:
                               try{
                                 int body_params = body.getNumParams();
@@ -1569,7 +1686,10 @@ CALL_FUNCTION               ::= id:fun_id lparen rparen
                                 int fun_params = symbolsTable.getNumParams(fun_id);
 
                                 if(fun_params != body_params){
-                                  throw new SemanticError("Incorrect number of parameters :"+ body_params + ".Function " + fun_id + " has " + fun_params + "params");
+                                  String from = bodyxleft.getLine() + ":" + bodyxleft.getColumn();
+                                  String to = rpxright.getLine() + ":" + rpxright.getColumn();
+                                  String message = "Missing parameters. Function " + fun_id + " has " + fun_params + " parameters" + " from "+from+" to "+to;
+                                  throw new SemanticError(message);
                                 }
 
                                 String fun_backId = body.getFunBackId();
@@ -1600,7 +1720,10 @@ CALL_BODY                   ::= CALL_BODY:body separator VALUE:value
                                 }
                                 else{
                                   if(value.getType() != TYPE.dvar && value.getType() != TYPE.dconst && value.getType() != TYPE.darg){
-                                    throw new SemanticError(fun_id + ". Incorrect type for param "+ num_params);
+                                    String from = valuexleft.getLine() + ":" + valuexleft.getColumn();
+                                    String to = valuexright.getLine() + ":" + valuexright.getColumn();
+                                    String message = fun_id + ". Incorrect type for param "+ num_params + " from "+from+" to "+to;
+                                    throw new SemanticError(message);
                                   }
                                   Type value_type = symbolsTable.get(value.getTypeName());
                                   subType = value_type.getSubType();
@@ -1611,7 +1734,10 @@ CALL_BODY                   ::= CALL_BODY:body separator VALUE:value
                                 SUBJACENTTYPE paramSubType = symbolsTable.get(paramType.getTypeName()).getSubType();
 
                                 if(paramSubType != subType){
-                                  throw new SemanticError(fun_id + ". Incorrect type for param " + num_params + ". Expected " + subType + " but got " + paramSubType);
+                                  String from = valuexleft.getLine() + ":" + valuexleft.getColumn();
+                                  String to = valuexright.getLine() + ":" + valuexright.getColumn();
+                                  String message = fun_id + ". Incorrect type for param " + num_params + ". Expected " + subType + " but got " + paramSubType + " from "+from+" to "+to;
+                                  throw new SemanticError(message);
                                 }
 
                                 String fun_back_id = body.getFunBackId();
@@ -1637,7 +1763,10 @@ CALL_BODY                   ::= CALL_BODY:body separator VALUE:value
                                 }
                                 else{
                                   if(value.getType() != TYPE.dvar && value.getType() != TYPE.dconst && value.getType() != TYPE.darg){
-                                    throw new SemanticError(fun_id + ". Incorrect type for param 0");
+                                    String from = valuexleft.getLine() + ":" + valuexleft.getColumn();
+                                    String to = valuexright.getLine() + ":" + valuexright.getColumn();
+                                    String message = fun_id + ". Incorrect type for param 0" + " from "+from+" to "+to;
+                                    throw new SemanticError(message);
                                   }
                                   Type value_type = symbolsTable.get(value.getTypeName());
                                   subType = value_type.getSubType();
@@ -1648,7 +1777,10 @@ CALL_BODY                   ::= CALL_BODY:body separator VALUE:value
                                 SUBJACENTTYPE paramSubType = symbolsTable.get(paramType.getTypeName()).getSubType();
 
                                 if(paramSubType != subType){
-                                  throw new SemanticError(fun_id + ". Incorrect type for param 0. Expected " + subType + " but got " + paramSubType);
+                                  String from = valuexleft.getLine() + ":" + valuexleft.getColumn();
+                                  String to = valuexright.getLine() + ":" + valuexright.getColumn();
+                                  String message = fun_id + ". Incorrect type for param 0. Expected " + subType + " but got " + paramSubType + " from "+from+" to "+to;
+                                  throw new SemanticError(message);
                                 }
 
                                 Type fun_type = symbolsTable.get(fun_id);
@@ -1663,7 +1795,10 @@ CALL_BODY                   ::= CALL_BODY:body separator VALUE:value
 
                                 RESULT = new SymbolCallBody(fun_id, fun_back_id, 0+1);
                               }catch(SymbolsTableError e){
-                                throw new SemanticError(e.getMessage());
+                                String from = fun_idxleft.getLine() + ":" + fun_idxleft.getColumn();
+                                String to = fun_idxright.getLine() + ":" + fun_idxright.getColumn();
+                                String message = e.getMessage() + " from "+from+" to "+to;
+                                throw new SemanticError(message);
                               }
                             :};
 
@@ -1706,7 +1841,10 @@ DEFINE_FUNCTION             ::= FUNCTION_INIT:fun_init lbracket BLOCK_IN FUNCTIO
                             {:
                               //check if fun type and return type are the same
                               if(fun_init.getSubType() != fun_ret.getSubType()) {
-                                throw new SemanticError("Invalid return type. Expected : "+fun_init.getSubType()+", but got: "+fun_ret.getSubType());
+                                String from = fun_retxleft.getLine() + ":" + fun_retxleft.getColumn();
+                                String to = fun_retxright.getLine() + ":" + fun_retxright.getColumn();
+                                String message = "Invalid return type. Expected : "+fun_init.getSubType()+", but got: "+fun_ret.getSubType() + " from "+from+" to "+to;
+                                throw new SemanticError(message);
                               }
 
                               // no return value
@@ -1738,10 +1876,16 @@ FUNCTION_INIT               ::= inst_function id:fun_id FUNCTION_PARAMS:fun_para
                                 // check return type
                                 Type return_fun_type = symbolsTable.get(type_id);
                                 if(return_fun_type.getType() != TYPE.dtype){
-                                  throw new SemanticError("Function declaration : invalid type");
+                                  String from = type_idxleft.getLine() + ":" + type_idxleft.getColumn();
+                                  String to = type_idxright.getLine() + ":" + type_idxright.getColumn();
+                                  String message = "Function declaration : invalid type" + " from "+from+" to "+to;
+                                  throw new SemanticError(message);
                                 }
                                 if(return_fun_type.getSubType() == SUBJACENTTYPE.st_string){
-                                  throw new SemanticError("Invalid return type : "+type_id+". Valid return types are : boolean or number");
+                                  String from = type_idxleft.getLine() + ":" + type_idxleft.getColumn();
+                                  String to = type_idxright.getLine() + ":" + type_idxright.getColumn();
+                                  String message = "Invalid return type : "+type_id+". Valid return types are : boolean or number" + " from "+from+" to "+to;
+                                  throw new SemanticError(message);
                                 }
 
                                 SUBJACENTTYPE subType = return_fun_type.getSubType();
@@ -1777,7 +1921,10 @@ FUNCTION_INIT               ::= inst_function id:fun_id FUNCTION_PARAMS:fun_para
 
                                 RESULT = new SymbolFunInit(backId, subType);
                               }catch(SymbolsTableError e){
-                                throw new SemanticError(e.getMessage());
+                                String from = type_idxleft.getLine() + ":" + type_idxleft.getColumn();
+                                String to = type_idxright.getLine() + ":" + type_idxright.getColumn();
+                                String message = e.getMessage() + " from "+from+" to "+to;
+                                throw new SemanticError(message);
                               }
                             :};
 
@@ -1796,10 +1943,16 @@ FUNCTION_W_PARAMS           ::= FUNCTION_W_PARAMS:prev_params separator id:id tw
                                 //check param type
                                 Type type_type = symbolsTable.get(type_id);
                                 if(type_type.getType() != TYPE.dtype){
-                                  throw new SemanticError("Invalid param type");
+                                  String from = idxleft.getLine() + ":" + idxleft.getColumn();
+                                  String to = type_idxright.getLine() + ":" + type_idxright.getColumn();
+                                  String message = "Invalid param type" + " from "+from+" to "+to;
+                                  throw new SemanticError(message);
                                 }
                                 if(type_type.getSubType() == SUBJACENTTYPE.st_string){
-                                  throw new SemanticError("Invalid param type : "+type_id+". Valid params types are : boolean or number");
+                                  String from = idxleft.getLine() + ":" + idxleft.getColumn();
+                                  String to = type_idxright.getLine() + ":" + type_idxright.getColumn();
+                                  String message = "Invalid param type : "+type_id+". Valid params types are : boolean or number" + " from "+from+" to "+to;
+                                  throw new SemanticError(message);
                                 }
 
                                 Type param_type = new Type(TYPE.darg, type_id);
@@ -1808,7 +1961,10 @@ FUNCTION_W_PARAMS           ::= FUNCTION_W_PARAMS:prev_params separator id:id tw
 
                                 RESULT = new SymbolFunWParams(param, prev_params);
                               }catch(SymbolsTableError e){
-                                throw new SemanticError(e.getMessage());
+                                String from = type_idxleft.getLine() + ":" + type_idxleft.getColumn();
+                                String to = type_idxright.getLine() + ":" + type_idxright.getColumn();
+                                String message = e.getMessage() + " from "+from+" to "+to;
+                                throw new SemanticError(message);
                               }
                             :}
                             | lparen id:id two_points id:type_id
@@ -1817,10 +1973,16 @@ FUNCTION_W_PARAMS           ::= FUNCTION_W_PARAMS:prev_params separator id:id tw
                                 //check param type
                                 Type type_type = symbolsTable.get(type_id);
                                 if(type_type.getType() != TYPE.dtype){
-                                  throw new SemanticError("Invalid param type");
+                                  String from = idxleft.getLine() + ":" + idxleft.getColumn();
+                                  String to = type_idxright.getLine() + ":" + type_idxright.getColumn();
+                                  String message = "Invalid param type" + " from "+from+" to "+to;
+                                  throw new SemanticError(message);
                                 }
                                 if(type_type.getSubType() == SUBJACENTTYPE.st_string){
-                                  throw new SemanticError("Invalid param type : "+type_id+". Valid params types are : boolean or number");
+                                  String from = idxleft.getLine() + ":" + idxleft.getColumn();
+                                  String to = type_idxright.getLine() + ":" + type_idxright.getColumn();
+                                  String message = "Invalid param type : "+type_id+". Valid params types are : boolean or number" + " from "+from+" to "+to;
+                                  throw new SemanticError(message);
                                 }
 
                                 Type param_type = new Type(TYPE.darg, type_id);
@@ -1829,7 +1991,10 @@ FUNCTION_W_PARAMS           ::= FUNCTION_W_PARAMS:prev_params separator id:id tw
 
                                 RESULT = new SymbolFunWParams(param);
                               }catch(SymbolsTableError e){
-                                throw new SemanticError(e.getMessage());
+                                String from = type_idxleft.getLine() + ":" + type_idxleft.getColumn();
+                                String to = type_idxright.getLine() + ":" + type_idxright.getColumn();
+                                String message = e.getMessage() + " from "+from+" to "+to;
+                                throw new SemanticError(message);
                               }
                             :};
 
