@@ -33,11 +33,6 @@ public class Backend {
     // TE
     private ArrayList<Label> labelTable;
     
-    // Constants to calculate the memory usage          --- A lo mejor van en la clase GENERATOR
-    public static final int BYTES_INT = 4;
-    public static final int BYTES_CHAR = 2;
-    public static final int BYTES_BOOL = 2;
-    
     private static int tmp_n = 0;
 
     public Backend(SymbolsTable symbolsTable) {
@@ -192,11 +187,6 @@ public class Backend {
             }
         }
         return null;
-    }
-
-    public boolean isLastProcedure(String proc){
-        int x = this.procTable.size() - 1 ;
-        return this.procTable.get(x).getName().equals(proc);
     }
     
     private int getLastProcedureId(){
