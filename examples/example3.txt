@@ -8,7 +8,35 @@ function factorial(num : number) : number {
 	return result;
 }
 
+function recursiveAdding(num : number) : number {
+	result : number = 0;
+	if((num < 1)){
+		print("Invalid number: ");
+		print(num);
+		print("\n");
+		result = 0;
+	}
+	elif ((num == 1)){
+		result = 1;
+	}
+	else{
+		result = num + recursiveAdding(num - 1);
+	}
+	return result;
+}
+
 function main() {
-	print(factorial(4));
+	numA : number = 10;
+	numB : number = 100;
+	print("FACTORIAL ");
+	print(numA);
+	print("! :");
+	print(factorial(numA));
+	print("\n");
+
+	print("RECURSIVE ADDING ");
+	print(numB);
+	print(" :");
+	print(recursiveAdding(numB));
 	print("\n");
 }

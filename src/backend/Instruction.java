@@ -76,6 +76,9 @@ public class Instruction {
                 break;
             case copy:
                 result += this.dest + " = " + this.op1;
+                if(this.op1.equals("return")){
+                    result += " "+this.op2;
+                }
                 break;
             /* JUMPS */    
             case go_to:
@@ -184,54 +187,20 @@ public class Instruction {
         this.dest = dest;
     }
 
-    public boolean isLiteral(String n) {
-        return n.charAt(0) == '"' || n.matches("[0-9]+");
-    }
-    
-    public boolean isLiteralOp1() {
-        if(op1 == null) return false;
-        return op1.charAt(0) == '"' || (op1.matches("[0-9]+") || op1.charAt(0) == '-') || isBoolean(op1);
-    }
-    
-    public boolean isLiteralOp2() {
-        if(op2 == null) return false;
-        return op2.charAt(0) == '"' || (op1.matches("[0-9]+") || op1.charAt(0) == '-') || isBoolean(op2);
+    public static boolean opIsLiteral(String n) {
+        return opIsInt(n) || opIsBoolean(n) || opIsString(n);
     }
 
-    public boolean isInt(String n) {
-        return n.matches("[0-9]+");
-    }
-    
-    public boolean isIntOp1(){
-        if(op1 == null) return false;
-        return op1.matches("[0-9]+");
-    }
-    
-    public boolean isIntOp2(){
-        if(op2 == null) return false;
-        return op2.matches("[0-9]+");        
+    public static boolean opIsInt(String n) {
+        return n.matches("[0-9]+") || n.matches("^-[0-9]+");
     }
 
-    public boolean isBoolean(String n) {
+    public static boolean opIsBoolean(String n) {
         return n.equals("true") || n.equals("false");
     }
     
-    public boolean isBoolOp1(){
-        if(op1 == null) return false;
-        return op1.matches("true") || op1.matches("false");
-    }
-
-    public boolean isBoolOp2(){
-        if(op2 == null) return false;
-        return op2.matches("true") || op2.matches("false");
-    }
-    
-    public boolean isString(String n) {
-        return !isBoolean(n) && !isInt(n);
-    }
-    
-    public boolean isStringOp1(){
-        return !isIntOp1() && !isBoolOp1();
+    public static boolean opIsString(String n) {
+        return n.charAt(0) == '"' && n.charAt(n.length() - 1) == '"';
     }
 
 }

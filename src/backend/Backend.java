@@ -6,13 +6,14 @@
 package backend;
 
 import SymbolsTable.SymbolsTable;
-import SymbolsTable.Type;
 import SymbolsTable.Type.SUBJACENTTYPE;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,7 +27,7 @@ public class Backend {
 
     private final String PATH = "output\\Backend_Tables.txt";
     // TV
-    private ArrayList<Variable> varTable;
+    private HashMap<String, Variable> varTable;
     // TP
     private ArrayList<Procedure> procTable;
     // TE
@@ -39,9 +40,9 @@ public class Backend {
     
     private static int tmp_n = 0;
 
-    public Backend(SymbolsTable table) {
-        this.symbolsTable = table;
-        this.varTable = new ArrayList<>();
+    public Backend(SymbolsTable symbolsTable) {
+        this.symbolsTable = symbolsTable;
+        this.varTable = new HashMap<>();
         this.procTable = new ArrayList<>();
         this.labelTable = new ArrayList<>();
     }
@@ -53,42 +54,59 @@ public class Backend {
     //    private int offset;     // offset
     //    private int size;       // space occupation
     //    private Type type;      // type
-    public String addVar(String varname, int offset, int size, SUBJACENTTYPE type) {
+    public String addVar(String varname, int size, SUBJACENTTYPE type, boolean isParam) {
+        int scope = symbolsTable.getActualScope();
         int idParent = getLastProcedureId();
-        String name = varname + "_" + idParent;
+        String name = varname + "_" + idParent + "_" + scope;
+        Procedure proc = procTable.get(idParent);
+        int offset = (proc.getSize() + size);
+        if(isParam) {
+            offset = proc.getOffset() + 16;
+            // We update its parent size
+            proc.setOffset(offset);
+        }
+        if(!isParam){
+            // We update its parent size
+            proc.setSize(proc.getSize() + size);
+        }
         // We add the variable into the table
-        varTable.add(new Variable(name, idParent, offset, size, type));
-
+        varTable.put(name,new Variable(name, idParent, offset, size, type, isParam));
+        
         return name;
     }
 
     // STRING VARIABLE
-    public String addStrVar(String varname, int offset, int size, String value) {
+    public String addStrVar(String varname, int size, String value) {
         int idParent = getLastProcedureId();
-        String name = varname + "_" + idParent;
+        int scope = symbolsTable.getActualScope();
+        String name = varname + "_" + idParent + "_" + scope;
         // We add the variable into the table
-        varTable.add(new StrVariable(name, idParent, offset, size, value));
+        varTable.put(name,new StrVariable(name, idParent, size, value));
 
         return name;
     }
 
     // TMP STRING VARIABLE
-    public String addTempStrVar(int offset, int size, String value) {
+    public String addTempStrVar(int size, String value) {
         String name = "T"+tmp_n;
         tmp_n++;
         int idParent = getLastProcedureId();
         // We add the variable into the table
-        varTable.add(new StrVariable(name, idParent, offset, size, value));
+        varTable.put(name,new StrVariable(name, idParent, size, value));
 
         return name;
     }
 
-    public String addTempVar(int offset, int size, SUBJACENTTYPE type) {
+    public String addTempVar(int size, SUBJACENTTYPE type) {
         String name = "T"+tmp_n;
         tmp_n++;
         int idParent = getLastProcedureId();
         // We add the variable into the table
-        varTable.add(new Variable(name, idParent, offset, size, type));
+        Procedure proc = procTable.get(idParent);
+        int offset = (proc.getSize() + size);
+        proc.setSize(offset);
+        // We add the variable into the table
+        varTable.put(name, new Variable(name, idParent, offset, size, type, false));
         return name;
     }
 
@@ -102,13 +120,14 @@ public class Backend {
     public String addProc(String procName, int params,int size, int offset, SUBJACENTTYPE type) {
         String name = "PROC_" + procName;
         // We add the new procedure  
-        procTable.add(new Procedure(name, params, size, offset, type));
-        
+        procTable.add(new Procedure(name, params, size, type));
         return name;
     }
 
-    public void addMain(){
-        this.procTable.add(new Procedure("main", 0, 0, 0, SUBJACENTTYPE.st_null));
+    public String addMain(){
+        String name = "PROC_main";
+        this.procTable.add(new Procedure(name, 0, 0, SUBJACENTTYPE.st_null));
+        return name;
     }
     
     public String addLabel(){
@@ -154,12 +173,30 @@ public class Backend {
         }
     }
 
-    public ArrayList<Variable> getVarTable() {
-        return varTable;
+    public String getVarAssembler(String name) {
+        return this.varTable.get(name).getAssemblerDir();
     }
 
-    public ArrayList<Procedure> getProcTable() {
-        return procTable;
+    public Variable getVariable(String name) {
+        return this.varTable.get(name);
+    }
+
+    public Collection<Variable> getVariables(){
+        return this.varTable.values();
+    }
+
+    public Procedure getProcedure(String proc){
+        for (Procedure procedure : this.procTable) {
+            if (procedure.getName().equals(proc)){
+                return procedure;
+            }
+        }
+        return null;
+    }
+
+    public boolean isLastProcedure(String proc){
+        int x = this.procTable.size() - 1 ;
+        return this.procTable.get(x).getName().equals(proc);
     }
     
     private int getLastProcedureId(){

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import Sin.Param;
 public class SymbolFunParams extends SymbolBase {
 
-	private ArrayList<Param> params = null;
+	private ArrayList<Param> params = new ArrayList<Param>();
 
 	public SymbolFunParams() {
 		super("Symbol Function Params", 0);

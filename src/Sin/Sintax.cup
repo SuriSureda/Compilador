@@ -63,7 +63,15 @@ parser code
 
   public void unrecovered_syntax_error(ComplexSymbol s){
     try {
+      ArrayList<Integer> expected = new ArrayList<Integer>(expected_token_ids());
+      ArrayList<String> expected_names = new ArrayList<String>();
+
+      for(Integer i : expected){
+        expected_names.add(symbl_name_from_id(i));
+      }
+
       scanner.closeTokensFile((s.left+1), (s.right+1));
+      
       throw new SyntaxError(s, expected_names, false);
     } catch (Exception e) {
       closeErrorFiles();
@@ -191,10 +199,12 @@ STARTS                      ::=  INIT DECLARE_FUNCTIONS
                               c3a_g.savec3aInFile(false);
                               assembler.generateAssembler(false);
                               
-                              //OPTIMIZED CODE
+                              /*
+                               OPTIMIZED CODE, NOT IMPLEMENTED
                               c3a_g.optimize();
                               c3a_g.savec3aInFile(true);
                               assembler.generateAssembler(true);
+                              */
 
                               closeErrorFiles();
                             :};
@@ -214,11 +224,23 @@ DECLARE_FUNCTIONS           ::= DEFINE_FUNCTION DECLARE_FUNCTIONS
                             :};
                             
 MAIN                        ::= inst_function inst_main M_MAIN lparen rparen lbracket BLOCK_IN MAIN_INSTRUCTIONS BLOCK_OUT rbracket {:
+                              c3a_g.generateC3aInstr(
+                                Code.rtn,
+                                null,
+                                null,
+                                "PROC_main"
+                              );
+
                               RESULT = new SymbolMain();
                             :};
 
 M_MAIN                      ::= 
                             {:
+
+                              String backId = backend.addMain();
+                              Type fun_type = new Type(backId, TYPE.dfun, null);
+                              symbolsTable.add("main", fun_type);
+
                               c3a_g.generateC3aInstr(
                                 Code.skip,
                                 null,
@@ -226,7 +248,12 @@ M_MAIN                      ::=
                                 "main"
                               );
 
-                              backend.addMain();
+                              c3a_g.generateC3aInstr(
+                                Code.pmb,
+                                null,
+                                null,
+                                backId
+                              );
 
                               RESULT = new SymbolMMain();
                             :};
@@ -298,9 +325,9 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
 
                                 if(type.getSubType() == SUBJACENTTYPE.st_string){
                                   String value = declarations.getValue();
-                                  backId = backend.addStrVar(var_id, 0,type.getSize(), value);
+                                  backId = backend.addStrVar(var_id, type.getSize(), value);
                                 }else{
-                                  backId = backend.addVar(var_id, 0, type.getSize(), type.getSubType());
+                                  backId = backend.addVar(var_id, type.getSize(), type.getSubType(), false);
                                 }
                                 
                                 type.setBackendId(backId);
@@ -365,9 +392,9 @@ DECLARATIONS                ::=  id:var_id separator DECLARATIONS:declarations
                                 String var_id;
                                 if(type.getSubType() == SUBJACENTTYPE.st_string){
                                   String str_value = (String) value.getValue();
-                                  var_id = backend.addStrVar(id_var, 0, type.getSize(), str_value);
+                                  var_id = backend.addStrVar(id_var, type.getSize(), str_value);
                                 }else{
-                                  var_id = backend.addVar(id_var, 0,type.getSize(), type.getSubType());
+                                  var_id = backend.addVar(id_var, type.getSize(), type.getSubType(), false);
                                 }
 
                                 var_type.setBackendId(var_id);
@@ -501,7 +528,7 @@ ARITHMETICAL_OPERATION      ::= ARITHMETICAL_VALUE:arith_val1 ARITH_OP:op ARITHM
 
                                 Type type_number = symbolsTable.get("number");
                                 
-                                String var_id = backend.addTempVar( 0, type_number.getSize(), type_number.getSubType());
+                                String var_id = backend.addTempVar(type_number.getSize(), type_number.getSubType());
 
                                 c3a_g.generateC3aInstr(
                                   op_code,
@@ -528,7 +555,7 @@ ARITHMETICAL_OPERATION      ::= ARITHMETICAL_VALUE:arith_val1 ARITH_OP:op ARITHM
                                 SymbolArithOperation sym = arith_op;
                                 if(op.equals("-")){
                                   Type type_number = symbolsTable.get("number");
-                                  String var_id = backend.addTempVar(0, type_number.getSize(),  type_number.getSubType());
+                                  String var_id = backend.addTempVar(type_number.getSize(),  type_number.getSubType());
 
                                   if(arith_op.getIsConst()){
                                     Integer value = - arith_op.getValue().intValue();
@@ -582,7 +609,7 @@ ARITHMETICAL_VALUE         ::= NUMBER_VALUE:n_val
 
                               Type type_number = symbolsTable.get("number");
                               
-                              String var_id = backend.addTempVar(0, type_number.getSize(),  type_number.getSubType());
+                              String var_id = backend.addTempVar(type_number.getSize(),  type_number.getSubType());
 
                               c3a_g.generateC3aInstr(
                                 Code.copy,
@@ -647,12 +674,12 @@ ARITHMETICAL_VALUE         ::= NUMBER_VALUE:n_val
                                 throw new SemanticError("Invalid function call "+call_fn.getFunctionId() + " with return type "+ dfn_type.getSubType() +". Expected :"+SUBJACENTTYPE.st_number);
                               }
                               
-                              String var_id = backend.addTempVar( 0, fn_type.getSize(), dfn_type.getSubType());
+                              String var_id = backend.addTempVar(dfn_type.getSize(), dfn_type.getSubType());
 
                               c3a_g.generateC3aInstr(
                                 Code.copy,
-                                "return "+call_fn.getFunctionId(),
-                                null,
+                                "return",
+                                call_fn.getBackendId(),
                                 var_id
                               );                                
 
@@ -671,12 +698,12 @@ ARITHMETICAL_VALUE         ::= NUMBER_VALUE:n_val
                                 throw new SemanticError("Invalid function call "+call_fn.getFunctionId() + " with return type "+ dfn_type.getSubType() +". Expected :"+SUBJACENTTYPE.st_number);
                               }
                               
-                              String var_id = backend.addTempVar( 0, fn_type.getSize(), dfn_type.getSubType());
+                              String var_id = backend.addTempVar(dfn_type.getSize(), dfn_type.getSubType());
 
                               c3a_g.generateC3aInstr(
                                 Code.copy,
-                                "return "+call_fn.getFunctionId(),
-                                null,
+                                "return",
+                                call_fn.getBackendId(),
                                 var_id
                               );                                
 
@@ -727,7 +754,7 @@ ID_VALUE                    ::= id:id_val
                                 }
 
                                 Type type_boolean = symbolsTable.get("boolean");
-                                String var_id = backend.addTempVar(0, type_boolean.getSize(),  type_boolean.getSubType());
+                                String var_id = backend.addTempVar(type_boolean.getSize(),  type_boolean.getSubType());
 
                                 c3a_g.generateC3aInstr(
                                   Code.not,
@@ -761,7 +788,7 @@ ID_VALUE                    ::= id:id_val
 
                                 if(op.equals("-")){
                                   Type type_number = symbolsTable.get("number");
-                                  String var_id = backend.addTempVar(0, type_number.getSize(),  type_number.getSubType());
+                                  String var_id = backend.addTempVar(type_number.getSize(),  type_number.getSubType());
 
                                   c3a_g.generateC3aInstr(
                                     Code.neg,
@@ -834,7 +861,7 @@ VALUE                       ::= ID_VALUE:id_val
                                 Boolean value = bool_val.getValue();
                                 Type type_bool = symbolsTable.get("boolean");
 
-                                String var_id = backend.addTempVar(0, type_bool.getSize(), type_bool.getSubType());
+                                String var_id = backend.addTempVar(type_bool.getSize(), type_bool.getSubType());
 
                                 c3a_g.generateC3aInstr(
                                   Code.copy,
@@ -855,7 +882,7 @@ VALUE                       ::= ID_VALUE:id_val
 
                                 Type type_number = symbolsTable.get("number");
                                 
-                                String var_id = backend.addTempVar(0, type_number.getSize(), type_number.getSubType());
+                                String var_id = backend.addTempVar(type_number.getSize(), type_number.getSubType());
 
                                 c3a_g.generateC3aInstr(
                                   Code.copy,
@@ -889,7 +916,7 @@ VALUE                       ::= ID_VALUE:id_val
                                 SymbolValue sym;
 
                                 Type type_bool = symbolsTable.get("boolean");
-                                String var_id = backend.addTempVar(0,type_bool.getSize(), type_bool.getSubType());
+                                String var_id = backend.addTempVar(type_bool.getSize(), type_bool.getSubType());
 
                                 c3a_g.generateC3aInstr(
                                   Code.not,
@@ -944,12 +971,12 @@ VALUE                       ::= ID_VALUE:id_val
                                   throw new SemanticError("Function call : "+call_fn.getFunctionId() + " does not return any value");
                                 }
                                 
-                                String var_id = backend.addTempVar( 0, fn_type.getSize(), dfn_type.getSubType());
+                                String var_id = backend.addTempVar(dfn_type.getSize(), dfn_type.getSubType());
 
                                 c3a_g.generateC3aInstr(
                                   Code.copy,
-                                  "return "+call_fn.getFunctionId(),
-                                  null,
+                                  "return",
+                                  call_fn.getBackendId(),
                                   var_id
                                 );                                
 
@@ -962,7 +989,7 @@ VALUE                       ::= ID_VALUE:id_val
                             {:
                               try{
                                 Type number_type = symbolsTable.get("number");
-                                String var_id = backend.addTempVar( 0, number_type.getSize(), number_type.getSubType());
+                                String var_id = backend.addTempVar(number_type.getSize(), number_type.getSubType());
 
                                 c3a_g.generateC3aInstr(
                                   Code.input,
@@ -1011,7 +1038,7 @@ BOOLEAN_OPERATION           ::= BOOLEAN_OP_VALUE:bool_val1 op_logical:op BOOLEAN
                                 }
 
                                 Type type_bool = symbolsTable.get("boolean"); 
-                                String var_id = backend.addTempVar( 0, type_bool.getSize(), type_bool.getSubType());
+                                String var_id = backend.addTempVar(type_bool.getSize(), type_bool.getSubType());
                                 
                                 String val1_id = bool_val1.getVarId();
                                 String val2_id = bool_val2.getVarId();
@@ -1042,7 +1069,7 @@ BOOLEAN_OPERATION           ::= BOOLEAN_OP_VALUE:bool_val1 op_logical:op BOOLEAN
                               try{
                                 SymbolBoolOp sym;
                                 Type type_boolean = symbolsTable.get("boolean");
-                                String var_id = backend.addTempVar(0, type_boolean.getSize(),  type_boolean.getSubType());
+                                String var_id = backend.addTempVar(type_boolean.getSize(),  type_boolean.getSubType());
 
                                 c3a_g.generateC3aInstr(
                                   Code.neg,
@@ -1070,7 +1097,7 @@ BOOLEAN_OP_VALUE            ::= BOOLEAN_VALUE:bool_val
                                 Boolean value = bool_val.getValue();
                                 Type type_boolean = symbolsTable.get("boolean");
                                 
-                                String var_id = backend.addTempVar(0, type_boolean.getSize(),  type_boolean.getSubType());
+                                String var_id = backend.addTempVar(type_boolean.getSize(),  type_boolean.getSubType());
 
                                 c3a_g.generateC3aInstr(
                                   Code.copy,
@@ -1139,7 +1166,7 @@ BOOLEAN_OP_VALUE            ::= BOOLEAN_VALUE:bool_val
                             {:
                               try{
                                 Type type_bool = symbolsTable.get("boolean");
-                                String var_id = backend.addTempVar(0,type_bool.getSize(), type_bool.getSubType());
+                                String var_id = backend.addTempVar(type_bool.getSize(), type_bool.getSubType());
 
                                 c3a_g.generateC3aInstr(
                                   Code.not,
@@ -1170,12 +1197,12 @@ BOOLEAN_OP_VALUE            ::= BOOLEAN_VALUE:bool_val
                                   throw new SemanticError("Invalid function call "+call_fn.getFunctionId() + " with return type "+ dfn_type.getSubType() +". Expected :"+SUBJACENTTYPE.st_boolean);
                                 }
                                 
-                                String var_id = backend.addTempVar( 0, fn_type.getSize(), dfn_type.getSubType());
+                                String var_id = backend.addTempVar(dfn_type.getSize(), dfn_type.getSubType());
 
                                 c3a_g.generateC3aInstr(
                                   Code.copy,
-                                  "return "+call_fn.getFunctionId(),
-                                  null,
+                                  "return",
+                                  call_fn.getBackendId(),
                                   var_id
                                 );                                
 
@@ -1194,12 +1221,12 @@ BOOLEAN_OP_VALUE            ::= BOOLEAN_VALUE:bool_val
                                   throw new SemanticError("Invalid function call "+call_fn.getFunctionId() + " with return type "+ dfn_type.getSubType() +". Expected :"+SUBJACENTTYPE.st_number);
                                 }
                                 
-                                String var_id = backend.addTempVar( 0, fn_type.getSize(), dfn_type.getSubType());
+                                String var_id = backend.addTempVar(dfn_type.getSize(), dfn_type.getSubType());
 
                                 c3a_g.generateC3aInstr(
                                   Code.copy,
-                                  "return "+call_fn.getFunctionId(),
-                                  null,
+                                  "return",
+                                  call_fn.getBackendId(),
                                   var_id
                                 );                                
 
@@ -1340,7 +1367,7 @@ VALUE_COMPARISON            ::= lparen VALUE:val1 op_relational:op VALUE:val2 rp
                                 }
 
                                 Type type_bool = symbolsTable.get("boolean");
-                                String var_id = backend.addTempVar( 0, type_bool.getSize(), type_bool.getSubType());
+                                String var_id = backend.addTempVar(type_bool.getSize(), type_bool.getSubType());
                                 
                                 if(allConst){
                                   sym = new SymbolValueComparison(var_id, val);
@@ -1524,7 +1551,7 @@ CALL_FUNCTION               ::= id:fun_id lparen rparen
                                 String backId = fun_type.getBackendId();
                                 c3a_g.generateC3aInstr(
                                   Code.call,
-                                  null,
+                                  0 + "",
                                   null,
                                   backId
                                 );
@@ -1548,10 +1575,12 @@ CALL_FUNCTION               ::= id:fun_id lparen rparen
                                 String fun_backId = body.getFunBackId();
                                 c3a_g.generateC3aInstr(
                                   Code.call,
-                                  null,
+                                  fun_params + "",
                                   null,
                                   fun_backId
                                 );
+
+
 
                                 RESULT = new SymbolCallFunction(fun_id, fun_backId);
                               }catch(SymbolsTableError e){
@@ -1652,7 +1681,7 @@ INSTRUCTION_OUT             ::= instr_out lparen VALUE:value rparen
                                 }
 
                                 if(value.getType() == TYPE.dnull && value.getSubType() == SUBJACENTTYPE.st_string){
-                                  var_id = backend.addTempStrVar(0, value.getStringSize(), (String) value.getValue());
+                                  var_id = backend.addTempStrVar(value.getStringSize(), (String) value.getValue());
                                   c3a_g.generateC3aInstr(
                                     Code.output,
                                     subtype.toString(),
@@ -1711,25 +1740,25 @@ FUNCTION_INIT               ::= inst_function id:fun_id FUNCTION_PARAMS:fun_para
                                 if(return_fun_type.getType() != TYPE.dtype){
                                   throw new SemanticError("Function declaration : invalid type");
                                 }
+                                if(return_fun_type.getSubType() == SUBJACENTTYPE.st_string){
+                                  throw new SemanticError("Invalid return type : "+type_id+". Valid return types are : boolean or number");
+                                }
 
                                 SUBJACENTTYPE subType = return_fun_type.getSubType();
-
-                                String backId = backend.addProc(fun_id, 0,return_fun_type.getSize(), 0, subType);
+                                ArrayList<Param> params = fun_params.getParams();
+                                String backId = backend.addProc(fun_id, params.size(), 0, 0, subType);
 
                                 Type fun_type = new Type(backId, TYPE.dfun, type_id);
 
                                 symbolsTable.add(fun_id, fun_type);
                                 
                                 // add params if it has
-                                ArrayList<Param> params = fun_params.getParams();
-                                if(params != null){
-                                  for(Param param : params){
-                                    Type param_type = param.getType();
-                                    SUBJACENTTYPE param_subType = symbolsTable.get(param.getType().getTypeName()).getSubType();
-                                    String param_backId = backend.addVar(param.getVarId(), 0, param.getSize(), param_subType);
-                                    param_type.setBackendId(param_backId);
-                                    symbolsTable.addParam(fun_id, param_backId, param.getVarId(), param_type);
-                                  }
+                                for(Param param : params){
+                                  Type param_type = param.getType();
+                                  SUBJACENTTYPE param_subType = symbolsTable.get(param.getType().getTypeName()).getSubType();
+                                  String param_backId = backend.addVar(param.getVarId(), param.getSize(), param_subType, true);
+                                  param_type.setBackendId(param_backId);
+                                  symbolsTable.addParam(fun_id, param_backId, param.getVarId(), param_type);
                                 }
 
                                 c3a_g.generateC3aInstr(
@@ -1767,7 +1796,10 @@ FUNCTION_W_PARAMS           ::= FUNCTION_W_PARAMS:prev_params separator id:id tw
                                 //check param type
                                 Type type_type = symbolsTable.get(type_id);
                                 if(type_type.getType() != TYPE.dtype){
-                                  throw new Error("Invalid param type");
+                                  throw new SemanticError("Invalid param type");
+                                }
+                                if(type_type.getSubType() == SUBJACENTTYPE.st_string){
+                                  throw new SemanticError("Invalid param type : "+type_id+". Valid params types are : boolean or number");
                                 }
 
                                 Type param_type = new Type(TYPE.darg, type_id);
@@ -1786,6 +1818,9 @@ FUNCTION_W_PARAMS           ::= FUNCTION_W_PARAMS:prev_params separator id:id tw
                                 Type type_type = symbolsTable.get(type_id);
                                 if(type_type.getType() != TYPE.dtype){
                                   throw new SemanticError("Invalid param type");
+                                }
+                                if(type_type.getSubType() == SUBJACENTTYPE.st_string){
+                                  throw new SemanticError("Invalid param type : "+type_id+". Valid params types are : boolean or number");
                                 }
 
                                 Type param_type = new Type(TYPE.darg, type_id);

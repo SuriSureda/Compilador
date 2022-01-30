@@ -1,17 +1,10 @@
-function printSquare(index : number) : void {
-	square : number = index * index ;
-
-	print(" NUMBER : ");
-	print(index);
-	print("\tSQUARE : ");
+function printSquare(num : number) : void {
+	square : number = num * num;
 	print(square);
 	print("\n");
 }
 
 function main() {
-	index : number = 0;
-	while((index < 100)){
-		printSquare(index);
-		index = index + 1;
-	}
+	num : number = 10;
+	printSquare(num);
 }

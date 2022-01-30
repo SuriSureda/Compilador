@@ -6,6 +6,8 @@
 */
 
 package Lex;                         // PAQUETE AL QUE PERTENECE
+import java_cup.runtime.ComplexSymbolFactory;
+import java_cup.runtime.ComplexSymbolFactory.Location;
 import java_cup.runtime.Symbol;      // CLASE SYMBOL PARA LOS TOKENS DE CUP
 import Sin.ParserSym;
 import Lex.Token.*;
@@ -16,6 +18,7 @@ import java.io.Writer;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.io.IOException;
+import Errors.*;
 
 
 /**
@@ -312,18 +315,25 @@ public class LexerCup implements java_cup.runtime.Scanner {
   private int zzFinalHighSurrogate = 0;
 
   /* user code: */
+    public LexerCup(java.io.Reader in, ComplexSymbolFactory sf) {
+      this(in);
+      this.symbolFactory = sf;
+    }
+
     public static final String TOKENS_PATH = "output\\Tokens.txt";
 
     public static final String TOKENS_ERROR_PATH = "output\\Error_Tokens.txt";
 
     private static BufferedWriter out;
+
+    private ComplexSymbolFactory symbolFactory;
     
     /**
     * closes tokesn file for a syntax error
     */
     public void closeTokensFile(int line, int column){
         try{
-            out.write("Stopped processing tokens due to a syntax error on line : " + line + " and column : "+ column);
+            out.write("Stopped processing tokens due to a syntax or semantic error on line : " + line + " and column : "+ column);
             out.close();
         }catch(Exception e){
             System.out.println("Error closing Tokens file : " + e);
@@ -348,12 +358,12 @@ public class LexerCup implements java_cup.runtime.Scanner {
         }
     }
 
-    private Symbol symbol(int type){
-        return new Symbol(type,yyline,yycolumn);
+    private Symbol symbol(String plainname,int type){
+        return symbolFactory.newSymbol(plainname, type, new Location(yyline+1, yycolumn +1), new Location(yyline+1,yycolumn+yylength()));
     }
 
-    private Symbol symbol(int type, Object value){
-        return new Symbol(type,yyline,yycolumn,value);
+    private Symbol symbol(String plainname, int type, String lexeme){
+        return symbolFactory.newSymbol(plainname, type, new Location(yyline+1, yycolumn +1), new Location(yyline+1,yycolumn+yylength()), lexeme);
     }
 
 
@@ -751,7 +761,7 @@ public class LexerCup implements java_cup.runtime.Scanner {
       if (zzInput == YYEOF && zzStartRead == zzCurrentPos) {
         zzAtEOF = true;
             zzDoEOF();
-          {   return symbol(ParserSym.EOF);
+          {   return symbol(Token.Tokens.EOF.toString(),ParserSym.EOF);
  }
       }
       else {
@@ -759,26 +769,27 @@ public class LexerCup implements java_cup.runtime.Scanner {
           case 1: 
             { Token token = new Token(Token.Tokens.ERROR,yyline,yycolumn, yytext());
                         writeToken(token);
-                        System.out.println("[Lexical error]:" + "[" + getLine() + ":" + getColumn() + "]" + " Unkown symbol: "+"'"+this.yytext()+"'");
-                        Writer w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(TOKENS_ERROR_PATH, true), "utf-8"));
-                        w.write("[Lexical error]:" + "[" + getLine() + ":" + getColumn() + "]" + " Unkown symbol: "+"'"+this.yytext()+"'"+".\n");
-                        w.close();
-
-                        return symbol(ParserSym.error);
+                        try{
+                            throw new LexicalError("[Lexical error]:" + "[" + getLine() + ":" + getColumn() + "]" + " Unkown symbol: "+"'"+this.yytext()+"'");
+                        } catch (LexicalError ex) {
+                            System.err.println("ERROR: " + ex.getMessage());
+                        }
+                        
+                        return symbol(Token.Tokens.ERROR.toString(), ParserSym.error);
             } 
             // fall through
           case 30: break;
           case 2: 
             { Token token = new Token(Token.Tokens.NUMBER,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.number, yytext());
+                     return symbol(Token.Tokens.NUMBER.toString(),ParserSym.number, yytext());
             } 
             // fall through
           case 31: break;
           case 3: 
             { Token token = new Token(Token.Tokens.ID,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.id, yytext());
+                     return symbol(Token.Tokens.ID.toString(),ParserSym.id, yytext());
             } 
             // fall through
           case 32: break;
@@ -790,175 +801,175 @@ public class LexerCup implements java_cup.runtime.Scanner {
           case 5: 
             { Token token = new Token(Token.Tokens.OP_ARITHMETICAL_C,yyline,yycolumn, yytext());
                         writeToken(token);
-                        return symbol(ParserSym.op_arithmetical_c, yytext());
+                        return symbol(Token.Tokens.OP_ARITHMETICAL_C.toString(),ParserSym.op_arithmetical_c, yytext());
             } 
             // fall through
           case 34: break;
           case 6: 
             { Token token = new Token(Token.Tokens.OP_ARITHMETICAL_B,yyline,yycolumn, yytext());
                         writeToken(token);
-                        return symbol(ParserSym.op_arithmetical_b, yytext());
+                        return symbol(Token.Tokens.OP_ARITHMETICAL_B.toString(),ParserSym.op_arithmetical_b, yytext());
             } 
             // fall through
           case 35: break;
           case 7: 
             { Token token = new Token(Token.Tokens.OP_ASSIG,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.op_assig, yytext());
+                     return symbol(Token.Tokens.OP_ASSIG.toString(),ParserSym.op_assig, yytext());
             } 
             // fall through
           case 36: break;
           case 8: 
             { Token token = new Token(Token.Tokens.OP_LOGICAL_NOT,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.op_logical_not, yytext());
+                     return symbol(Token.Tokens.OP_LOGICAL_NOT.toString(),ParserSym.op_logical_not, yytext());
             } 
             // fall through
           case 37: break;
           case 9: 
             { Token token = new Token(Token.Tokens.OP_RELATIONAL,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.op_relational, yytext());
+                     return symbol(Token.Tokens.OP_RELATIONAL.toString(),ParserSym.op_relational, yytext());
             } 
             // fall through
           case 38: break;
           case 10: 
             { Token token = new Token(Token.Tokens.LPAREN,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.lparen, yytext());
+                     return symbol(Token.Tokens.LPAREN.toString(),ParserSym.lparen);
             } 
             // fall through
           case 39: break;
           case 11: 
             { Token token = new Token(Token.Tokens.RPAREN,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.rparen, yytext());
+                     return symbol(Token.Tokens.RPAREN.toString(),ParserSym.rparen);
             } 
             // fall through
           case 40: break;
           case 12: 
             { Token token = new Token(Token.Tokens.LBRACKET,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.lbracket, yytext());
+                     return symbol(Token.Tokens.LBRACKET.toString(),ParserSym.lbracket);
             } 
             // fall through
           case 41: break;
           case 13: 
             { Token token = new Token(Token.Tokens.RBRACKET,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.rbracket, yytext());
+                     return symbol(Token.Tokens.RBRACKET.toString(),ParserSym.rbracket);
             } 
             // fall through
           case 42: break;
           case 14: 
             { Token token = new Token(Token.Tokens.NEXTINSTR,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.nextinstr, yytext());
+                     return symbol(Token.Tokens.NEXTINSTR.toString(),ParserSym.nextinstr);
             } 
             // fall through
           case 43: break;
           case 15: 
             { Token token = new Token(Token.Tokens.SEPARATOR,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.separator, yytext());
+                     return symbol(Token.Tokens.SEPARATOR.toString(),ParserSym.separator);
             } 
             // fall through
           case 44: break;
           case 16: 
             { Token token = new Token(Token.Tokens.TWO_POINTS,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.two_points, yytext());
+                     return symbol(Token.Tokens.TWO_POINTS.toString(),ParserSym.two_points);
             } 
             // fall through
           case 45: break;
           case 17: 
             { Token token = new Token(Token.Tokens.STRING,yyline,yycolumn, yytext());
                         writeToken(token);
-                        return symbol(ParserSym.string, yytext());
+                        return symbol(Token.Tokens.STRING.toString(),ParserSym.string, yytext());
             } 
             // fall through
           case 46: break;
           case 18: 
             { Token token = new Token(Token.Tokens.OP_LOGICAL,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.op_logical, yytext());
+                     return symbol(Token.Tokens.OP_LOGICAL.toString(),ParserSym.op_logical, yytext());
             } 
             // fall through
           case 47: break;
           case 19: 
             { Token token = new Token(Token.Tokens.INST_IF,yyline,yycolumn, yytext());
                         writeToken(token);
-                        return symbol(ParserSym.inst_if, yytext());
+                        return symbol(Token.Tokens.INST_IF.toString(), ParserSym.inst_if);
             } 
             // fall through
           case 48: break;
           case 20: 
             { Token token = new Token(Token.Tokens.BOOL,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.bool, yytext());
+                     return symbol(Token.Tokens.BOOL.toString(),ParserSym.bool, yytext());
             } 
             // fall through
           case 49: break;
           case 21: 
             { Token token = new Token(Token.Tokens.INSTR_IN,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.instr_in, yytext());
+                     return symbol(Token.Tokens.INSTR_IN.toString(),ParserSym.instr_in);
             } 
             // fall through
           case 50: break;
           case 22: 
             { Token token = new Token(Token.Tokens.INST_ELSE,yyline,yycolumn, yytext());
                         writeToken(token);
-                        return symbol(ParserSym.inst_else, yytext());
+                        return symbol(Token.Tokens.INST_ELSE.toString(), ParserSym.inst_else);
             } 
             // fall through
           case 51: break;
           case 23: 
             { Token token = new Token(Token.Tokens.INST_ELSE,yyline,yycolumn, yytext());
                         writeToken(token);
-                        return symbol(ParserSym.inst_elif, yytext());
+                        return symbol(Token.Tokens.INST_ELSE.toString(),ParserSym.inst_elif);
             } 
             // fall through
           case 52: break;
           case 24: 
             { Token token = new Token(Token.Tokens.INST_MAIN,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.inst_main, yytext());
+                     return symbol(Token.Tokens.INST_MAIN.toString(),ParserSym.inst_main);
             } 
             // fall through
           case 53: break;
           case 25: 
             { Token token = new Token(Token.Tokens.DCONST,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.dconst, yytext());
+                     return symbol(Token.Tokens.DCONST.toString(),ParserSym.dconst, yytext());
             } 
             // fall through
           case 54: break;
           case 26: 
             { Token token = new Token(Token.Tokens.INST_WHILE,yyline,yycolumn, yytext());
                         writeToken(token);
-                        return symbol(ParserSym.inst_while, yytext());
+                        return symbol(Token.Tokens.INST_WHILE.toString(),ParserSym.inst_while);
             } 
             // fall through
           case 55: break;
           case 27: 
             { Token token = new Token(Token.Tokens.INSTR_OUT,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.instr_out, yytext());
+                     return symbol(Token.Tokens.INSTR_OUT.toString(),ParserSym.instr_out);
             } 
             // fall through
           case 56: break;
           case 28: 
             { Token token = new Token(Token.Tokens.INST_RETURN,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.inst_return, yytext());
+                     return symbol(Token.Tokens.INST_RETURN.toString(),ParserSym.inst_return);
             } 
             // fall through
           case 57: break;
           case 29: 
             { Token token = new Token(Token.Tokens.INST_FUNCTION,yyline,yycolumn, yytext());
                      writeToken(token);
-                     return symbol(ParserSym.inst_function, yytext());
+                     return symbol(Token.Tokens.INST_FUNCTION.toString(),ParserSym.inst_function);
             } 
             // fall through
           case 58: break;

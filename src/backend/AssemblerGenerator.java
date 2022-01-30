@@ -36,7 +36,7 @@ public class AssemblerGenerator {
     private BufferedWriter writer;
     private final String PATH = "output\\AssemblerCode_NOT_Optimized.s";
     private final String PATH_OPTIMIZED = "output\\AssemblerCode_Optimized.s";
-    // Symbol Table
+    // Symbols Table
     private SymbolsTable symbolsTable;
     // TS + TV
     private Backend backend;
@@ -104,26 +104,15 @@ public class AssemblerGenerator {
         /* C functions declaration */
         writeLine(".extern printf, scanf, exit");
         writeLine(".data");
-        declareVariables();
+        declareStringVariables();
         writeLine(".text");
     }
     
-    private void declareVariables() {
-        for (int i = 0; i < backend.getVarTable().size(); i++) {
-
-            Variable var = backend.getVarTable().get(i);
-
-            switch (var.getType()) {
-                case st_number:
-                case st_boolean:
-                    writeLine(var.getName() + ": .quad 0");
-                    break;
-                case st_string:
-                    writeLine(var.getName() + ": .asciz " +"\"" + ((StrVariable) var).getValue() +"\"");
-                case st_null:
-                    break;
-                default:
-                    break;
+    private void declareStringVariables() {
+        // Only declare as global string values
+        for(Variable var : backend.getVariables()){
+            if(var instanceof StrVariable){
+                writeLine(var.getName() + ": .asciz " +"\"" + ((StrVariable) var).getValue() +"\"");
             }
         }
 
@@ -136,7 +125,7 @@ public class AssemblerGenerator {
 
     private void writePrintBoolFunction() {
         writeLine("print_bool :");
-        writeLine("cmp $0,%rdi");
+        writeLine("cmpw $0,%di");
         writeLine("je print_false");
         writeLine("mov $true_label, %rdi");
         writeLine("jmp print_bool_val");
@@ -148,7 +137,6 @@ public class AssemblerGenerator {
 
     private void writeBottom() {
         writeLine("# exit");
-        writeLine("call exit\n");
         writeLine("\n# auxiliar functions");
         writeCMPFunctions();
         writePrintBoolFunction();
@@ -157,10 +145,6 @@ public class AssemblerGenerator {
     public void toAssembly(Instruction instruction, Instruction nextInstruction) {
         writeC3A_Comment(instruction);
         switch (instruction.getOpCode()) {
-            // .global main
-            // 
-            // Pop %rsp
-            // Place:
             case skip:
                 skipInstruction(instruction);
                 break;
@@ -197,7 +181,7 @@ public class AssemblerGenerator {
                 callInstruction(instruction);
                 break;
             case param:
-                paramInstruction(instruction, nextInstruction);
+                paramInstruction(instruction);
                 break;
             // Preamble expression
             case pmb:
@@ -248,7 +232,7 @@ public class AssemblerGenerator {
     }
 
     private void jumpCondInstruction(Instruction instruction){
-        writeLine("cmp $1,"+instruction.getOp1());
+        writeLine("cmpw $1,"+ getVarAssembler(instruction.getOp1()));
         writeLine("je "+instruction.getDest());
     }
 
@@ -256,30 +240,39 @@ public class AssemblerGenerator {
         writeLine("push %rbp");
         writeLine("xor %rax, %rax");
         writeLine("mov $format_int, %rdi");
-        writeLine("leaq "+instruction.getDest()+"(%rip), %rsi");
+        writeLine("leaq "+getVarAssembler(instruction.getDest())+", %rsi");
         writeLine("call scanf");
         writeLine("pop %rbp");
     }
 
     private void unaryInstruction(Instruction instruction){
-        writeLine("mov "+ instruction.getOp1() + ", %rdi");
-        writeLine(instruction.getOpCode() + " %rdi");
-        writeLine("mov %rdi, " + instruction.getDest());
+        Variable variable = backend.getVariable(instruction.getOp1());
+        String suffix = "l";
+        String register = "%edi";
+        if(variable.getType() == SUBJACENTTYPE.st_boolean){
+            suffix = "w";
+            register = "%di";
+        }
+        writeLine("mov"+suffix+" "+variable.getAssemblerDir()+ ", "+register);
+        writeLine(instruction.getOpCode()+suffix+ " "+register);
+        writeLine("mov"+suffix+" "+register+", " +getVarAssembler(instruction.getDest()));
     }
 
     private void logicalInstruction(Instruction instruction){
+        // For sure that are boolean values
         // AND or OR
-        writeLine("mov " + instruction.getOp1() + ", %rdi");
-        writeLine("mov " + instruction.getOp2() + ", %rax");
-        writeLine(instruction.getOpCode() + " %rax, %rdi");
-        writeLine("mov %rdi, " + instruction.getDest());
+        writeLine("movw " + getVarAssembler(instruction.getOp1()) + ", %di");
+        writeLine("movw " + getVarAssembler(instruction.getOp2()) + ", %ax");
+        writeLine(instruction.getOpCode()+"w"+ " %ax, %di");
+        writeLine("movw %di, " + getVarAssembler(instruction.getDest()));
     }
 
     private void outputInstruction(Instruction instruction){
         /* when we call output, op1 stores type of dest in string format */
         if(instruction.getOp1().equals(SUBJACENTTYPE.st_number.toString())){
             writeLine("mov $format_int, %rdi");
-            writeLine("mov "+instruction.getDest()+", %rsi");
+            writeLine("xor %rsi, %rsi");
+            writeLine("movl "+getVarAssembler(instruction.getDest())+", %esi");
             writeLine("xor %rax, %rax");
             writeLine("call printf");
         }
@@ -289,7 +282,7 @@ public class AssemblerGenerator {
             writeLine("call printf");
         }
         if(instruction.getOp1().equals(SUBJACENTTYPE.st_boolean.toString())){
-            writeLine("mov "+instruction.getDest()+", %rdi");
+            writeLine("movw "+getVarAssembler(instruction.getDest())+", %di");
             writeLine("call print_bool");
         }
         
@@ -304,28 +297,48 @@ public class AssemblerGenerator {
     private void returnInstruction(Instruction instruction) {
         // is function with return value, op1 register that stores return value
         if (instruction.getOp1() != null) {
-            writeLine("# Moving function result into %rax");
-            writeLine("mov " + instruction.getOp1() + ", %rax");
+            Variable variable = backend.getVariable(instruction.getOp1());
+            writeLine("# Moving function result into %eax or %ax");
+            String suffix = "l";
+            String register = "%eax";
+            if(variable.getType() == SUBJACENTTYPE.st_boolean){
+                suffix = "w";
+                register = "%ax";
+            }
+            writeLine("mov"+suffix+" "+ variable.getAssemblerDir() + ", "+ register);
         }
 
-        writeLine("mov %rbp, %rsp       # Restaurar valor inicial de RSP.");
-        writeLine("pop %rbp             # Restaurar valor inicial de RBP.");
+        // delete all reservated space
+        Procedure proc = backend.getProcedure(instruction.getDest());
+        writeLine("# Delete all reserved space");
+        writeLine("addq $"+proc.getSize()+", %rsp");
+        writeLine("leave");
         writeLine("ret");
     }
 
     // Auxiliar method which will be helping with the arithmetical calculations (sum and rest)
     private void calculateSumRes(Instruction instruction, String type) {
-        writeLine("mov " + checkType(instruction, 1) + instruction.getOp1() + ", " + "%rdi");
-        writeLine("mov " + checkType(instruction, 2) + instruction.getOp2() + ", " + "%rax");
-        writeLine(type + " %rax" + ", %rdi");
-        writeLine("mov %rdi, " + instruction.getDest());
+        boolean op1Lit = Instruction.opIsInt(instruction.getOp1());
+        boolean op2Lit = Instruction.opIsInt(instruction.getOp1());
+        String op1 = op1Lit ? "$"+instruction.getOp1() : getVarAssembler(instruction.getOp1());
+        String op2 = op2Lit ? "$"+instruction.getOp2() : getVarAssembler(instruction.getOp2());
+        // For sure that are 
+        writeLine("movl " + op1 + ", %edi");
+        writeLine("movl " + op2 + ", %eax");
+        writeLine(type+"l" + " %eax, %edi");
+        writeLine("movl %edi, " + getVarAssembler(instruction.getDest()));
     }
 
     // Auxiliar method which will help with the / and % operations
     private void calculateDivision(Instruction instruction, String type, int code) {
-        writeLine("mov " + checkType(instruction, 1) + instruction.getOp1() + ", " + "%rdi");
-        writeLine("mov " + checkType(instruction, 2) + instruction.getOp2() + ", " + "%rax");
-        writeLine(type + " %rdi");
+        boolean op1Lit = Instruction.opIsInt(instruction.getOp1());
+        boolean op2Lit = Instruction.opIsInt(instruction.getOp1());
+        String op1 = op1Lit ? "$"+instruction.getOp1() : getVarAssembler(instruction.getOp1());
+        String op2 = op2Lit ? "$"+instruction.getOp2() : getVarAssembler(instruction.getOp2());
+
+        writeLine("movl " + op1 + ", " + "%edi");
+        writeLine("movl " + op2 + ", " + "%eax");
+        writeLine(type+"l" + " %edi");
         checkDivisionStatus(instruction, code);
     }
 
@@ -333,55 +346,44 @@ public class AssemblerGenerator {
     private void checkDivisionStatus(Instruction instruction, int code) {
         if (code == 1) {
             //Division
-            writeLine("mov %rax, " + instruction.getDest());
+            writeLine("movl %eax, " + getVarAssembler(instruction.getDest()));
         } else if (code == 2) {
             //modulus
-            writeLine("mov %rdx, " + instruction.getDest());
+            writeLine("movl %edx, " + getVarAssembler(instruction.getDest()));
         }
     }
 
     // Mulu calculation
     private void calculateMulu(Instruction instruction, String type) {
-        writeLine("mov " + checkType(instruction, 1) + instruction.getOp1() + ", " + "%rax");
-        writeLine("mov " + checkType(instruction, 2) + instruction.getOp2() + ", " + "%rdi");
-        writeLine(type + " %rax" + ", %rdi");
-        writeLine("mov %rdi, " + instruction.getDest());
+        boolean op1Lit = Instruction.opIsInt(instruction.getOp1());
+        boolean op2Lit = Instruction.opIsInt(instruction.getOp1());
+        String op1 = op1Lit ? "$"+instruction.getOp1() : getVarAssembler(instruction.getOp1());
+        String op2 = op2Lit ? "$"+instruction.getOp2() : getVarAssembler(instruction.getOp2());
+        writeLine("movl " + op1 + ", " + "%edi");
+        writeLine("movl " + op2 + ", " + "%eax");
+        writeLine(type+"l" + " %eax" + ", %edi");
+        writeLine("movl %edi, " + getVarAssembler(instruction.getDest()));
     }
 
     // Call Instruction
     private void callInstruction(Instruction instruction) {
         writeLine("xor %rax, %rax   # clean return register");
         writeLine("call " + instruction.getDest());
+        writeLine("# pop all params");
+        int numParams = Integer.parseInt(instruction.getOp1());
+        for (int i = 0; i < numParams; i++){
+            writeLine("pop %rdx");
+        }
     }
 
-    private void paramInstruction(Instruction instruction, Instruction nextInstruction) {
-        writeLine("mov " + instruction.getOp1() + ",%rdx");
+    private void paramInstruction(Instruction instruction) {
+        Variable variable = backend.getVariable(instruction.getOp1());
+        String code = "movslq";
+        if(variable.getType() == SUBJACENTTYPE.st_boolean){
+            code = "movswq";
+        }
+        writeLine(code+" "+ variable.getAssemblerDir() + ", %rdx");
         writeLine("push %rdx");
-    }
-
-    private boolean declarationExists(String name) {
-        for (int i = 0; i < assemblyInstructions.size() && !readLine(i).startsWith("# "); i++) {
-            if (readLine(i).contains("skip")) {
-                return false;
-            }
-            if (readLine(i).contains(name + ":") && readLine(i).charAt(0) == name.charAt(0)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private String readLine(int lineNumber) {
-        return assemblyInstructions.get(lineNumber);
-    }
-    
-    private void newIntegerGlobalVariable(String name, String value) {
-        for (int i = 0; i < assemblyInstructions.size(); i++) {
-            if (readLine(i).contains(".data") && !declarationExists(name)) {
-                writeSpecificLine(i + 1, name + ": .quad " + value + "\n");
-                break;
-            }
-        }
     }
 
     public void writeSpecificLine(int lineNumber, String codeToWrite) {
@@ -390,43 +392,81 @@ public class AssemblerGenerator {
 
     // Auxiliar method which indicates what kind of jump are we analyzing
     private void substractCMP(Instruction instruction, Code type) {
-        writeLine("mov " + checkLiteral(instruction, 2) + ", %rdi");
-        writeLine("mov " + checkLiteral(instruction, 1) +  ", %rsi");
+        boolean isNumCmp;
+        if(Instruction.opIsInt(instruction.getOp1()) || Instruction.opIsInt(instruction.getOp2())){
+            isNumCmp = true;
+        }
+        else{
+            Variable var = backend.getVariable(instruction.getOp1());
+            if(var == null){
+                var = backend.getVariable(instruction.getOp2());
+            }
+            isNumCmp = var.getType() == SUBJACENTTYPE.st_number;
+        }
+        String suffix = "l";
+        String register1 = "%edi";
+        String register2 = "%esi";
+        if(!isNumCmp) {
+            suffix = "w";
+            register1 = "%di";
+            register2 = "%si";
+        }
+        writeLine("mov"+suffix+" "+ checkLiteral(instruction.getOp2()) + ", "+register1);
+        writeLine("mov"+suffix+" "+ checkLiteral(instruction.getOp1()) +  ", "+register2);
         writeLine("xor %rax, %rax # clean return value register");
-        String functionLabel = getCMPFunctionLabel(type);
+        String functionLabel = getCMPFunctionLabel(type, isNumCmp);
         writeLine("call "+functionLabel);
-        writeLine("mov %rax,"+instruction.getDest()+" # get return value");
+        writeLine("movw %ax,"+getVarAssembler(instruction.getDest())+" # get return value");
+    }
+
+    private String checkLiteral(String operand){
+        boolean opInt = Instruction.opIsInt(operand);
+        boolean opBool = Instruction.opIsBoolean(operand);
+        //literall number
+        if(opInt){
+            return "$"+operand;
+        }
+        // literall boolean
+        if(opBool) {
+            // true
+            if(operand.equals("true")) {
+                return "$1";
+            }
+            // false
+            return "$0";
+        }
+        return getVarAssembler(operand);
     }
 
     // Auxiliar method that generates the copy Instruction
     private void copyInstruction(Instruction instruction) {
-        if(instruction.getOp1().contains("return")){
-            writeLine("mov %rax, "+instruction.getDest());
-        }
-        else if (instruction.isLiteralOp1()) {
-            if(instruction.isBoolOp1()){
-                if (instruction.getOp1().equals("true")) { //cert
-                    writeLine("movl $1, " + instruction.getDest());
-                } else { //false
-                    writeLine("movl $0, " + instruction.getDest());
-                }
-            }else{
-                writeLine("mov $" + instruction.getOp1() + ", %rdi");
-                writeLine("mov " + "%rdi, " + instruction.getDest());
+        if(instruction.getOp1().equals("return")){
+            Procedure procedure = backend.getProcedure(instruction.getOp2());
+            String suffix = "l";
+            String register = "%eax";
+            if(procedure.getType() == SUBJACENTTYPE.st_boolean){
+                suffix = "w";
+                register = "%ax";
             }
-        } else {
-            writeLine("mov " + instruction.getOp1() + ", " + "%rdi");
-            writeLine("mov " + "%rdi, " + instruction.getDest());
+            writeLine("mov"+suffix+" "+register+", "+getVarAssembler(instruction.getDest()));
+        }else{
+            Variable variable = backend.getVariable(instruction.getDest());
+            boolean isNum = variable.getType() == SUBJACENTTYPE.st_number;
+            String suffix = "l";
+            String register = "%edi";
+            if(!isNum) {
+                suffix = "w";
+                register = "%di";
+            }
+            writeLine("mov"+suffix+" "+ checkLiteral(instruction.getOp1()) + ", " + register);
+            writeLine("mov"+suffix+" "+register+", " + getVarAssembler(instruction.getDest()));
         }
     }
 
     private void pmbInstruction(Instruction instruction) {
         try{
-            if (!lastProcedure(instruction.getDest())) {
-                writeLine("push %rbp        # Guardem el registre que utilitzarem com a apuntador de la pila.");
-                writeLine("mov %rsp, %rbp");
-            }
-
+            writeLine("push %rbp        # Guardem el registre que utilitzarem com a apuntador de la pila.");
+            writeLine("mov %rsp, %rbp");
             //Declarar parametros del procedimiento como variables.
             String backFunId = instruction.getDest();
             String funId = backFunId.replace("PROC_", "");
@@ -436,82 +476,24 @@ public class AssemblerGenerator {
                 throw new Error("Invalid function");  
             }
 
-            ArrayList<Expansion> params = symbolsTable.getParams(funId);
-
-            for(Expansion param : params) {
-                newIntegerGlobalVariable(param.getId(), "0");
-            }
-
-            int index = params.size() - 1;
-            writeLine("# Restaurar paràmetres");
-            for (int i = 0; i < params.size() * 8; i += 8) {
-                writeLine("mov " + (i + 16) + "(%rbp), %rax");
-                writeLine("mov %rax, " + params.get(index).getId());
-                index--;
-            }
+            //save space for local variables
+            Procedure proc = backend.getProcedure(backFunId);
+            writeLine("sub $"+proc.getSize()+ ", %rsp");
         }catch(SymbolsTableError e){
             //AQUI MAU S'HAURIA D'ARRIBAR JA QUE SINTÀTIC JA S'ENCARREGA DE COMPROVAR
         }
     }
 
-    // Auxiliar method for checking if destination is the last instruction of the
-    // program
-    private boolean lastProcedure(String dest) {
-        int x = backend.getProcTable().size() - 1;
-        return backend.getProcTable().get(x).toString().equals(dest);
+    private String getVarAssembler(String varName){
+        return backend.getVarAssembler(varName);
     }
 
-    private String checkType(Instruction operand, int type) {
-        String back = "";
-        if (type == 1) {
-            if (operand.isIntOp1()) {
-                back = "$";
-            }
-        } else {
-            if (operand.isIntOp2()) {
-                back = "$";
-            }
-        }
-        return back;
-    }
-
-    private String checkLiteral(Instruction operand, int type) {
-        String back = "";
-        if (type == 1) {
-            if (operand.isLiteralOp1()) {
-                back = "$";
-                if(operand.isBoolOp1() && operand.getOp1().equals("true")){
-                    back += "1";
-                }
-                if(operand.isBoolOp1() && operand.getOp1().equals("false")){
-                    back += "0";
-                }
-                
-            }
-            else{
-                back = operand.getOp1();
-            }
-        } else {
-            if (operand.isLiteralOp2()) {
-                back = "$";
-                if(operand.isBoolOp2() && operand.getOp2().equals("true")){
-                    back += "1";
-                }
-                if(operand.isBoolOp2() && operand.getOp2().equals("false")){
-                    back += "0";
-                }
-                
-            }else{
-                back = operand.getOp2();
-            }
-        }
-
-        return back;
-    }
-
-    private String getCMPFunctionLabel(Code code){
+    private String getCMPFunctionLabel(Code code, boolean numCmp){
         switch(code){
             case EQ:
+                if(numCmp){
+                    return "CMP_EQ_NUM";
+                }
                 return "CMP_EQ";
             case GE:
                 return "CMP_GE";
@@ -522,6 +504,9 @@ public class AssemblerGenerator {
             case LT:
                 return "CMP_LT";
             case NE:
+                if(numCmp){
+                    return "CMP_NE_NUM";
+                }
                 return "CMP_NE";
             default:
                 return "";
@@ -535,53 +520,56 @@ public class AssemblerGenerator {
         writeGE();
         writeLE();
         writeLT();
+        writeNE_num();
+        writeEQ_num();
     }
 
     private void writeLT() {
+        // comparation between two integers
         writeLine("# boolean value assignation LT");
         writeLine("CMP_LT :");
-        writeLine("\tcmp %rdi, %rsi");
+        writeLine("\tcmp %edi, %esi");
         writeLine("\tjge CMP_LT_GE");
-        writeLine("\tmov $1, %rax");
+        writeLine("\tmov $1, %ax");
         writeLine("\tret");
         writeLine("CMP_LT_GE :");
-        writeLine("\tmov $0, %rax");
+        writeLine("\tmov $0, %ax");
         writeLine("\tret\n");
     }
 
     private void writeLE() {
         writeLine("# boolean value assignation LE");
         writeLine("CMP_LE :");
-        writeLine("\tcmp %rdi, %rsi");
+        writeLine("\tcmp %edi, %esi");
         writeLine("\tjg CMP_LE_G");
-        writeLine("\tmov $1, %rax");
+        writeLine("\tmov $1, %ax");
         writeLine("\tret");
         writeLine("CMP_LE_G :");
-        writeLine("\tmov $0, %rax");
+        writeLine("\tmov $0, %ax");
         writeLine("\tret\n");
     }
 
     private void writeGE() {
         writeLine("# boolean value assignation GE");
         writeLine("CMP_GE :");
-        writeLine("\tcmp %rdi, %rsi");
+        writeLine("\tcmp %edi, %esi");
         writeLine("\tjl CMP_GE_L");
-        writeLine("\tmov $1, %rax");
+        writeLine("\tmov $1, %ax");
         writeLine("\tret");
         writeLine("CMP_GE_L :");
-        writeLine("\tmov $0, %rax");
+        writeLine("\tmov $0, %ax");
         writeLine("\tret\n");
     }
 
     private void writeGT() {
         writeLine("# boolean value assignation GT");
         writeLine("CMP_GT :");
-        writeLine("\tcmp %rdi, %rsi");
+        writeLine("\tcmp %edi, %esi");
         writeLine("\tjl CMP_GT_LE");
-        writeLine("\tmov $1, %rax");
+        writeLine("\tmov $1, %ax");
         writeLine("\tret");
         writeLine("CMP_GT_LE :");
-        writeLine("\tmov $0, %rax");
+        writeLine("\tmov $0, %ax");
         writeLine("\tret\n");
     }
 
@@ -606,6 +594,30 @@ public class AssemblerGenerator {
         writeLine("\tret");
         writeLine("CMP_EQ_NE :");
         writeLine("\tmov $0, %rax");
+        writeLine("\tret\n");
+    }
+
+    private void writeNE_num() {
+        writeLine("# boolean value assignation NE num");
+        writeLine("CMP_NE_NUM :");
+        writeLine("\tcmp %edi, %esi");
+        writeLine("\tje CMP_NE_E_NUM");
+        writeLine("\tmov $1, %ax");
+        writeLine("\tret");
+        writeLine("CMP_NE_E_NUM :");
+        writeLine("\tmov $0, %ax");
+        writeLine("\tret\n");
+    }
+
+    private void writeEQ_num() {
+        writeLine("# boolean value assignation EQ num");
+        writeLine("CMP_EQ_NUM :");
+        writeLine("\tcmp %edi, %esi");
+        writeLine("\tjne CMP_EQ_NE_NUM");
+        writeLine("\tmov $1, %ax");
+        writeLine("\tret");
+        writeLine("CMP_EQ_NE_NUM :");
+        writeLine("\tmov $0, %ax");
         writeLine("\tret\n");
     }
 }

@@ -20,13 +20,15 @@ public class Variable {
     private int offset;     // offset
     private int size;       // space occupation
     private SUBJACENTTYPE type;      // type
+    private boolean isParam;
 
-    public Variable(String name,int idParent, int offset, int tam, SUBJACENTTYPE type) {
+    public Variable(String name,int idParent, int offset, int tam, SUBJACENTTYPE type, boolean isParam) {
         this.name = name;
         this.idParent = idParent;
         this.offset = offset;
         this.size = tam;
         this.type = type;
+        this.isParam = isParam;
     }
 
     public SUBJACENTTYPE getType() {
@@ -37,8 +39,16 @@ public class Variable {
         return this.name;
     }
 
+    public String getAssemblerDir() {
+        if(isParam) {
+            return this.offset + "(%rbp)";
+        }
+        // - offset
+        return (-this.offset) + "(%rbp)";
+    }
+
     @Override
     public String toString() {
-        return this.name+ "\ttam : "+this.size+"\ttipus_subjacent :"+this.type;
+        return this.name+ "\ttam : "+this.size+"\ttipus_subjacent :"+this.type+"\tidFun : "+this.idParent+"\toffset : "+getAssemblerDir();
     }
 }

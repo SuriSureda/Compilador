@@ -12,7 +12,6 @@ public class SyntaxError extends Exception{
     private final String PATH = "output\\syntaxError.txt";
 
     public SyntaxError(ComplexSymbol s, ArrayList<String> expectedName, boolean recovered){
-        super();
         String error = "Syntax Error: "+ s.value+ "found in position ("+ s.left+1+":"+ s.right+1+")";
         if (expectedName != null){
             error += "\n Token Expected: ";
@@ -32,7 +31,7 @@ public class SyntaxError extends Exception{
             out.write(error);
         } catch (IOException e) {
             e.printStackTrace();
-        }  
+        } 
     }
 
     public static void closeFile(){

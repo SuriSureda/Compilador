@@ -1,7 +1,6 @@
 package compilador;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.BufferedReader;
 import java.nio.file.Files;
@@ -16,7 +15,6 @@ import java.io.Reader;
 
 import java_cup.internal_error;
 import java_cup.runtime.ComplexSymbolFactory;
-import java_cup.runtime.SymbolFactory;
 
 public class Main {
 	private static final String USER_DIR = System.getProperty("user.dir");
@@ -96,7 +94,7 @@ public class Main {
 			// rezamos 3 ave marias, 5 padre nuestros y le hacemos una estatua a Andreu  para que todo funcione 
 			parser.parse();
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.out.println(e.getMessage());
 		};
 	}
 

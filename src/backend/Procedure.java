@@ -20,20 +20,18 @@ public class Procedure {
     private int nv;         // variable number
     private int nparams;
     private int size;       // memory used
-    private int offset;     // offset
+    private int offset;     // params offset
     private SUBJACENTTYPE type;      // type
 
-    public Procedure(String name, int nparams, int size, int offset, SUBJACENTTYPE type) {
+    public Procedure(String name, int nparams, int size, SUBJACENTTYPE type) {
         this.name = name;
         this.nv = NV++;
         this.nparams = nparams;
         this.size = size;
-        this.offset = offset;
         this.type = type;
+        this.offset = 0;
     }
 
-
-       
    @Override
    public String toString() {
      return this.name.replace("PROC_", "") + "\tnparams=" + this.nparams + "\ttype="+this.type;
@@ -63,5 +61,9 @@ public class Procedure {
 
     public void setOffset(int offset) {
         this.offset = offset;
+    }
+
+    public SUBJACENTTYPE getType() {
+        return this.type;
     }
 }

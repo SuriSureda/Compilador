@@ -7,6 +7,7 @@ package Sin;
 
 import java_cup.runtime.Symbol;
 import java_cup.runtime.ComplexSymbolFactory;
+import java_cup.runtime.ComplexSymbolFactory.ComplexSymbol;
 import Symbols.*;
 import SymbolsTable.*;
 import SymbolsTable.Type.TYPE;
@@ -44,7 +45,7 @@ public class Parser extends java_cup.runtime.lr_parser {
   protected static final short _production_table[][] = 
     unpackFromStrings(new String[] {
     "\000\137\000\002\002\004\000\002\002\004\000\002\003" +
-    "\002\000\002\043\004\000\002\043\003\000\002\005\012" +
+    "\002\000\002\043\004\000\002\043\003\000\002\005\014" +
     "\000\002\004\002\000\002\006\003\000\002\006\003\000" +
     "\002\007\004\000\002\007\003\000\002\010\004\000\002" +
     "\010\003\000\002\010\003\000\002\010\004\000\002\010" +
@@ -80,7 +81,7 @@ public class Parser extends java_cup.runtime.lr_parser {
   /** Parse-action table. */
   protected static final short[][] _action_table = 
     unpackFromStrings(new String[] {
-    "\000\320\000\004\022\uffff\001\002\000\004\022\007\001" +
+    "\000\322\000\004\022\uffff\001\002\000\004\022\007\001" +
     "\002\000\004\002\006\001\002\000\004\002\001\001\002" +
     "\000\006\004\275\036\274\001\002\000\004\022\007\001" +
     "\002\000\004\002\ufffd\001\002\000\004\002\000\001\002" +
@@ -256,11 +257,12 @@ public class Parser extends java_cup.runtime.lr_parser {
     "\307\001\002\000\006\030\uffa9\034\uffa9\001\002\000\004" +
     "\035\311\001\002\000\004\004\312\001\002\000\004\031" +
     "\uffac\001\002\000\004\027\314\001\002\000\004\030\315" +
-    "\001\002\000\004\031\316\001\002\000\014\004\020\016" +
-    "\016\021\024\026\023\032\uffa3\001\002\000\004\032\ufff9" +
-    "\001\002\000\014\004\020\016\016\021\024\026\023\032" +
-    "\ufffa\001\002\000\004\032\322\001\002\000\004\002\ufffc" +
-    "\001\002" });
+    "\001\002\000\004\031\316\001\002\000\014\004\ufff0\016" +
+    "\ufff0\021\ufff0\026\ufff0\032\ufff0\001\002\000\014\004\020" +
+    "\016\016\021\024\026\023\032\uffa3\001\002\000\004\032" +
+    "\ufff9\001\002\000\014\004\020\016\016\021\024\026\023" +
+    "\032\ufffa\001\002\000\004\032\uffef\001\002\000\004\032" +
+    "\324\001\002\000\004\002\ufffc\001\002" });
 
   /** Access to parse-action table. */
   public short[][] action_table() {return _action_table;}
@@ -268,7 +270,7 @@ public class Parser extends java_cup.runtime.lr_parser {
   /** <code>reduce_goto</code> table. */
   protected static final short[][] _reduce_table = 
     unpackFromStrings(new String[] {
-    "\000\320\000\006\002\004\003\003\001\001\000\012\005" +
+    "\000\322\000\006\002\004\003\003\001\001\000\012\005" +
     "\010\043\011\044\007\045\012\001\001\000\002\001\001" +
     "\000\002\001\001\000\002\001\001\000\012\005\010\043" +
     "\272\044\007\045\012\001\001\000\002\001\001\000\002" +
@@ -379,11 +381,12 @@ public class Parser extends java_cup.runtime.lr_parser {
     "\000\002\001\001\000\002\001\001\000\002\001\001\000" +
     "\002\001\001\000\002\001\001\000\002\001\001\000\002" +
     "\001\001\000\002\001\001\000\002\001\001\000\002\001" +
-    "\001\000\030\006\320\007\317\010\025\013\020\022\027" +
-    "\023\016\036\031\042\030\052\021\053\032\054\316\001" +
-    "\001\000\002\001\001\000\022\010\166\013\020\022\027" +
-    "\023\016\036\031\042\030\052\021\053\032\001\001\000" +
-    "\002\001\001\000\002\001\001" });
+    "\001\000\004\011\316\001\001\000\030\006\321\007\320" +
+    "\010\025\013\020\022\027\023\016\036\031\042\030\052" +
+    "\021\053\032\054\317\001\001\000\002\001\001\000\022" +
+    "\010\166\013\020\022\027\023\016\036\031\042\030\052" +
+    "\021\053\032\001\001\000\004\012\322\001\001\000\002" +
+    "\001\001\000\002\001\001" });
 
   /** Access to <code>reduce_goto</code> table. */
   public short[][] reduce_table() {return _reduce_table;}
@@ -435,7 +438,7 @@ public class Parser extends java_cup.runtime.lr_parser {
     super(scanner, sf);
     this.scanner = scanner;
     this.symbolsTable = new SymbolsTable();
-    this.backend = new Backend();
+    this.backend = new Backend(symbolsTable);
     this.c3a_g = new C3a_generator(backend);
     this.assembler = new AssemblerGenerator(symbolsTable, backend, c3a_g);
     this.labelTrueStack = new Stack<String>();
@@ -449,24 +452,32 @@ public class Parser extends java_cup.runtime.lr_parser {
     LexicalError.closeFile();
   }
 
-  public void syntax_error(Symbol s) {
+  public void syntax_error(ComplexSymbol s) {
     try {
       ArrayList<Integer> expected = new ArrayList<Integer>(expected_token_ids());
-      report_error(
-        "Syntax Error : " + s.value + " (" + (s.left+1) + ":" + (s.right+1) + ")\n", s
-      );
-      throw new SyntaxError("Syntax Error : " + s.value + " (" + (s.left+1) + ":" + (s.right+1) + ")");
+      ArrayList<String> expected_names = new ArrayList<String>();
+
+      for(Integer i : expected){
+        expected_names.add(symbl_name_from_id(i));
+      }
+
+      throw new SyntaxError(s, expected_names, true);
     } catch (Exception e) {
 		};
   }
 
-  public void unrecovered_syntax_error(Symbol s){
+  public void unrecovered_syntax_error(ComplexSymbol s){
     try {
+      ArrayList<Integer> expected = new ArrayList<Integer>(expected_token_ids());
+      ArrayList<String> expected_names = new ArrayList<String>();
+
+      for(Integer i : expected){
+        expected_names.add(symbl_name_from_id(i));
+      }
+
       scanner.closeTokensFile((s.left+1), (s.right+1));
-      report_fatal_error(
-        "Unrecovered Syntax Error : " + s.value + " (" + (s.left+1) + ":" + (s.right+1) + ")", null
-      );
-      throw new SyntaxError("Unrecovered Syntax Error : " + s.value + " (" + (s.left+1) + ":" + (s.right+1) + ")");
+      
+      throw new SyntaxError(s, expected_names, false);
     } catch (Exception e) {
       closeErrorFiles();
 		};
@@ -547,10 +558,12 @@ class CUP$Parser$actions {
                               c3a_g.savec3aInFile(false);
                               assembler.generateAssembler(false);
                               
-                              //OPTIMIZED CODE
+                              /*
+                               OPTIMIZED CODE, NOT IMPLEMENTED
                               c3a_g.optimize();
                               c3a_g.savec3aInFile(true);
                               assembler.generateAssembler(true);
+                              */
 
                               closeErrorFiles();
                             
@@ -593,13 +606,20 @@ class CUP$Parser$actions {
           return CUP$Parser$result;
 
           /*. . . . . . . . . . . . . . . . . . . .*/
-          case 5: // MAIN ::= inst_function inst_main M_MAIN lparen rparen lbracket MAIN_INSTRUCTIONS rbracket 
+          case 5: // MAIN ::= inst_function inst_main M_MAIN lparen rparen lbracket BLOCK_IN MAIN_INSTRUCTIONS BLOCK_OUT rbracket 
             {
               SymbolMain RESULT =null;
 		
+                              c3a_g.generateC3aInstr(
+                                Code.rtn,
+                                null,
+                                null,
+                                "PROC_main"
+                              );
+
                               RESULT = new SymbolMain();
                             
-              CUP$Parser$result = parser.getSymbolFactory().newSymbol("MAIN",3, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-7)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
+              CUP$Parser$result = parser.getSymbolFactory().newSymbol("MAIN",3, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-9)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
             }
           return CUP$Parser$result;
 
@@ -608,6 +628,11 @@ class CUP$Parser$actions {
             {
               SymbolMMain RESULT =null;
 		
+
+                              String backId = backend.addMain();
+                              Type fun_type = new Type(backId, TYPE.dfun, null);
+                              symbolsTable.add("main", fun_type);
+
                               c3a_g.generateC3aInstr(
                                 Code.skip,
                                 null,
@@ -615,7 +640,12 @@ class CUP$Parser$actions {
                                 "main"
                               );
 
-                              backend.addMain();
+                              c3a_g.generateC3aInstr(
+                                Code.pmb,
+                                null,
+                                null,
+                                backId
+                              );
 
                               RESULT = new SymbolMMain();
                             
@@ -754,7 +784,7 @@ class CUP$Parser$actions {
                                 symbolsTable.leaveBlock();
                                 RESULT = new SymbolBlockOut();
                               }catch(SymbolsTableError e){
-                                
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("BLOCK_OUT",8, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -778,9 +808,9 @@ class CUP$Parser$actions {
 
                                 if(type.getSubType() == SUBJACENTTYPE.st_string){
                                   String value = declarations.getValue();
-                                  backId = backend.addStrVar(var_id, 0,type.getSize(), value);
+                                  backId = backend.addStrVar(var_id, type.getSize(), value);
                                 }else{
-                                  backId = backend.addVar(var_id, 0, type.getSize(), type.getSubType());
+                                  backId = backend.addVar(var_id, type.getSize(), type.getSubType(), false);
                                 }
                                 
                                 type.setBackendId(backId);
@@ -797,7 +827,8 @@ class CUP$Parser$actions {
                                   RESULT = declarations;
 
                               }catch(SymbolsTableError e){
-                                System.out.print(e.getMessage() + var_idxleft + " " + var_idxright); 
+                                throw new SemanticError(e.getMessage());
+                                //System.out.print(e.getMessage() + var_idxleft + " " + var_idxright); 
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("DECLARATIONS",9, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -863,9 +894,9 @@ class CUP$Parser$actions {
                                 String var_id;
                                 if(type.getSubType() == SUBJACENTTYPE.st_string){
                                   String str_value = (String) value.getValue();
-                                  var_id = backend.addStrVar(id_var, 0, type.getSize(), str_value);
+                                  var_id = backend.addStrVar(id_var, type.getSize(), str_value);
                                 }else{
-                                  var_id = backend.addVar(id_var, 0,type.getSize(), type.getSubType());
+                                  var_id = backend.addVar(id_var, type.getSize(), type.getSubType(), false);
                                 }
 
                                 var_type.setBackendId(var_id);
@@ -891,7 +922,8 @@ class CUP$Parser$actions {
 
                                 RESULT = symDcls;
                               }catch(SymbolsTableError e){
-                                System.out.print(e.getMessage() + id_varxleft + " " + id_varxright); 
+                                throw new SemanticError(e.getMessage());
+                                //System.out.print(e.getMessage() + id_varxleft + " " + id_varxright); 
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("DECLARATIONS",9, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-5)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -957,7 +989,7 @@ class CUP$Parser$actions {
 
                                 RESULT = new SymbolOperatorAssignation();
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("OPERATOR_ASSIG",16, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -1057,7 +1089,7 @@ class CUP$Parser$actions {
 
                                 Type type_number = symbolsTable.get("number");
                                 
-                                String var_id = backend.addTempVar( 0, type_number.getSize(), type_number.getSubType());
+                                String var_id = backend.addTempVar(type_number.getSize(), type_number.getSubType());
 
                                 c3a_g.generateC3aInstr(
                                   op_code,
@@ -1075,7 +1107,7 @@ class CUP$Parser$actions {
                                 
                                 RESULT = sym;
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("ARITHMETICAL_OPERATION",19, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -1097,7 +1129,7 @@ class CUP$Parser$actions {
                                 SymbolArithOperation sym = arith_op;
                                 if(op.equals("-")){
                                   Type type_number = symbolsTable.get("number");
-                                  String var_id = backend.addTempVar(0, type_number.getSize(),  type_number.getSubType());
+                                  String var_id = backend.addTempVar(type_number.getSize(),  type_number.getSubType());
 
                                   if(arith_op.getIsConst()){
                                     Integer value = - arith_op.getValue().intValue();
@@ -1116,7 +1148,7 @@ class CUP$Parser$actions {
 
                                 RESULT = sym;
                               }catch(SymbolsTableError e){
-                                
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("ARITHMETICAL_OPERATION",19, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-3)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -1202,7 +1234,7 @@ class CUP$Parser$actions {
 
                               Type type_number = symbolsTable.get("number");
                               
-                              String var_id = backend.addTempVar(0, type_number.getSize(),  type_number.getSubType());
+                              String var_id = backend.addTempVar(type_number.getSize(),  type_number.getSubType());
 
                               c3a_g.generateC3aInstr(
                                 Code.copy,
@@ -1213,7 +1245,7 @@ class CUP$Parser$actions {
 
                               RESULT = new SymbolArithValue(var_id, value);
                             }catch(SymbolsTableError e){
-
+                              throw new SemanticError(e.getMessage());
                             }
                           
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("ARITHMETICAL_VALUE",20, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -1253,7 +1285,7 @@ class CUP$Parser$actions {
 
                               RESULT = sym;
                             }catch(SymbolsTableError e){
-
+                              throw new SemanticError(e.getMessage());
                             }
                           
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("ARITHMETICAL_VALUE",20, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -1297,18 +1329,18 @@ class CUP$Parser$actions {
                                 throw new SemanticError("Invalid function call "+call_fn.getFunctionId() + " with return type "+ dfn_type.getSubType() +". Expected :"+SUBJACENTTYPE.st_number);
                               }
                               
-                              String var_id = backend.addTempVar( 0, fn_type.getSize(), dfn_type.getSubType());
+                              String var_id = backend.addTempVar(dfn_type.getSize(), dfn_type.getSubType());
 
                               c3a_g.generateC3aInstr(
                                 Code.copy,
-                                "return "+call_fn.getFunctionId(),
-                                null,
+                                "return",
+                                call_fn.getBackendId(),
                                 var_id
                               );                                
 
                               RESULT = new SymbolArithValue(var_id);
                             }catch(SymbolsTableError e){
-
+                              throw new SemanticError(e.getMessage());
                             }
                           
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("ARITHMETICAL_VALUE",20, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -1334,12 +1366,12 @@ class CUP$Parser$actions {
                                 throw new SemanticError("Invalid function call "+call_fn.getFunctionId() + " with return type "+ dfn_type.getSubType() +". Expected :"+SUBJACENTTYPE.st_number);
                               }
                               
-                              String var_id = backend.addTempVar( 0, fn_type.getSize(), dfn_type.getSubType());
+                              String var_id = backend.addTempVar(dfn_type.getSize(), dfn_type.getSubType());
 
                               c3a_g.generateC3aInstr(
                                 Code.copy,
-                                "return "+call_fn.getFunctionId(),
-                                null,
+                                "return",
+                                call_fn.getBackendId(),
                                 var_id
                               );                                
 
@@ -1354,7 +1386,7 @@ class CUP$Parser$actions {
 
                               RESULT = new SymbolArithValue(var_id);
                             }catch(SymbolsTableError e){
-
+                              throw new SemanticError(e.getMessage());
                             }
                           
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("ARITHMETICAL_VALUE",20, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -1379,7 +1411,7 @@ class CUP$Parser$actions {
 
                                 RESULT = sym;
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("ID_VALUE",12, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -1422,7 +1454,7 @@ class CUP$Parser$actions {
                                 }
 
                                 Type type_boolean = symbolsTable.get("boolean");
-                                String var_id = backend.addTempVar(0, type_boolean.getSize(),  type_boolean.getSubType());
+                                String var_id = backend.addTempVar(type_boolean.getSize(),  type_boolean.getSubType());
 
                                 c3a_g.generateC3aInstr(
                                   Code.not,
@@ -1440,7 +1472,7 @@ class CUP$Parser$actions {
                                 
                                 RESULT = sym;
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("ID_VALUE",12, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -1469,7 +1501,7 @@ class CUP$Parser$actions {
 
                                 if(op.equals("-")){
                                   Type type_number = symbolsTable.get("number");
-                                  String var_id = backend.addTempVar(0, type_number.getSize(),  type_number.getSubType());
+                                  String var_id = backend.addTempVar(type_number.getSize(),  type_number.getSubType());
 
                                   c3a_g.generateC3aInstr(
                                     Code.neg,
@@ -1488,7 +1520,7 @@ class CUP$Parser$actions {
 
                                 RESULT = sym;
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("ID_VALUE",12, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -1571,7 +1603,7 @@ class CUP$Parser$actions {
 
                                 RESULT = sym;
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("VALUE",15, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -1590,7 +1622,7 @@ class CUP$Parser$actions {
                                 Boolean value = bool_val.getValue();
                                 Type type_bool = symbolsTable.get("boolean");
 
-                                String var_id = backend.addTempVar(0, type_bool.getSize(), type_bool.getSubType());
+                                String var_id = backend.addTempVar(type_bool.getSize(), type_bool.getSubType());
 
                                 c3a_g.generateC3aInstr(
                                   Code.copy,
@@ -1601,7 +1633,7 @@ class CUP$Parser$actions {
 
                                 RESULT = new SymbolValue(var_id, SUBJACENTTYPE.st_boolean, value);
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("VALUE",15, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -1621,7 +1653,7 @@ class CUP$Parser$actions {
 
                                 Type type_number = symbolsTable.get("number");
                                 
-                                String var_id = backend.addTempVar(0, type_number.getSize(), type_number.getSubType());
+                                String var_id = backend.addTempVar(type_number.getSize(), type_number.getSubType());
 
                                 c3a_g.generateC3aInstr(
                                   Code.copy,
@@ -1632,7 +1664,7 @@ class CUP$Parser$actions {
 
                                 RESULT = new SymbolValue(var_id, SUBJACENTTYPE.st_number, value);
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("VALUE",15, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -1675,7 +1707,7 @@ class CUP$Parser$actions {
                                 SymbolValue sym;
 
                                 Type type_bool = symbolsTable.get("boolean");
-                                String var_id = backend.addTempVar(0,type_bool.getSize(), type_bool.getSubType());
+                                String var_id = backend.addTempVar(type_bool.getSize(), type_bool.getSubType());
 
                                 c3a_g.generateC3aInstr(
                                   Code.not,
@@ -1693,7 +1725,7 @@ class CUP$Parser$actions {
 
                                 RESULT = sym;
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("VALUE",15, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -1760,18 +1792,18 @@ class CUP$Parser$actions {
                                   throw new SemanticError("Function call : "+call_fn.getFunctionId() + " does not return any value");
                                 }
                                 
-                                String var_id = backend.addTempVar( 0, fn_type.getSize(), dfn_type.getSubType());
+                                String var_id = backend.addTempVar(dfn_type.getSize(), dfn_type.getSubType());
 
                                 c3a_g.generateC3aInstr(
                                   Code.copy,
-                                  "return "+call_fn.getFunctionId(),
-                                  null,
+                                  "return",
+                                  call_fn.getBackendId(),
                                   var_id
                                 );                                
 
                                 RESULT = new SymbolValue(var_id, TYPE.dfun, fn_type.getTypeName());
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("VALUE",15, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -1785,7 +1817,7 @@ class CUP$Parser$actions {
 		
                               try{
                                 Type number_type = symbolsTable.get("number");
-                                String var_id = backend.addTempVar( 0, number_type.getSize(), number_type.getSubType());
+                                String var_id = backend.addTempVar(number_type.getSize(), number_type.getSubType());
 
                                 c3a_g.generateC3aInstr(
                                   Code.input,
@@ -1796,7 +1828,7 @@ class CUP$Parser$actions {
 
                                 RESULT = new SymbolValue(var_id, number_type.getSubType());
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("VALUE",15, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -1849,7 +1881,7 @@ class CUP$Parser$actions {
                                 }
 
                                 Type type_bool = symbolsTable.get("boolean"); 
-                                String var_id = backend.addTempVar( 0, type_bool.getSize(), type_bool.getSubType());
+                                String var_id = backend.addTempVar(type_bool.getSize(), type_bool.getSubType());
                                 
                                 String val1_id = bool_val1.getVarId();
                                 String val2_id = bool_val2.getVarId();
@@ -1868,7 +1900,7 @@ class CUP$Parser$actions {
 
                                 RESULT = sym;
                               }catch(SymbolsTableError e){
-                                
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("BOOLEAN_OPERATION",21, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -1900,7 +1932,7 @@ class CUP$Parser$actions {
                               try{
                                 SymbolBoolOp sym;
                                 Type type_boolean = symbolsTable.get("boolean");
-                                String var_id = backend.addTempVar(0, type_boolean.getSize(),  type_boolean.getSubType());
+                                String var_id = backend.addTempVar(type_boolean.getSize(),  type_boolean.getSubType());
 
                                 c3a_g.generateC3aInstr(
                                   Code.neg,
@@ -1918,7 +1950,7 @@ class CUP$Parser$actions {
 
                                 RESULT = sym;
                               }catch(SymbolsTableError e){
-                                
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("BOOLEAN_OPERATION",21, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-3)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -1937,7 +1969,7 @@ class CUP$Parser$actions {
                                 Boolean value = bool_val.getValue();
                                 Type type_boolean = symbolsTable.get("boolean");
                                 
-                                String var_id = backend.addTempVar(0, type_boolean.getSize(),  type_boolean.getSubType());
+                                String var_id = backend.addTempVar(type_boolean.getSize(),  type_boolean.getSubType());
 
                                 c3a_g.generateC3aInstr(
                                   Code.copy,
@@ -1948,7 +1980,7 @@ class CUP$Parser$actions {
 
                                 RESULT = new SymbolBoolOpValue(var_id, value);
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("BOOLEAN_OP_VALUE",22, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -1987,7 +2019,7 @@ class CUP$Parser$actions {
 
                                 RESULT = sym;
                               }catch(SymbolsTableError e){
-                                
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("BOOLEAN_OP_VALUE",22, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -2046,7 +2078,7 @@ class CUP$Parser$actions {
 		
                               try{
                                 Type type_bool = symbolsTable.get("boolean");
-                                String var_id = backend.addTempVar(0,type_bool.getSize(), type_bool.getSubType());
+                                String var_id = backend.addTempVar(type_bool.getSize(), type_bool.getSubType());
 
                                 c3a_g.generateC3aInstr(
                                   Code.not,
@@ -2064,7 +2096,7 @@ class CUP$Parser$actions {
                                 }
                                 RESULT = sym;
                               }catch(SymbolsTableError e){
-                                
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("BOOLEAN_OP_VALUE",22, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -2087,18 +2119,18 @@ class CUP$Parser$actions {
                                   throw new SemanticError("Invalid function call "+call_fn.getFunctionId() + " with return type "+ dfn_type.getSubType() +". Expected :"+SUBJACENTTYPE.st_boolean);
                                 }
                                 
-                                String var_id = backend.addTempVar( 0, fn_type.getSize(), dfn_type.getSubType());
+                                String var_id = backend.addTempVar(dfn_type.getSize(), dfn_type.getSubType());
 
                                 c3a_g.generateC3aInstr(
                                   Code.copy,
-                                  "return "+call_fn.getFunctionId(),
-                                  null,
+                                  "return",
+                                  call_fn.getBackendId(),
                                   var_id
                                 );                                
 
                                 RESULT = new SymbolBoolOpValue(var_id);
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("BOOLEAN_OP_VALUE",22, ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -2124,12 +2156,12 @@ class CUP$Parser$actions {
                                   throw new SemanticError("Invalid function call "+call_fn.getFunctionId() + " with return type "+ dfn_type.getSubType() +". Expected :"+SUBJACENTTYPE.st_number);
                                 }
                                 
-                                String var_id = backend.addTempVar( 0, fn_type.getSize(), dfn_type.getSubType());
+                                String var_id = backend.addTempVar(dfn_type.getSize(), dfn_type.getSubType());
 
                                 c3a_g.generateC3aInstr(
                                   Code.copy,
-                                  "return "+call_fn.getFunctionId(),
-                                  null,
+                                  "return",
+                                  call_fn.getBackendId(),
                                   var_id
                                 );                                
 
@@ -2142,7 +2174,7 @@ class CUP$Parser$actions {
 
                                 RESULT = new SymbolBoolOpValue(var_id);
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("BOOLEAN_OP_VALUE",22, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -2312,7 +2344,7 @@ class CUP$Parser$actions {
                                 }
 
                                 Type type_bool = symbolsTable.get("boolean");
-                                String var_id = backend.addTempVar( 0, type_bool.getSize(), type_bool.getSubType());
+                                String var_id = backend.addTempVar(type_bool.getSize(), type_bool.getSubType());
                                 
                                 if(allConst){
                                   sym = new SymbolValueComparison(var_id, val);
@@ -2329,7 +2361,7 @@ class CUP$Parser$actions {
 
                                 RESULT = sym;
                               }catch(SymbolsTableError e){
-                                
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("VALUE_COMPARISON",23, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-4)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -2595,14 +2627,14 @@ class CUP$Parser$actions {
                                 String backId = fun_type.getBackendId();
                                 c3a_g.generateC3aInstr(
                                   Code.call,
-                                  null,
+                                  0 + "",
                                   null,
                                   backId
                                 );
 
                                 RESULT = new SymbolCallFunction(fun_id, backId);
                               }catch(SymbolsTableError e){
-                                
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("CALL_FUNCTION",40, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -2629,14 +2661,16 @@ class CUP$Parser$actions {
                                 String fun_backId = body.getFunBackId();
                                 c3a_g.generateC3aInstr(
                                   Code.call,
-                                  null,
+                                  fun_params + "",
                                   null,
                                   fun_backId
                                 );
 
+
+
                                 RESULT = new SymbolCallFunction(fun_id, fun_backId);
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("CALL_FUNCTION",40, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-1)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -2688,7 +2722,7 @@ class CUP$Parser$actions {
 
                                 RESULT = new SymbolCallBody(fun_id, fun_back_id, num_params+1);
                               }catch(SymbolsTableError e){
-                                
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("CALL_BODY",41, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -2740,7 +2774,7 @@ class CUP$Parser$actions {
 
                                 RESULT = new SymbolCallBody(fun_id, fun_back_id, 0+1);
                               }catch(SymbolsTableError e){
-
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("CALL_BODY",41, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -2767,7 +2801,7 @@ class CUP$Parser$actions {
                                 }
 
                                 if(value.getType() == TYPE.dnull && value.getSubType() == SUBJACENTTYPE.st_string){
-                                  var_id = backend.addTempStrVar(0, value.getStringSize(), (String) value.getValue());
+                                  var_id = backend.addTempStrVar(value.getStringSize(), (String) value.getValue());
                                   c3a_g.generateC3aInstr(
                                     Code.output,
                                     subtype.toString(),
@@ -2784,7 +2818,7 @@ class CUP$Parser$actions {
                                 }
                                 RESULT = new SymbolInstructionOut();
                               }catch(SymbolsTableError e){
-                                
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("INSTRUCTION_OUT",17, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-3)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -2853,25 +2887,25 @@ class CUP$Parser$actions {
                                 if(return_fun_type.getType() != TYPE.dtype){
                                   throw new SemanticError("Function declaration : invalid type");
                                 }
+                                if(return_fun_type.getSubType() == SUBJACENTTYPE.st_string){
+                                  throw new SemanticError("Invalid return type : "+type_id+". Valid return types are : boolean or number");
+                                }
 
                                 SUBJACENTTYPE subType = return_fun_type.getSubType();
-
-                                String backId = backend.addProc(fun_id, 0,return_fun_type.getSize(), 0, subType);
+                                ArrayList<Param> params = fun_params.getParams();
+                                String backId = backend.addProc(fun_id, params.size(), 0, 0, subType);
 
                                 Type fun_type = new Type(backId, TYPE.dfun, type_id);
 
                                 symbolsTable.add(fun_id, fun_type);
                                 
                                 // add params if it has
-                                ArrayList<Param> params = fun_params.getParams();
-                                if(params != null){
-                                  for(Param param : params){
-                                    Type param_type = param.getType();
-                                    SUBJACENTTYPE param_subType = symbolsTable.get(param.getType().getTypeName()).getSubType();
-                                    String param_backId = backend.addVar(param.getVarId(), 0, param.getSize(), param_subType);
-                                    param_type.setBackendId(param_backId);
-                                    symbolsTable.addParam(fun_id, param_backId, param.getVarId(), param_type);
-                                  }
+                                for(Param param : params){
+                                  Type param_type = param.getType();
+                                  SUBJACENTTYPE param_subType = symbolsTable.get(param.getType().getTypeName()).getSubType();
+                                  String param_backId = backend.addVar(param.getVarId(), param.getSize(), param_subType, true);
+                                  param_type.setBackendId(param_backId);
+                                  symbolsTable.addParam(fun_id, param_backId, param.getVarId(), param_type);
                                 }
 
                                 c3a_g.generateC3aInstr(
@@ -2890,7 +2924,7 @@ class CUP$Parser$actions {
 
                                 RESULT = new SymbolFunInit(backId, subType);
                               }catch(SymbolsTableError e){
-                                
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("FUNCTION_INIT",35, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-5)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -2940,7 +2974,10 @@ class CUP$Parser$actions {
                                 //check param type
                                 Type type_type = symbolsTable.get(type_id);
                                 if(type_type.getType() != TYPE.dtype){
-                                  throw new Error("Invalid param type");
+                                  throw new SemanticError("Invalid param type");
+                                }
+                                if(type_type.getSubType() == SUBJACENTTYPE.st_string){
+                                  throw new SemanticError("Invalid param type : "+type_id+". Valid params types are : boolean or number");
                                 }
 
                                 Type param_type = new Type(TYPE.darg, type_id);
@@ -2949,7 +2986,7 @@ class CUP$Parser$actions {
 
                                 RESULT = new SymbolFunWParams(param, prev_params);
                               }catch(SymbolsTableError e){
-                                
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("FUNCTION_W_PARAMS",37, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-4)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -2973,6 +3010,9 @@ class CUP$Parser$actions {
                                 if(type_type.getType() != TYPE.dtype){
                                   throw new SemanticError("Invalid param type");
                                 }
+                                if(type_type.getSubType() == SUBJACENTTYPE.st_string){
+                                  throw new SemanticError("Invalid param type : "+type_id+". Valid params types are : boolean or number");
+                                }
 
                                 Type param_type = new Type(TYPE.darg, type_id);
 
@@ -2980,7 +3020,7 @@ class CUP$Parser$actions {
 
                                 RESULT = new SymbolFunWParams(param);
                               }catch(SymbolsTableError e){
-                                
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("FUNCTION_W_PARAMS",37, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-3)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);
@@ -3032,7 +3072,7 @@ class CUP$Parser$actions {
 
                                 RESULT = new SymbolFunReturn(value.getVarId(), subType);
                               }catch(SymbolsTableError e){
-                                
+                                throw new SemanticError(e.getMessage());
                               }
                             
               CUP$Parser$result = parser.getSymbolFactory().newSymbol("FUNCTION_RETURN",39, ((java_cup.runtime.Symbol)CUP$Parser$stack.elementAt(CUP$Parser$top-2)), ((java_cup.runtime.Symbol)CUP$Parser$stack.peek()), RESULT);

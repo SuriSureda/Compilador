@@ -1,0 +1,13 @@
+function prova() : void {
+	n : number = 0;
+
+}
+
+function main() {
+	n : number = 1;
+
+	while((n<10)){
+		n : number = 0;
+		n = n + 1;
+	}
+}
